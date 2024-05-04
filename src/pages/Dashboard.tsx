@@ -1,11 +1,33 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Input from "../components/Input";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { useForm } from "react-hook-form";
 import Button from "../components/Button";
+import api from "../services/api"
+import { useAuth } from "../context/authContext";
 
 const Dashboard: React.FC = () => {
   const { register, handleSubmit, reset } = useForm();
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = await getToken(); 
+      console.log(token)
+      const response = await api.get("/user/me", {
+        headers: {
+          Authorization: `Bearer ${token}` 
+        }
+      });
+      console.log(response.data)
+    } catch (error) {
+      console.error("Erro ao obter dados do usuário:", error);
+    }
+  };
 
   return (
     <>
