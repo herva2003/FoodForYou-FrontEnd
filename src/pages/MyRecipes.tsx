@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "../components/Sidebar";
 
-const Dashboard: React.FC = () => {
+const MyRecipes: React.FC = () => {
   return (
     <>
       <div className="w-screen h-screen flex bg-dark-white">
@@ -12,4 +12,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default MyRecipes;

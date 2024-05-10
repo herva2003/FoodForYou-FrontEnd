@@ -1,8 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
-import SignUp from "./src/pages/SignUp";
-import SignIn from "./src/pages/SignIn";
-import AuthRedirect from "./src/components/AuthRedirect";
-import Dashboard from "./src/pages/Dashboard";
+import SignUp from "./pages/SignUp";
+import SignIn from "./pages/SignIn";
+import AuthRedirect from "./components/AuthRedirect";
+import Dashboard from "./pages/Dashboard";
+import AskRecipe from "./pages/AskRecipe";
+import MyRecipes from "./pages/MyRecipes";
 
 export const AuthRoute = createBrowserRouter([
   {
@@ -23,6 +25,14 @@ export const Route = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />,
+  },
+  {
+    path: "/askRecipe",
+    element: <AskRecipe />,
+  },
+  {
+    path: "/myRecipes",
+    element: <MyRecipes />,
   },
   {
     path: "/*",
