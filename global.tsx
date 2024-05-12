@@ -8,9 +8,9 @@ export const SidebarData = [
     link: "/dashboard",
   },
   {
-    name: "Solicitar Receita",
+    name: "Ingredientes",
     icon: FiBook,
-    link: "/askRecipe",
+    link: "/ingredients",
   },
   {
     name: "Minhas Receitas",

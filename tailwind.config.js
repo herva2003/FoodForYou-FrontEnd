@@ -11,6 +11,7 @@ export default {
         "dark-grey": "#383838",
         "secondary-darker": "#2F2F2F",
         "dark-white": "#EEEEEE",
+        "description": "#AAB7B8"
       },
     },
     fontFamily: {

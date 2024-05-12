@@ -3,8 +3,8 @@ import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import AuthRedirect from "./components/AuthRedirect";
 import Dashboard from "./pages/Dashboard";
-import AskRecipe from "./pages/AskRecipe";
 import MyRecipes from "./pages/MyRecipes";
+import Ingredients from "./pages/Ingredients";
 
 export const AuthRoute = createBrowserRouter([
   {
@@ -27,8 +27,8 @@ export const Route = createBrowserRouter([
     element: <Dashboard />,
   },
   {
-    path: "/askRecipe",
-    element: <AskRecipe />,
+    path: "/ingredients",
+    element: <Ingredients />,
   },
   {
     path: "/myRecipes",
