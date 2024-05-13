@@ -23,6 +23,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const getToken = async () => {
     const data = await getItem("token");
+    console.log(data, "TOKEN");
     setToken(data);
 
     return token;

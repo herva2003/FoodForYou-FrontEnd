@@ -3,33 +3,53 @@ import { IoIosArrowBack } from "react-icons/io";
 import { IoIosArrowForward } from "react-icons/io";
 import { SidebarData } from "../../global";
 import { useNavigate } from "react-router-dom";
+import { IoMenuSharp } from "react-icons/io5";
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  visible: boolean;
+  setVisible: (s: boolean) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ visible, setVisible }) => {
   const navigate = useNavigate();
-  const [visible, setVisible] = useState(true);
 
   return (
     <>
       {visible ? (
         <>
-          <div className="flex-shrink-0 w-[300px] h-[100vh] bg-white relative z-10">
+          <div className="absolute top-0 bottom-0 left-0 w-[300px] h-[100vh] bg-white ">
             <div
               onClick={() => setVisible(false)}
-              className="w-[30px] h-[30px] bg-white rounded-full flex items-center justify-center shadow-md absolute top-10 right-[-15px] cursor-pointer">
-              <IoIosArrowBack />
+              className="flex cursor-pointer self-end ml-auto p-[20px]">
+              <IoMenuSharp size={30} className="ml-auto" />
             </div>
-            <div className="w-full h-[150px] border-b border-dar-grey p-[10px]"></div>
+            <div className="w-full h-[150px] p-[10px]"></div>
             <div className="w-full h-full justify-center">
               <ul className="">
                 {SidebarData.map((item) => (
                   <li
                     onClick={() => navigate(item.link)}
                     key={item.name}
-                    className="text-white flex flex-row items-center hover:bg-secondary-darker cursor-pointer">
+                    className={`text-white ${
+                      window.location.pathname === item.link
+                        ? "bg-dark-white"
+                        : "bg-white"
+                    } flex flex-row items-center hover:bg-dark-white cursor-pointer`}>
                     <div className="m-5">
-                      <item.icon className="text-dark-grey" />
+                      <item.icon
+                        className={`${
+                          window.location.pathname === item.link
+                            ? "text-primary"
+                            : "text-title"
+                        }`}
+                      />
                     </div>
-                    <h1 className="text-dark-grey">
+                    <h1
+                      className={`${
+                        window.location.pathname === item.link
+                          ? "text-primary"
+                          : "text-title"
+                      }`}>
                       {item.name}
                     </h1>
                   </li>
@@ -41,8 +61,8 @@ const Sidebar: React.FC = () => {
       ) : (
         <div
           onClick={() => setVisible(true)}
-          className="w-[30px] h-[30px] bg-white rounded-full shadow-md flex items-center justify-center absolute top-10 left-10 cursor-pointer">
-          <IoIosArrowForward />
+          className="flex cursor-pointer w-[30px] h-[30px] mt-[15px] ml-[20px]">
+          <IoMenuSharp size={30} className="mr-0 text-title " />
         </div>
       )}
     </>

@@ -4,14 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        "custom-blue": "#5429FF",
-        "custom-grey": "#CBCCE8",
-        "dark-grey": "#667085",
-        "darker-grey": "#344054",
-        "dark-grey": "#383838",
-        "secondary-darker": "#2F2F2F",
-        "dark-white": "#EEEEEE",
-        "description": "#AAB7B8"
+        primary: "#4254ED",
+        white: "#fff",
+        "dark-white": "#F4F8FC",
+        secondary: "#FFCC99",
+
+        title: "#454545",
+        subtitle: "#ADB5BD",
+        border: "#EEF0F5",
+        remove: "#FF6464",
       },
     },
     fontFamily: {

@@ -22,22 +22,20 @@ const SignIn: React.FC = () => {
   }
 
   const handleSignIn = async (data: SignInRequest) => {
-    // const { email, password } = data;
+    const { email, password } = data;
     try {
-      // const { data } = await api.post("/auth/login", {
-      //   login: email,
-      //   password: password,
-      // });
+      const response = await api.post("api/auth/login", {
+        login: email,
+        password: password,
+      });
 
-      const data = { token: "1231253123" };
-
-      if (data.token) {
-        handleSetToken(data.token);
+      if (response.data.data.accessToken) {
+        handleSetToken(response.data.data.accessToken);
         navigate("/dashboard");
       } else {
         console.log("tratar erro");
       }
-      console.log(data.token);
+      console.log(response.data.data.accessToken);
     } catch (error) {
       console.log(error);
     }
@@ -53,7 +51,7 @@ const SignIn: React.FC = () => {
       <div className="flex flex-row items-center">
         <div className="flex flex-col py-4 w-[360px] h-[550px] mx-28">
           <h1 className="font-main font-extrabold text-4xl mb-2">NFT Access</h1>
-          <p className="mb-10 text-dark-grey">
+          <p className="mb-10 text-title">
             Please fill your detail to access your account
           </p>
           <form
@@ -64,6 +62,7 @@ const SignIn: React.FC = () => {
               {...register("email")}
               label="Email"
               placeholder="email"
+              backgroundColor="bg-dark-white"
               icon={
                 <button onClick={() => reset({ email: "" })}>
                   <IoIosCloseCircleOutline color="#667085" size={20} />
@@ -74,6 +73,7 @@ const SignIn: React.FC = () => {
               {...register("password")}
               label="Password"
               placeholder="password"
+              backgroundColor="bg-dark-white"
               icon={
                 <button type="button">
                   {showPassword ? (
@@ -100,12 +100,12 @@ const SignIn: React.FC = () => {
                 <label className="ml-2">Remember me</label>
               </div>
               <Link to={""}>
-                <p className="text-custom-blue">Forgot Password?</p>
+                <p className="text-primary">Forgot Password?</p>
               </Link>
             </div>
 
             <div>
-              <Button type="submit" title="Sign In" />
+              <Button type="submit" title="Sign In" marginBottom="mb-[5px]" />
               <Button
                 outline
                 type="submit"
@@ -115,11 +115,9 @@ const SignIn: React.FC = () => {
             </div>
           </form>
           <div className="flex justify-center">
-            <p className="text-sm text-darker-grey mr-2">
-              Don't have an account?
-            </p>
+            <p className="text-sm title mr-2">Don't have an account?</p>
             <Link to={"/signUp"}>
-              <p className="text-custom-blue text-sm">Sign up</p>
+              <p className="text-primary text-sm">Sign up</p>
             </Link>
           </div>
         </div>
@@ -127,7 +125,7 @@ const SignIn: React.FC = () => {
         <img
           src="src\assets\DRIP_20.png"
           alt=""
-          className="w-[50%] h-[896px] max-h-[100%] bg-indigo-100 rounded-3xl"
+          className="w-[50%] h-[896px] max-h-[100%] bg-dark-white rounded-3xl"
         />
       </div>
     </div>

@@ -1,13 +1,21 @@
 import FlatList from "flatlist-react";
 import React, { useState } from "react";
 import { data } from "../services/data";
-import { useIngredients } from "../context/ingredientsContext";
 
-const Dropdown: React.FC = () => {
+interface DropdownProps {
+  onClick: (name: string, id: string) => void;
+}
+
+const Dropdown: React.FC<DropdownProps> = ({ onClick }) => {
   const [visible, setVisible] = useState(false);
   const [text, setText] = useState("");
-  const {addIngredient} = useIngredients();
-  console.log("renderizou");
+
+  const blank = () => (
+    <div className="flex justify-center">
+      {" "}
+      <h1 className="text-sm- text-subtitle">Nenhum item foi encontrado</h1>
+    </div>
+  );
 
   return (
     <div className="w-[50%] h-10">
@@ -27,9 +35,13 @@ const Dropdown: React.FC = () => {
           <FlatList
             list={data}
             renderOnScroll
+            renderWhenEmpty={blank}
             filterBy={(item) => item.label.toLowerCase().startsWith(text)}
             renderItem={(item) => (
-              <li onClick={() => addIngredient(item.value, item.label)} key={item.value} className="list-none my-5 hover:bg-dark-white px-5 h-[40px] items-center flex cursor-pointer">
+              <li
+                onClick={() => onClick(item.label, item.value)}
+                key={item.value}
+                className="list-none my-5 hover:bg-dark-white px-5 h-[40px] items-center flex cursor-pointer">
                 {item.label}
               </li>
             )}
