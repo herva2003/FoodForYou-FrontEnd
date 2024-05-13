@@ -131,7 +131,7 @@ const Ingredients: React.FC = () => {
           open={openModal}
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description">
-          <div className="w-[60vw] h-[80vh] bg-white rounded-[4px] py-[20px] px-[40px]">
+          <div className="w-[70vw] h-[90vh] bg-white rounded-[4px] py-[20px] px-[40px]">
             <div className="flex justify-between items-center mb-[40px]">
               <h1 className="text-md text-title font-semibold ">
                 Selecione os itens que deseja adicionar a sua lista
@@ -142,7 +142,7 @@ const Ingredients: React.FC = () => {
                 onClick={closeModal}
               />
             </div>
-            <div className="flex justify-between ">
+            <div className="flex justify-between">
               <Dropdown onClick={handleAddSelectedIngredient} />
               <div className="flex flex-col h-[60vh] w-[40%] overflow-hidden overflow-y-scroll no-scrollbar rounded-[4px] ">
                 <FlatList
