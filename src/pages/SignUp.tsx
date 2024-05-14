@@ -9,35 +9,13 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 
-interface FormData {
-  fullName: string;
-  email: string;
-  password: string;
-  document: string;
-  weight: string;
-}
-
 const SignIn: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
 
-  const { register, handleSubmit, reset } = useForm<FormData>();
-
-  const navigate = useNavigate();
-
-  const onSubmit = async (data: FormData) => {
-    try {
-      const response = await api.post('/auth/signup', data);
-      if (response.status === 201) {
-        navigate("/signIn");
-      }
-      console.log(response.data); 
-    } catch (error) {
-      console.error('Erro ao enviar dados:', error);
-    }
-  };
+  const { register, handleSubmit, reset } = useForm();
 
   return (
-    <div className="h-screen flex w-screen px-8 py-8 border justify-center bg-indigo-100">
+    <div className="h-screen flex w-screen px-8 py-8 border justify-center bg-dark-white">
       <img
         src="src\assets\Logo.png"
         alt="company-logo"
@@ -46,17 +24,18 @@ const SignIn: React.FC = () => {
       <img
         src="src\assets\DRIP_20.png"
         alt=""
-        className="w-[600px] h-[600px] bg-indigo-100 rounded-3xl self-center"
+        className="w-[600px] h-[600px] bg-dark-white rounded-3xl self-center"
       />
       <div className="flex flex-row bg-white rounded-3xl">
         <div className="flex flex-col py-4 w-[560px] h-[550px] mx-28 mt-20">
           <h1 className="font-main font-extrabold text-4xl mb-8">
             Sign up now
           </h1>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit((data) => console.log(data))}>
             <Input
               {...register("fullName")}
               placeholder="full name"
+              backgroundColor="bg-dark-white"
               icon={
                 <button onClick={() => reset({ fullName: "" })}>
                   <IoIosCloseCircleOutline color="#667085" size={20} />
@@ -67,6 +46,7 @@ const SignIn: React.FC = () => {
             <Input
               {...register("email")}
               placeholder="email"
+              backgroundColor="bg-dark-white"
               icon={
                 <button onClick={() => reset({ email: "" })}>
                   <IoIosCloseCircleOutline color="#667085" size={20} />
@@ -77,6 +57,7 @@ const SignIn: React.FC = () => {
             <Input
               {...register("password")}
               placeholder="password"
+              backgroundColor="bg-dark-white"
               icon={
                 <button type="button">
                   {showPassword ? (
@@ -102,6 +83,7 @@ const SignIn: React.FC = () => {
                 <Input
                   {...register("document")}
                   placeholder="document"
+                  backgroundColor="bg-dark-white"
                   icon={
                     <button onClick={() => reset({ document: "" })}>
                       <IoIosCloseCircleOutline color="#667085" size={20} />
@@ -114,6 +96,7 @@ const SignIn: React.FC = () => {
                 <Input
                   {...register("weight")}
                   placeholder="weight"
+                  backgroundColor="bg-dark-white"
                   icon={
                     <button onClick={() => reset({ weight: "" })}>
                       <IoIosCloseCircleOutline color="#667085" size={20} />
@@ -123,7 +106,7 @@ const SignIn: React.FC = () => {
                 />
               </div>
             </div>
-            <p className="text-xs text-custom-grey">
+            <p className="text-xs text-subtitle">
               You will be able change the weight later
             </p>
 
@@ -143,14 +126,12 @@ const SignIn: React.FC = () => {
               </p>
             </div>
 
-            <Button title="Sign Up" />
+            <Button title="Sign Up" marginBottom="mb-[5px]" />
           </form>
           <div className="flex justify-center">
-            <p className="text-sm text-darker-grey mr-2">
-              Already have an account?
-            </p>
+            <p className="text-sm text-title mr-2">Already have an account?</p>
             <Link to={"/signIn"}>
-              <p className="text-custom-blue text-sm">Sign in</p>
+              <p className="text-primary text-sm">Sign in</p>
             </Link>
           </div>
         </div>
