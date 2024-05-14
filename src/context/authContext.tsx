@@ -7,7 +7,10 @@ interface AuthProviderProps {
 
 interface AuthContextProps {
   token: string | null;
-  handleSetToken: (token: string) => void;
+  refreshToken: string | null;
+  handleSetToken: (token: string, refreshToken: string) => void;
+  getToken: () => Promise<string | null>; // Adicionando getToken ao contexto
+  getRefreshToken: () => Promise<string | null>; // Adicionando getRefreshToken ao contexto
 }
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
@@ -15,26 +18,35 @@ const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { getItem, setItem } = useLocalStorage();
   const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
-  const handleSetToken = (data: string) => {
-    setItem("token", data);
-    setToken(data);
+  const handleSetToken = (tokenData: string, refreshTokenData: string) => {
+    setItem("token", tokenData);
+    setToken(tokenData);
+    setItem("refreshToken", refreshTokenData);
+    setRefreshToken(refreshTokenData);
   };
 
   const getToken = async () => {
     const data = await getItem("token");
     console.log(data, "TOKEN");
     setToken(data);
+    return data;
+  };
 
-    return token;
+  const getRefreshToken = async () => {
+    const data = await getItem("refreshToken");
+    setRefreshToken(data);
+    return data;
   };
 
   useEffect(() => {
     getToken();
+    getRefreshToken();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ token, handleSetToken }}>
+    <AuthContext.Provider value={{ token, refreshToken, handleSetToken, getToken, getRefreshToken }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,51 +1,18 @@
 import React, { useState } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import api from "../services/api"; // Importe o Axios
 
 import { useForm } from "react-hook-form";
 
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
-import api from "../services/api";
-import { useAuth } from "../context/authContext";
 
 const SignIn: React.FC = () => {
-  const { handleSetToken } = useAuth();
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
   const { register, handleSubmit, reset } = useForm();
-
-  interface SignUpProps {
-    fullname: string;
-    email: string;
-    password: string;
-    document: string;
-    balance: string;
-  }
-
-  const handleSignUp = async (data: SignUpProps) => {
-    const { fullname, email, password, document, balance } = data;
-
-    try {
-      const response = await api.post("api/auth/signup", {
-        email: email,
-        password: password,
-        document: document,
-        fullName: fullname,
-        weight: balance,
-      });
-
-      if (response.data.data.accessToken) {
-        handleSetToken(response.data.data.accessToken);
-        navigate("/dashboard");
-      } else {
-        console.log("tratar erro");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   return (
     <div className="h-screen flex w-screen px-8 py-8 border justify-center bg-dark-white">
@@ -64,16 +31,13 @@ const SignIn: React.FC = () => {
           <h1 className="font-main font-extrabold text-4xl mb-8">
             Sign up now
           </h1>
-          <form
-            onSubmit={handleSubmit((data) =>
-              handleSignUp(data as SignUpProps)
-            )}>
+          <form onSubmit={handleSubmit((data) => console.log(data))}>
             <Input
-              {...register("fullname")}
+              {...register("fullName")}
               placeholder="full name"
               backgroundColor="bg-dark-white"
               icon={
-                <button onClick={() => reset({ fullname: "" })}>
+                <button onClick={() => reset({ fullName: "" })}>
                   <IoIosCloseCircleOutline color="#667085" size={20} />
                 </button>
               }
@@ -130,11 +94,11 @@ const SignIn: React.FC = () => {
               </div>
               <div className="w-[30%]">
                 <Input
-                  {...register("balance")}
+                  {...register("weight")}
                   placeholder="weight"
                   backgroundColor="bg-dark-white"
                   icon={
-                    <button onClick={() => reset({ balance: "" })}>
+                    <button onClick={() => reset({ weight: "" })}>
                       <IoIosCloseCircleOutline color="#667085" size={20} />
                     </button>
                   }

@@ -1,26 +1,11 @@
-import React, { useEffect } from "react";
-import SidebarPage from "../components/SidebarPage";
-import api from "../services/api";
-import { useIngredients } from "../context/ingredientsContext";
+import React from "react";
+import Input from "../components/Input";
+import { IoIosCloseCircleOutline } from "react-icons/io";
+import { useForm } from "react-hook-form";
+import Button from "../components/Button";
 
 const Dashboard: React.FC = () => {
-  const { handleSetIngredients } = useIngredients();
-
-  const getIngredients = async () => {
-    try {
-      const response = await api.get("/api/user/ingredient");
-
-      if (response.data) {
-        handleSetIngredients(response.data.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getIngredients();
-  }, []);
+  const { register, handleSubmit, reset } = useForm();
 
   return (
     <SidebarPage headerTitle="Dashboard">

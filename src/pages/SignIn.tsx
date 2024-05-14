@@ -24,22 +24,25 @@ const SignIn: React.FC = () => {
   const handleSignIn = async (data: SignInRequest) => {
     const { email, password } = data;
     try {
-      const response = await api.post("api/auth/login", {
-        login: email,
-        password: password,
-      });
+      // const { data } = await api.post("/auth/login", {
+      //   login: email,
+      //   password: password,
+      // });
 
-      if (response.data.data.accessToken) {
-        handleSetToken(response.data.data.accessToken);
+      const data = { token: "1231253123" };
+
+      if (data.token) {
+        handleSetToken(data.token);
         navigate("/dashboard");
       } else {
-        console.log("tratar erro");
+        console.log("Token null");
       }
-      console.log(response.data.data.accessToken);
+      console.log(data.token);
     } catch (error) {
-      console.log(error);
+      console.log("Erro durante a solicitação de login:", error);
     }
   };
+  
 
   return (
     <div className="h-screen flex w-screen px-8 py-8 border justify-center">
