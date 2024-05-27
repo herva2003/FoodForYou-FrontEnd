@@ -9,10 +9,35 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 
-const SignIn: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
+interface FormData {
+  fullName: string;
+  email: string;
+  password: string;
+  document: string;
+  weight: string;
+}
 
-  const { register, handleSubmit, reset } = useForm();
+
+
+const SignIn: React.FC = () => {
+  const [showPassword, setShowPassword] = useState(false); 
+
+  const { register, handleSubmit, reset } = useForm<FormData>();
+
+  const navigate = useNavigate();
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      const response = await api.post('/api/v1/auth/signup', data);
+      if (response.status === 201) {
+        navigate("/signIn");
+      }
+      console.log(response.data); 
+    } catch (error) {
+      console.error('Erro ao enviar dados:', error);
+    }
+  };
+
 
   return (
     <div className="h-screen flex w-screen px-8 py-8 border justify-center bg-dark-white">
@@ -31,7 +56,7 @@ const SignIn: React.FC = () => {
           <h1 className="font-main font-extrabold text-4xl mb-8">
             Sign up now
           </h1>
-          <form onSubmit={handleSubmit((data) => console.log(data))}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <Input
               {...register("fullName")}
               placeholder="full name"
