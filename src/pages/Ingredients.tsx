@@ -98,14 +98,16 @@ const Ingredients: React.FC = () => {
   };
 
   const handleAddSelectedIngredient = (name: string, id: string) => {
-    const newItem: SelectedIngredientsProps = {
-      name: name,
-      id: id,
-    };
-
-    setSelectedIngredients((prev) => [...prev, newItem]);
+    const isAlreadyAdded = selectedIngredients.some(item => item.id === id);
+    if (!isAlreadyAdded) {
+      const newItem: SelectedIngredientsProps = {
+        name: name,
+        id: id,
+      };
+      setSelectedIngredients((prev) => [...prev, newItem]);
+    }
   };
-
+  
   const blank = () => (
     <div className="flex justify-center">
       {" "}
@@ -132,8 +134,6 @@ const Ingredients: React.FC = () => {
     setVisible(checkeds.length > 0);
   }, [checkeds]);
 
-  console.log(selectedIngredients)
-  console.log(getToken())
 
   return (
     <>
