@@ -34,8 +34,8 @@ const MyRecipes: React.FC = () => {
   const [newPreparationStep, setNewPreparationStep] = useState("");
   const [preparationMethodList, setPreparationMethodList] = useState<string[]>([]);
   const [newPreparationTime, setNewPreparationTime] = useState(0);
-  const [tipo, setTipo] = useState("");
-  const [obesetatiion, setObesetatiion] = useState("");
+  const [type, setType] = useState("");
+  const [observation, setObservation] = useState("");
   const { getToken } = useAuth();
   const [generatedRecipe, setGeneratedRecipe] = useState<GeneratedRecipe | null>(null);
 
@@ -59,11 +59,13 @@ const MyRecipes: React.FC = () => {
     }
   };
 
+  console.log(generatedRecipe)
+
 
   const generatedRecipeFromIa = async () => {
     try {
       const token = await getToken();
-      const requestBody = { tipo, obesetatiion };
+      const requestBody = { type , observation };
   
       const response = await api.post("/api/v1/recipe/generate", requestBody, {
         headers: { Authorization: `Bearer ${token}` },
@@ -72,31 +74,51 @@ const MyRecipes: React.FC = () => {
       console.log(response); 
   
       if (response.data) {
-        console.log(response.data.data)
+        console.log(response.data)
+       await  setGeneratedRecipe(response.data)
+       loadDataFromAI()
       }
     } catch (error) {
       console.log(error);
     }
   };
 
+  const submitAddedRecipe = async () => {
+    try {
+      const token = await getToken();
+      const formData = getFormData();
+  
+      const response = await api.post("/api/v1/user/recipe", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      console.log(response);
+  
+      if (response.data) {
+        fetchRecipes();
+        setOpenModal(false);
+        console.log("Dados enviados com sucesso!");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar os dados:");
+    }
+  };
+  
+
 
   const openAlert = () => {
     const tipoValue = prompt("Digite o tipo:");
     const obesetatiionValue = prompt("Digite a obesetatiion:");
     if (tipoValue && obesetatiionValue) {
-      setTipo(tipoValue);
-      setObesetatiion(obesetatiionValue);
+      setType(tipoValue);
+      setObservation(obesetatiionValue);
       generatedRecipeFromIa();
     }
   };
 
   const closeModal = () => {
-    setOpenModal(false);
-  };
-
-  const submitAddedIngredients = () => {
-    // Adicionar lógica para enviar os dados do novo item para a API
-    // e então fechar o modal
     setOpenModal(false);
   };
 
@@ -110,6 +132,15 @@ const MyRecipes: React.FC = () => {
     setNewPreparationStep("");
   };
 
+  const loadDataFromAI = () => {
+    if (generatedRecipe) {
+      setNewRecipeName(generatedRecipe.name || "");
+      setIngredientsList(generatedRecipe.ingredients || []);
+      setPreparationMethodList(generatedRecipe.preparationMethod || []);
+      setNewPreparationTime(generatedRecipe.preparationTime || 0);
+    }
+  };
+  
   const getFormData = (): {} => {
     return {
       name: newRecipeName,
@@ -143,7 +174,7 @@ const MyRecipes: React.FC = () => {
               onClick={closeModal}
             />
           </div>
-          <form onSubmit={submitAddedIngredients}>
+          <form onSubmit={submitAddedRecipe}>
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Nome da Receita
