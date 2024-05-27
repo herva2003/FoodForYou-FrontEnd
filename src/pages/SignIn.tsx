@@ -35,6 +35,7 @@ const SignIn: React.FC = () => {
 
       if (accessToken && refreshToken) {
         handleSetToken(accessToken,refreshToken);
+        navigate("/dashboard");
       } else {
         console.log("Token null");
       }

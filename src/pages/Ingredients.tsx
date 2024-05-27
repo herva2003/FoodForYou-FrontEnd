@@ -12,6 +12,7 @@ import Dropdown from "../components/Dropdown";
 import SelectedIngredientCard from "../components/SelectedIngredientCard";
 import api from "../services/api";
 import { IoSearchOutline } from "react-icons/io5";
+import { useAuth } from "../context/authContext";
 
 interface SelectedIngredientsProps {
   name: string;
@@ -33,9 +34,14 @@ const Ingredients: React.FC = () => {
     SelectedIngredientsProps[]
   >([]);
 
+  const { getToken } = useAuth();
+
   const getIngredients = async () => {
     try {
-      const response = await api.get("/api/user/ingredient");
+      const token = await getToken();
+      const response = await api.get("/api/v1/user/ingredient", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response.data) {
         handleSetIngredients(response.data.data);
@@ -47,10 +53,15 @@ const Ingredients: React.FC = () => {
 
   const handleDeleteIngredients = async () => {
     try {
-      const response = await api.delete("/api/user/ingredient/", checkeds);
-
+      const token = await getToken();
+      const response = await api.delete("/api/v1/user/ingredient/", {
+        data: checkeds,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
       if (response) {
         console.log(response);
+        setCheckeds([]);
       }
     } catch (error) {
       console.log(error);
@@ -59,11 +70,14 @@ const Ingredients: React.FC = () => {
 
   const submitAddedIngredients = async () => {
     try {
-      const response = await api.post(
-        "/api/user/ingredient",
-        selectedIngredients
+      const token = await getToken();
+      const response = await api.post("/api/v1/user/ingredient", 
+        selectedIngredients,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
-
+  
       if (response) {
         getIngredients();
         setOpenModal(false);
@@ -73,7 +87,6 @@ const Ingredients: React.FC = () => {
       console.log(error);
     }
   };
-
   const sortedIngredients: any = ingredients.sort((a, b) =>
     a.descrip.localeCompare(b.descrip)
   );
@@ -115,8 +128,12 @@ const Ingredients: React.FC = () => {
   };
 
   useEffect(() => {
+    getIngredients()
     setVisible(checkeds.length > 0);
   }, [checkeds]);
+
+  console.log(selectedIngredients)
+  console.log(getToken())
 
   return (
     <>
