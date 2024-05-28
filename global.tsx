@@ -23,4 +23,9 @@ export const SidebarData = [
     icon: FaRobot,
     link: "/recipeIa",
   },
+  {
+    name: "Identificar Receita",
+    icon: FiBookmark,
+    link: "/IdentifyIA",
+  }
 ];

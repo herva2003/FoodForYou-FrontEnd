@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import MyRecipes from "./pages/MyRecipes";
 import Ingredients from "./pages/Ingredients";
 import RecipeIa from "./pages/RecipeIa";
+import IdentifyIA from "./pages/IdentifyIA"
 
 export const AuthRoute = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ export const Route = createBrowserRouter([
   {
     path: "/recipeIA",
     element: <RecipeIa />,
+  },
+  {
+    path: "/IdentifyIA",
+    element: <IdentifyIA />,
   },
   {
     path: "/*",
