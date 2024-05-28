@@ -282,14 +282,6 @@ const MyRecipes: React.FC = () => {
                 }}
               />
             </div>
-
-            {/* interface RecipeProps {
-              id: string;
-              name: string;
-              ingredients: string[];
-              preparationMethod: string[];
-              preparationTime: number;
-            } */}
             <div className="w-full h-[100%] mt-[20px] overflow-y-scroll">
               {recipes.map((recipe: RecipeProps) => (
                 <RecipeCard
