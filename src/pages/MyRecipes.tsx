@@ -6,7 +6,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
 import { Modal } from "@mui/material";
-import { AiOutlineCloseCircle, AiOutlinePlus } from "react-icons/ai";
+import { AiOutlineClockCircle, AiOutlineClose, AiOutlineCloseCircle, AiOutlinePlus } from "react-icons/ai";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
 import { RecipeProps } from "../interfaces/RecipeProps";
@@ -79,6 +79,7 @@ const MyRecipes: React.FC = () => {
   };
 
   const submitAddedRecipe = async () => {
+    console.log('Entrou')
     try {
       const token = await getToken();
       const formData = getFormData();
@@ -127,6 +128,13 @@ const MyRecipes: React.FC = () => {
     setNewPreparationStep("");
   };
 
+  const resetRecipeItemsInputs = () => {
+    setIngredientsList([]);
+    setPreparationMethodList([]);
+    setNewPreparationStep("");
+    setNewIngredient("");
+  }
+
   const loadDataFromAI = () => {
     if (generatedRecipe) {
       setNewRecipeName(generatedRecipe.name || "");
@@ -158,93 +166,112 @@ const MyRecipes: React.FC = () => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <div className="w-[70vw] h-[90vh] bg-white rounded-[4px] py-[20px] px-[40px]">
+        <div className="min-w-[50vw] min-h-[50vh] bg-white rounded-[4px] py-[20px] px-[40px]">
           <div className="flex justify-between items-center mb-[40px]">
-            <h1 className="text-md text-title font-semibold ">
+            <h1 className="text-md text-title font-bold ">
               Adicionar nova receita
             </h1>
-            <AiOutlineCloseCircle
-              size={30}
+            <AiOutlineClose
+              size={25}
               className="cursor-pointer text-title"
               onClick={closeModal}
             />
           </div>
           <form onSubmit={submitAddedRecipe}>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-title text-md font-semibold mb-2">
                 Nome da Receita
               </label>
               <input
                 type="text"
                 value={newRecipeName}
                 onChange={(e) => setNewRecipeName(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Nome da Receita"
               />
             </div>
+            <h2 className="text-md text-title font-semibold mb-2">
+              Ingredientes
+            </h2>
             <div className="mb-4 flex">
               <input
                 type="text"
                 value={newIngredient}
+                onKeyDown={(e) => {
+                  if (e.key == "Enter") {
+                    e.preventDefault()
+                    addIngredientToList()
+                  }
+                }}
                 onChange={(e) => setNewIngredient(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-4/5 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Novo Ingrediente"
               />
               <Button
                 type="button"
-                title="add"
+                title="Adicionar"
+                width="w-1/5"
                 onClick={addIngredientToList}
               />
             </div>
-            <ul>
+            <ul className="ml-5 list-disc mb-4">
               {ingredientsList.map((ingredient, index) => (
                 <li key={index}>{ingredient}</li>
               ))}
             </ul>
+            <h2 className="text-md text-title font-semibold mb-2">
+              Passos de preparo
+            </h2>
             <div className="mb-4 flex">
               <input
                 type="text"
                 value={newPreparationStep}
+                onKeyDown={(e) => {
+                  if (e.key == "Enter") {
+                    e.preventDefault()
+                    addPreparationStepToList()
+                  }
+                }}
                 onChange={(e) => setNewPreparationStep(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-4/5 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Novo Passo de Preparo"
               />
               <Button
                 type="button"
-                title="add"
+                title="Adicionar"
+                width="w-1/5"
                 onClick={addPreparationStepToList}
               />
             </div>
-            <ul>
+            <ul className="ml-5 list-decimal mb-4">
               {preparationMethodList.map((step, index) => (
-                <li key={index}>{step}</li>
+                <li className="" key={index}>{step}</li>
               ))}
             </ul>
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Tempo de Preparo (minutos)
               </label>
-              <input
+              <Input
                 type="number"
                 value={newPreparationTime}
                 onChange={(e) => setNewPreparationTime(Number(e.target.value))}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder="Tempo de Preparo"
+                placeholder="Tempo"
+                firstIcon={<AiOutlineClockCircle color="#667085" size={20} />}
               />
             </div>
-            <div className="flex justify-end items-end mt-[30px]">
+            <div className="flex justify-end items-end mt-[30px] mb-[10px]">
               <Button
                 type="submit"
                 title="Salvar"
-                width="w-[10%]"
               />
             </div>
           </form>
-          <Button
+          {/* <Button
             type="button"
             title="Gerar Receita Automática"
             onClick={openAlert} // Chama a função openAlert quando o botão é clicado
-          />
+          /> */}
         </div>
       </Modal>
       <SidebarPage headerTitle="Minhas Receitas">
@@ -278,6 +305,7 @@ const MyRecipes: React.FC = () => {
                 marginBottom=""
                 marginLeft="ml-[40px]"
                 onClick={() => {
+                  resetRecipeItemsInputs()
                   setOpenModal(true);
                 }}
               />

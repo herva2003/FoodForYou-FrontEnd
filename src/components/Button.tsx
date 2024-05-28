@@ -3,6 +3,7 @@ import React, { ButtonHTMLAttributes } from "react";
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   title: string;
   icon?: React.ReactNode;
+  type?: "submit" | "reset" | "button" | undefined,
   outline?: boolean;
   onClick?: () => void;
   width?: string;
@@ -15,6 +16,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button: React.FC<ButtonProps> = ({
   title,
   icon,
+  type,
   outline,
   onClick,
   width,
@@ -27,6 +29,7 @@ const Button: React.FC<ButtonProps> = ({
     <>
       {!outline ? (
         <button
+          type={type}
           onClick={onClick}
           className={`${width ? width : "w-full"} h-[44px] shadow-sm ${
             backgroundColor ? backgroundColor : "bg-primary"

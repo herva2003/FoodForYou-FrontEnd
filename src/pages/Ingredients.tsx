@@ -209,7 +209,7 @@ const Ingredients: React.FC = () => {
               <div className="flex">
                 {visible ? (
                   <Button
-                    title="Deletar"
+                    title="Remover"
                     width="w-[120px]"
                     marginBottom=""
                     backgroundColor="bg-remove"

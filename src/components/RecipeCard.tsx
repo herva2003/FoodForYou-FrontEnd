@@ -81,7 +81,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps }) => {
           <Button title="Fechar" backgroundColor="bg-gray-500" onClick={closeModal}></Button>
         </div>
       </Modal>
-      <div className="w-full h-[50px] bg-white flex items-center justify-between px-[10px] my-[10px] rounded-[4px] shadow-sm">
+      <div className="w-[99%] h-[50px] bg-white flex items-center justify-between px-[10px] my-[10px] rounded-[4px] shadow-sm">
         <h1 className="text-title">{recipeProps.name}</h1>
         <div className="flex items-center">
           <button 
