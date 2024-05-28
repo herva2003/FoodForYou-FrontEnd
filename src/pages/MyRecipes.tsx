@@ -7,14 +7,9 @@ import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
 import { Modal } from "@mui/material";
 import { AiOutlineCloseCircle, AiOutlinePlus } from "react-icons/ai";
-
-interface RecipeProps {
-  id: string;
-  name: string;
-  ingredients: string[];
-  preparationMethod: string[];
-  preparationTime: number;
-}
+import { IoIosCloseCircleOutline } from "react-icons/io";
+import { IoSearchOutline } from "react-icons/io5";
+import { RecipeProps } from "../interfaces/RecipeProps";
 
 interface GeneratedRecipe {
   name: string;
@@ -62,7 +57,7 @@ const MyRecipes: React.FC = () => {
   console.log(generatedRecipe)
 
 
-  const generatedRecipeFromIa = async () => {
+  const generatedRecipeFromAi = async () => {
     try {
       const token = await getToken();
       const requestBody = { type , observation };
@@ -75,7 +70,7 @@ const MyRecipes: React.FC = () => {
   
       if (response.data) {
         console.log(response.data)
-       await  setGeneratedRecipe(response.data)
+       await setGeneratedRecipe(response.data)
        loadDataFromAI()
       }
     } catch (error) {
@@ -110,11 +105,11 @@ const MyRecipes: React.FC = () => {
 
   const openAlert = () => {
     const tipoValue = prompt("Digite o tipo:");
-    const obesetatiionValue = prompt("Digite a obesetatiion:");
+    const obesetatiionValue = prompt("Você tem alguma observação:");
     if (tipoValue && obesetatiionValue) {
       setType(tipoValue);
       setObservation(obesetatiionValue);
-      generatedRecipeFromIa();
+      generatedRecipeFromAi();
     }
   };
 
@@ -166,7 +161,7 @@ const MyRecipes: React.FC = () => {
         <div className="w-[70vw] h-[90vh] bg-white rounded-[4px] py-[20px] px-[40px]">
           <div className="flex justify-between items-center mb-[40px]">
             <h1 className="text-md text-title font-semibold ">
-              Adicionar Nova Receita
+              Adicionar nova receita
             </h1>
             <AiOutlineCloseCircle
               size={30}
@@ -259,6 +254,12 @@ const MyRecipes: React.FC = () => {
               value={filterText}
               onChange={(event) => setFilterText(event.target.value)}
               placeholder="Buscar..."
+              firstIcon={<IoSearchOutline color="#667085" size={20} />}
+              icon={
+                <button onClick={() => setFilterText("")}>
+                  <IoIosCloseCircleOutline color="#667085" size={20} />
+                </button>
+              }
             />
             <div className="flex justify-between items-center mt-[40px]">
               <h1 className="text-md text-subtitle self-end">Sua lista</h1>
@@ -281,12 +282,19 @@ const MyRecipes: React.FC = () => {
                 }}
               />
             </div>
+
+            {/* interface RecipeProps {
+              id: string;
+              name: string;
+              ingredients: string[];
+              preparationMethod: string[];
+              preparationTime: number;
+            } */}
             <div className="w-full h-[100%] mt-[20px] overflow-y-scroll">
-              {recipes.map((recipe) => (
+              {recipes.map((recipe: RecipeProps) => (
                 <RecipeCard
                   key={recipe.id}
-                  name={recipe.name}
-                  preparationTime={recipe.preparationTime}
+                  recipeProps={recipe}
                 />
               ))}
             </div>
