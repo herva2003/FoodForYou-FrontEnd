@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
-
+import Swal from "sweetalert2";
 interface FormData {
   fullName: string;
   email: string;
@@ -28,16 +28,30 @@ const SignIn: React.FC = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await api.post('/api/v1/auth/signup', data);
+      const response = await api.post("/api/v1/auth/signup", data);
       if (response.status === 201) {
-        navigate("/signIn");
+        Swal.fire({
+          title: "Success!",
+          text: "Your account has been created successfully.",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/signIn");
+          }
+        });
       }
-      console.log(response.data); 
+      console.log(response.data);
     } catch (error) {
-      console.error('Erro ao enviar dados:', error);
+      console.error("Error sending data:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "An error occurred while creating your account.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
-
 
   return (
     <div className="h-screen flex w-screen px-8 py-8 border justify-center bg-dark-white">

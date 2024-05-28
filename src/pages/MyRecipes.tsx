@@ -10,6 +10,7 @@ import { AiOutlineClockCircle, AiOutlineClose, AiOutlineCloseCircle, AiOutlinePl
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
 import { RecipeProps } from "../interfaces/RecipeProps";
+import Swal from "sweetalert2"
 
 interface GeneratedRecipe {
   name: string;
@@ -29,10 +30,7 @@ const MyRecipes: React.FC = () => {
   const [newPreparationStep, setNewPreparationStep] = useState("");
   const [preparationMethodList, setPreparationMethodList] = useState<string[]>([]);
   const [newPreparationTime, setNewPreparationTime] = useState(0);
-  const [type, setType] = useState("");
-  const [observation, setObservation] = useState("");
   const { getToken } = useAuth();
-  const [generatedRecipe, setGeneratedRecipe] = useState<GeneratedRecipe | null>(null);
 
   useEffect(() => {
     fetchRecipes();
@@ -54,33 +52,16 @@ const MyRecipes: React.FC = () => {
     }
   };
 
-  console.log(generatedRecipe)
-
-
-  const generatedRecipeFromAi = async () => {
-    try {
-      const token = await getToken();
-      const requestBody = { type , observation };
-  
-      const response = await api.post("/api/v1/recipe/generate", requestBody, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
-      console.log(response); 
-  
-      if (response.data) {
-        console.log(response.data)
-       await setGeneratedRecipe(response.data)
-       loadDataFromAI()
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const submitAddedRecipe = async () => {
-    console.log('Entrou')
     try {
+      Swal.fire({
+        title: "Loading",
+        html: "Loading",
+        timer: 2000,
+        timerProgressBar: true,
+      });
+  
       const token = await getToken();
       const formData = getFormData();
   
@@ -90,29 +71,32 @@ const MyRecipes: React.FC = () => {
         },
       });
   
+      Swal.close(); // Fechando o pop-up de carregamento
+  
       console.log(response);
   
       if (response.data) {
         fetchRecipes();
         setOpenModal(false);
-        console.log("Dados enviados com sucesso!");
+        Swal.fire({
+          title: "Success!",
+          text: "Recipe added successfully.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
-      console.error("Erro ao enviar os dados:");
+      console.error("Error sending data:", error);
+      Swal.close();
+      Swal.fire({
+        title: "Error!",
+        text: "An error occurred while adding the recipe.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
   
-
-
-  const openAlert = () => {
-    const tipoValue = prompt("Digite o tipo:");
-    const obesetatiionValue = prompt("Você tem alguma observação:");
-    if (tipoValue && obesetatiionValue) {
-      setType(tipoValue);
-      setObservation(obesetatiionValue);
-      generatedRecipeFromAi();
-    }
-  };
 
   const closeModal = () => {
     setOpenModal(false);
@@ -134,15 +118,6 @@ const MyRecipes: React.FC = () => {
     setNewPreparationStep("");
     setNewIngredient("");
   }
-
-  const loadDataFromAI = () => {
-    if (generatedRecipe) {
-      setNewRecipeName(generatedRecipe.name || "");
-      setIngredientsList(generatedRecipe.ingredients || []);
-      setPreparationMethodList(generatedRecipe.preparationMethod || []);
-      setNewPreparationTime(generatedRecipe.preparationTime || 0);
-    }
-  };
   
   const getFormData = (): {} => {
     return {

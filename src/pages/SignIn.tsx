@@ -10,6 +10,8 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
 
+import Swal from "sweetalert2"
+
 const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { handleSetToken } = useAuth();
@@ -29,18 +31,29 @@ const SignIn: React.FC = () => {
         password: password,
       });
 
-      console.log(response)
+      console.log(response);
       const responseData = response.data;
       const { accessToken, refreshToken } = responseData.data;
 
       if (accessToken && refreshToken) {
-        handleSetToken(accessToken,refreshToken);
+        handleSetToken(accessToken, refreshToken);
         navigate("/dashboard");
       } else {
-        console.log("Token null");
+        Swal.fire({
+          title: "Error!",
+          text: "Invalid credentials. Please try again.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
-      console.log("Erro durante a solicitação de login:", error);
+      console.log("Error during login request:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "An error occurred while attempting to login.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
   

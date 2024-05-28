@@ -13,6 +13,7 @@ import SelectedIngredientCard from "../components/SelectedIngredientCard";
 import api from "../services/api";
 import { IoSearchOutline } from "react-icons/io5";
 import { useAuth } from "../context/authContext";
+import Swal from "sweetalert2";
 
 interface SelectedIngredientsProps {
   name: string;
@@ -58,35 +59,76 @@ const Ingredients: React.FC = () => {
         data: checkeds,
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       if (response) {
         console.log(response);
         setCheckeds([]);
+        Swal.fire({
+          title: "Deleted!",
+          text: "Your ingredients have been deleted.",
+          icon: "success",
+        });
       }
     } catch (error) {
       console.log(error);
+      Swal.fire({
+        title: "Error!",
+        text: "An error occurred while deleting ingredients.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
+  };
+
+  const handleConfirmDelete = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleDeleteIngredients();
+      }
+    });
   };
 
   const submitAddedIngredients = async () => {
     try {
       const token = await getToken();
-      const response = await api.post("/api/v1/user/ingredient", 
+      const response = await api.post(
+        "/api/v1/user/ingredient",
         selectedIngredients,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-  
+
       if (response) {
         getIngredients();
         setOpenModal(false);
         setSelectedIngredients([]);
+        Swal.fire({
+          title: "Success!",
+          text: "Ingredients added successfully.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
       console.log(error);
+      Swal.fire({
+        title: "Error!",
+        text: "An error occurred while adding ingredients.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
+  
   const sortedIngredients: any = ingredients.sort((a, b) =>
     a.descrip.localeCompare(b.descrip)
   );
@@ -214,7 +256,7 @@ const Ingredients: React.FC = () => {
                     marginBottom=""
                     backgroundColor="bg-remove"
                     onClick={() => {
-                      handleDeleteIngredients();
+                      handleConfirmDelete();
                       console.log(checkeds, "CHECKEDS");
                     }}
                   />
