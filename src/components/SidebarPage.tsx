@@ -6,8 +6,8 @@ import api from "../services/api";
 import { Link, useNavigate } from "react-router-dom";
 
 interface SidebarPage {
-  children: React.ReactNode;
-  headerTitle: string;
+  children: React.ReactNode
+  headerTitle: string
 }
 
 const SidebarPage: React.FC<SidebarPage> = ({ children, headerTitle }) => {
