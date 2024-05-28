@@ -5,6 +5,7 @@ import AuthRedirect from "./components/AuthRedirect";
 import Dashboard from "./pages/Dashboard";
 import MyRecipes from "./pages/MyRecipes";
 import Ingredients from "./pages/Ingredients";
+import RecipeIa from "./pages/RecipeIa";
 
 export const AuthRoute = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ export const Route = createBrowserRouter([
   {
     path: "/myRecipes",
     element: <MyRecipes />,
+  },
+  {
+    path: "/recipeIA",
+    element: <RecipeIa />,
   },
   {
     path: "/*",
