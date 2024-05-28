@@ -4,13 +4,52 @@ import { IoIosEye } from "react-icons/io";
 import Button from "./Button";
 import { AiOutlineClockCircle, AiOutlineClose, AiOutlineCloseCircle, AiOutlineCloseSquare } from "react-icons/ai";
 import { RecipeProps } from "../interfaces/RecipeProps";
+import api from "../services/api";
+import Swal from "sweetalert2";
 
 interface RecipeCardProps {
-  recipeProps: RecipeProps
+  recipeProps: RecipeProps,
+  fetchRecipes: () => void;
 }
 
-const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps }) => {
+const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) => {
   const [openModalRecipe, setOpenRecipeModal] = useState(false);
+
+  const deleteRecipe = async (id: string) => {
+    try {
+      closeModal()
+      const confirmDelete = await Swal.fire({
+        title: 'Tem certeza?',
+        text: "Você não poderá reverter isso!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sim, exclua!',
+        cancelButtonText: 'Cancelar'
+      });
+      if (confirmDelete.isConfirmed) {
+        const response = await api.delete(`/api/v1/user/recipe/${id}`);
+        if (response.status === 204) {
+          Swal.fire(
+            'Excluído!',
+            'Sua receita foi excluída.',
+            'success'
+          );
+          fetchRecipes();
+          closeModal();
+        }
+      }
+    } catch (error) {
+      closeModal();
+      Swal.fire(
+        'Erro!',
+        'Houve um erro ao excluir a receita.',
+        'error'
+      );
+      console.error('Error deleting recipe:', error);
+    }
+  };
 
   const closeModal = () => {
     setOpenRecipeModal(false);
@@ -78,7 +117,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps }) => {
                 )
             }</p>
           </div>
-          <Button title="Fechar" backgroundColor="bg-gray-500" onClick={closeModal}></Button>
+          <Button title="Excluir" backgroundColor="bg-red-500" onClick={() => deleteRecipe(recipeProps.id)}></Button>
         </div>
       </Modal>
       <div className="w-[99%] h-[50px] bg-white flex items-center justify-between px-[10px] my-[10px] rounded-[4px] shadow-sm">

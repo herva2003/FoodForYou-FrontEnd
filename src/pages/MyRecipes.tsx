@@ -30,6 +30,7 @@ const MyRecipes: React.FC = () => {
   const [newPreparationStep, setNewPreparationStep] = useState("");
   const [preparationMethodList, setPreparationMethodList] = useState<string[]>([]);
   const [newPreparationTime, setNewPreparationTime] = useState(0);
+  const [showError, setShowError] = useState(false);
   const { getToken } = useAuth();
 
   useEffect(() => {
@@ -53,8 +54,14 @@ const MyRecipes: React.FC = () => {
   };
 
 
-  const submitAddedRecipe = async () => {
+
+  const submitAddedRecipe = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault()
     try {
+      if (!validateRecipe()) {
+        setShowError(true); 
+        return;
+      }
       Swal.fire({
         title: "Loading",
         html: "Loading",
@@ -63,7 +70,9 @@ const MyRecipes: React.FC = () => {
       });
   
       const token = await getToken();
+      console.log(token)
       const formData = getFormData();
+      console.log(formData)
   
       const response = await api.post("/api/v1/user/recipe", formData, {
         headers: {
@@ -71,11 +80,12 @@ const MyRecipes: React.FC = () => {
         },
       });
   
-      Swal.close(); // Fechando o pop-up de carregamento
+      Swal.close();
   
       console.log(response);
   
       if (response.data) {
+        clearRecipeFields()
         fetchRecipes();
         setOpenModal(false);
         Swal.fire({
@@ -87,6 +97,7 @@ const MyRecipes: React.FC = () => {
       }
     } catch (error) {
       console.error("Error sending data:", error);
+      setOpenModal(false);
       Swal.close();
       Swal.fire({
         title: "Error!",
@@ -99,26 +110,40 @@ const MyRecipes: React.FC = () => {
   
 
   const closeModal = () => {
+    clearRecipeFields();
     setOpenModal(false);
   };
 
   const addIngredientToList = () => {
-    setIngredientsList([...ingredientsList, newIngredient]);
-    setNewIngredient("");
+    if (newIngredient.trim() !== "") {
+      setIngredientsList([...ingredientsList, newIngredient]);
+      setNewIngredient("");
+    }
   };
-
+  
   const addPreparationStepToList = () => {
-    setPreparationMethodList([...preparationMethodList, newPreparationStep]);
-    setNewPreparationStep("");
+    if (newPreparationStep.trim() !== "") {
+      setPreparationMethodList([...preparationMethodList, newPreparationStep]);
+      setNewPreparationStep("");
+    }
   };
-
   const resetRecipeItemsInputs = () => {
     setIngredientsList([]);
     setPreparationMethodList([]);
     setNewPreparationStep("");
     setNewIngredient("");
+    setNewIngredient("");
+    setNewPreparationStep("");
+    setShowError(false)
   }
-  
+  const clearRecipeFields = () => {
+    setNewRecipeName("");
+    setNewPreparationTime(0);
+    setIngredientsList([]);
+    setPreparationMethodList([]);
+  };
+
+
   const getFormData = (): {} => {
     return {
       name: newRecipeName,
@@ -126,6 +151,16 @@ const MyRecipes: React.FC = () => {
       preparationMethod: preparationMethodList,
       preparationTime: newPreparationTime,
     };
+  };
+  const validateRecipe = () => {
+    if (
+      ingredientsList.length === 0 ||
+      preparationMethodList.length === 0 ||
+      newPreparationTime === 0
+    ) {
+      return false;
+    }
+    return true;
   };
 
   return (
@@ -184,6 +219,7 @@ const MyRecipes: React.FC = () => {
               />
               <Button
                 type="button"
+                disabled={newIngredient.trim() === ""}
                 title="Adicionar"
                 width="w-1/5"
                 onClick={addIngredientToList}
@@ -213,6 +249,7 @@ const MyRecipes: React.FC = () => {
               />
               <Button
                 type="button"
+                disabled={newPreparationStep.trim() === ""}
                 title="Adicionar"
                 width="w-1/5"
                 onClick={addPreparationStepToList}
@@ -229,6 +266,7 @@ const MyRecipes: React.FC = () => {
               </label>
               <Input
                 type="number"
+                required
                 value={newPreparationTime}
                 onChange={(e) => setNewPreparationTime(Number(e.target.value))}
                 placeholder="Tempo"
@@ -242,11 +280,11 @@ const MyRecipes: React.FC = () => {
               />
             </div>
           </form>
-          {/* <Button
-            type="button"
-            title="Gerar Receita Automática"
-            onClick={openAlert} // Chama a função openAlert quando o botão é clicado
-          /> */}
+          {showError && (
+        <div className="text-red-600 mb-4">
+          Por favor, preencha todos os campos.
+        </div>
+      )}
         </div>
       </Modal>
       <SidebarPage headerTitle="Minhas Receitas">
@@ -290,6 +328,7 @@ const MyRecipes: React.FC = () => {
                 <RecipeCard
                   key={recipe.id}
                   recipeProps={recipe}
+                  fetchRecipes={fetchRecipes}
                 />
               ))}
             </div>
