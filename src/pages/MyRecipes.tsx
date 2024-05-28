@@ -87,7 +87,7 @@ const MyRecipes: React.FC = () => {
       if (response.data) {
         clearRecipeFields()
         fetchRecipes();
-        setOpenModal(false);
+        closeModal();
         Swal.fire({
           title: "Success!",
           text: "Recipe added successfully.",
@@ -97,7 +97,7 @@ const MyRecipes: React.FC = () => {
       }
     } catch (error) {
       console.error("Error sending data:", error);
-      setOpenModal(false);
+      closeModal();
       Swal.close();
       Swal.fire({
         title: "Error!",
@@ -106,6 +106,23 @@ const MyRecipes: React.FC = () => {
         confirmButtonText: "OK",
       });
     }
+  };
+  
+
+  const handleDeleteIngredient = (index: number) => {
+    setIngredientsList((prevList) => {
+      const newList = [...prevList];
+      newList.splice(index, 1);
+      return newList;
+    });
+  };
+  
+  const handleDeletePreparationStep = (index: number) => {
+    setPreparationMethodList((prevList) => {
+      const newList = [...prevList];
+      newList.splice(index, 1);
+      return newList;
+    });
   };
   
 
@@ -225,11 +242,20 @@ const MyRecipes: React.FC = () => {
                 onClick={addIngredientToList}
               />
             </div>
+            
             <ul className="ml-5 list-disc mb-4">
-              {ingredientsList.map((ingredient, index) => (
-                <li key={index}>{ingredient}</li>
-              ))}
-            </ul>
+  {ingredientsList.map((ingredient, index) => (
+    <li key={index} className="flex items-center">
+      {index + 1}. {ingredient}
+      <button
+        className="ml-2 text-red-500"
+        onClick={() => handleDeleteIngredient(index)}
+      >
+        <AiOutlineCloseCircle />
+      </button>
+    </li>
+  ))}
+</ul>
             <h2 className="text-md text-title font-semibold mb-2">
               Passos de preparo
             </h2>
@@ -256,10 +282,18 @@ const MyRecipes: React.FC = () => {
               />
             </div>
             <ul className="ml-5 list-decimal mb-4">
-              {preparationMethodList.map((step, index) => (
-                <li className="" key={index}>{step}</li>
-              ))}
-            </ul>
+  {preparationMethodList.map((step, index) => (
+    <li className="flex items-center" key={index}>
+      {index + 1}. {step}
+      <button
+        className="ml-2 text-red-500"
+        onClick={() => handleDeletePreparationStep(index)}
+      >
+        <AiOutlineCloseCircle />
+      </button>
+    </li>
+  ))}
+</ul>
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Tempo de Preparo (minutos)
