@@ -7,11 +7,16 @@ import MyRecipes from "./pages/MyRecipes";
 import Ingredients from "./pages/Ingredients";
 import RecipeIa from "./pages/RecipeIa";
 import IdentifyIA from "./pages/IdentifyIA"
+import HomePage from "./pages/HomePage";
 
 export const AuthRoute = createBrowserRouter([
   {
     path: "/signIn",
     element: <SignIn />,
+  },
+  {
+    path: "/home",
+    element: <HomePage />,
   },
   {
     path: "/signUp",
