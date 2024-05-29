@@ -1,24 +1,24 @@
-
-import { Modal } from "@mui/material";
 import React, { memo, useState } from "react";
+import { Modal, Paper, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { IoIosEye } from "react-icons/io";
 import Button from "./Button";
-import { AiOutlineClockCircle, AiOutlineClose, AiOutlineCloseCircle, AiOutlineCloseSquare } from "react-icons/ai";
+import { AiOutlineClockCircle, AiOutlineClose } from "react-icons/ai";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import api from "../services/api";
 import Swal from "sweetalert2";
 
 interface RecipeCardProps {
-  recipeProps: RecipeProps,
+  recipeProps: RecipeProps;
   fetchRecipes: () => void;
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) => {
   const [openModalRecipe, setOpenRecipeModal] = useState(false);
+  const [showNutritionalValues, setShowNutritionalValues] = useState(true);
 
   const deleteRecipe = async (id: string) => {
     try {
-      closeModal()
+      closeModal();
       const confirmDelete = await Swal.fire({
         title: 'Tem certeza?',
         text: "Você não poderá reverter isso!",
@@ -56,24 +56,65 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
     setOpenRecipeModal(false);
   };
 
+  const nutritionalValueTranslation: { [key: string]: string } = {
+    'calcium_mg': 'Cálcio',
+    'carb_g': 'Carboidratos',
+    'copper_mcg': 'Cobre',
+    'energy_kcal': 'Energia',
+    'fat_g': 'Gordura',
+    'fiber_g': 'Fibra',
+    'folate_mcg': 'Folato',
+    'iron_mg': 'Ferro',
+    'magnesium_mg': 'Magnésio',
+    'manganese_mg': 'Manganês',
+    'niacin_mg': 'Niacina',
+    'phosphorus_mg': 'Fósforo',
+    'potassium_mg': 'Potássio',
+    'protein_g': 'Proteína',
+    'riboflavin_mg': 'Riboflavina',
+    'selenium_mcg': 'Selênio',
+    'sodium_mg': 'Sódio',
+    'sugar_g': 'Açúcar',
+    'thiamin_mg': 'Tiamina',
+    'vitA_mcg': 'Vitamina A',
+    'vitB12_mcg': 'Vitamina B12',
+    'vitB6_mg': 'Vitamina B6',
+    'vitC_mg': 'Vitamina C',
+    'vitD2_mcg': 'Vitamina D2',
+    'vitE_mg': 'Vitamina E',
+    'zinc_mg': 'Zinco',
+  };
+
+  const toggleNutritionalValues = () => {
+    setShowNutritionalValues(!showNutritionalValues);
+  };
 
   return (
     <>
       <Modal
         style={{
-          alignItems: "center",
-          justifyContent: "center",
-          alignSelf: "center",
-          justifySelf: "center",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
         open={openModalRecipe}
+        onClose={closeModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <div className="min-w-[30vw] min-h-[30vh] bg-white rounded-[4px] py-[20px] px-[40px]">
+        <div style={{
+          minWidth: '50%',
+          minHeight: '50%',
+          maxWidth: '90%',
+          maxHeight: '90%',
+          overflowY: 'auto',
+          background: 'white',
+          borderRadius: '4px',
+          padding: '20px',
+        }}>
           <div className="flex justify-between items-center mb-[40px]">
             <h1 className="text-md text-title font-semibold ">
-              {recipeProps.name == "" ? (<span>Nome não adicionado</span>) : (<span>{recipeProps.name}</span>)}
+              {recipeProps.name === "" ? (<span>Nome não adicionado</span>) : (<span>{recipeProps.name}</span>)}
             </h1>
             <div className="flex items-center">
               <p className="text-xs text-gray-500 mr-2">
@@ -84,43 +125,70 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
           </div>
           <div className="mb-6">
             <h2 className="font-semibold mb-2">Ingredientes</h2>
-            {recipeProps.ingredients.length!=0 ? (
+            {recipeProps.ingredients.length !== 0 ? (
               <ul className="ml-5 list-disc">
-                {recipeProps.ingredients.map((ingredient: string) => (
-                  <li>{ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}</li>
+                {recipeProps.ingredients.map((ingredient: string, index: number) => (
+                  <li key={index}>{ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}</li>
                 ))}
               </ul>
-            ):(
+            ) : (
               <p>Nenhum ingrediente especificado</p>
             )}
-            
           </div>
           <div className="mb-6">
             <h2 className="font-semibold mb-2">Preparação</h2>
-            {recipeProps.preparationMethod.length!=0 ? (
+            {recipeProps.preparationMethod.length !== 0 ? (
               <ul className="ml-5 list-decimal">
-                {
-                recipeProps.preparationMethod.map((prep: string) => (
-                  <li>{prep.charAt(0).toUpperCase() + prep.slice(1)}</li>
+                {recipeProps.preparationMethod.map((prep: string, index: number) => (
+                  <li key={index}>{prep.charAt(0).toUpperCase() + prep.slice(1)}</li>
                 ))}
               </ul>
-            ):(
+            ) : (
               <p>Nenhuma preparação adicionada</p>
             )}
           </div>
           <div className="mb-[40px]">
             <h2 className="font-semibold mb-2">Tempo de preparo</h2>
             <p className="flex items-center"><AiOutlineClockCircle color="#667085" size={20}></AiOutlineClockCircle>&nbsp;{
-              recipeProps.preparationTime == 0 ? 
+              recipeProps.preparationTime === 0 ?
                 (
                   <span>Tempo não especificado</span>
-                ):
+                ) :
                 (
                   <span>{recipeProps.preparationTime} minutos</span>
                 )
             }</p>
           </div>
-          <Button title="Excluir" backgroundColor="bg-red-500" onClick={() => deleteRecipe(recipeProps.id)}></Button>
+          <div className="mb-[40px]">
+          <div className={`flex items-center mb-2 ${recipeProps.nutritionalValues ? '' : 'hidden'}`}>
+  <h2 className="font-semibold mr-2">Valores Nutricionais</h2>
+  <Switch color="primary" checked={showNutritionalValues} onChange={toggleNutritionalValues} />
+</div>
+
+            {showNutritionalValues && recipeProps.nutritionalValues && (
+              <TableContainer component={Paper} className="mb-4">
+                <Table aria-label="nutritional-values-table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Nutriente</TableCell>
+                      <TableCell align="right">Quantidade (mg)</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(recipeProps.nutritionalValues).map(([key, value]) => (
+                      <TableRow key={key}>
+                        <TableCell component="th" scope="row">
+                          {nutritionalValueTranslation[key]}
+                        </TableCell>
+                        <TableCell align="right">{value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+            <Button title="Excluir" backgroundColor="bg-red-500" onClick={() => deleteRecipe(recipeProps.id)}></Button>
+          </div>
         </div>
       </Modal>
       <div className="w-[99%] h-[50px] bg-white flex items-center justify-between px-[10px] my-[10px] rounded-[4px] shadow-sm">

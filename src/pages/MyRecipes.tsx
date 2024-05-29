@@ -12,6 +12,7 @@ import { IoSearchOutline } from "react-icons/io5";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import Swal from "sweetalert2"
 
+
 const MyRecipes: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [filterText, setFilterText] = useState("");
@@ -45,9 +46,6 @@ const MyRecipes: React.FC = () => {
       console.log(error);
     }
   };
-
-
-
   const submitAddedRecipe = async (e: { preventDefault: () => void; }) => {
     e.preventDefault()
     try {
