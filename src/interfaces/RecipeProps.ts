@@ -5,4 +5,24 @@ export interface RecipeProps {
     preparationMethod: string[];
     preparationTime: number;
     createdAt: String;
+    nutritionalValues: NutritionalValues | null;
+}
+
+interface NutritionalValues {
+    id: string;
+    calcium_mg: number;
+    iron_mg: number;
+    magnesium_mg: number;
+    phosphorus_mg: number;
+    potassium_mg: number;
+    sodium_mg: number;
+    zinc_mg: number;
+    copper_mcg: number;
+    manganese_mg: number;
+    selenium_mcg: number;
+    thiamin_mg: number;
+    riboflavin_mg: number;
+    niacin_mg: number;
+    vitB6_mg: number;
+    vitE_mg: number;
 }
