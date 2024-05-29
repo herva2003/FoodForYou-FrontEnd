@@ -14,13 +14,21 @@ import Swal from "sweetalert2"
 import { RecipeInfoDTO } from "../interfaces/RecipeInfoDTO";
 import { RecipeIADTO } from "../interfaces/RecipeIADTO";
 
+import RecipeCardTrue from "../components/RecipeCardTrue";
+
 const steps = ['Selecionar configurações', 'Escolher receita', 'Fazer receita'];
 
 const RecipeIa: React.FC = () => {
     const { getToken } = useAuth();
+    const [activeStep, setActiveStep] = useState(0);
+    const [skipped, setSkipped] = useState(new Set<number>());
+    const [mealType, setMealType] = useState<string>('');
+    const [observation, setObservation] = useState<string>('');
     const [recipeGeneratedIa, setRecipeGeneratedIA] = useState<RecipeIADTO | null>(null);
-    const generatedRecipeIa = async (recipeInfo: RecipeInfoDTO) => {
+    const generatedRecipeIa = async () => {
+        Swal.showLoading();
         try {
+            const recipeInfo =  getData();
             const token = await getToken();
             const response = await api.post<RecipeIADTO>("/api/v1/recipe/generate", recipeInfo, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -28,11 +36,13 @@ const RecipeIa: React.FC = () => {
 
             console.log(response);
             if (response.data) {
+                Swal.close();
                 setRecipeGeneratedIA(response.data);
-                handleNext();
+                setActiveStep(1);
             }
         } catch (error) {
             console.error(error);
+            Swal.close();
             Swal.fire({
                 icon: 'error',
                 title: 'Erro',
@@ -40,8 +50,59 @@ const RecipeIa: React.FC = () => {
             });
         }
     };
-    const [activeStep, setActiveStep] = useState(0);
-    const [skipped, setSkipped] = useState(new Set<number>());
+
+    const saveRecipe = async () => {
+        if (!recipeGeneratedIa) {
+            return;
+        }
+
+        const confirmResult = await Swal.fire({
+            title: 'Confirmar',
+            text: 'Tem certeza que deseja salvar esta receita?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sim',
+            cancelButtonText: 'Cancelar'
+        });
+    
+        if (confirmResult.isConfirmed) {
+            Swal.showLoading();
+            try {
+                const token = await getToken();
+                await api.post("/api/v1/user/recipe", recipeGeneratedIa, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                clearFields();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso',
+                    text: 'Receita salva com sucesso!',
+                });
+                setActiveStep(0);
+            } catch (error) {
+                console.error(error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Não foi possível salvar a receita. Tente novamente mais tarde.',
+                });
+            }
+        }
+    };
+    
+
+    const getData = (): RecipeInfoDTO => {
+        return {
+            type: mealType,
+            observation: observation
+        };
+    };
+
+    const clearFields = () => {
+       setObservation('');
+       setMealType('');
+    };
+
 
     const isStepOptional = (step: number) => {
         return step === 1;
@@ -51,16 +112,35 @@ const RecipeIa: React.FC = () => {
         return skipped.has(step);
     };
 
-    const handleNext = () => {
-        let newSkipped = skipped;
-        if (isStepSkipped(activeStep)) {
-            newSkipped = new Set(newSkipped.values());
-            newSkipped.delete(activeStep);
+    const handleNext = async () => {
+        if(activeStep === 0) {
+           await generatedRecipeIa();
+        } else if(activeStep === 2) {
+            await saveRecipe();
         }
-
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        setSkipped(newSkipped);
+        else {
+            let newSkipped = skipped;
+            if (isStepSkipped(activeStep)) {
+                newSkipped = new Set(newSkipped.values());
+                newSkipped.delete(activeStep);
+            }
+    
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+            setSkipped(newSkipped);
+        }
     };
+    
+
+    // const handleNext = () => {
+    //     let newSkipped = skipped;
+    //     if (isStepSkipped(activeStep)) {
+    //         newSkipped = new Set(newSkipped.values());
+    //         newSkipped.delete(activeStep);
+    //     }
+
+    //     setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    //     setSkipped(newSkipped);
+    // };
 
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
@@ -88,51 +168,66 @@ const RecipeIa: React.FC = () => {
             case 0:
                 return (
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Alert severity="warning">Tipo de refeição: Escolha entre Café da manhã, Almoço ou Jantar.</Alert>
-                        <FormControl>
-                            <FormLabel id="meal-type-label">Tipo de refeição</FormLabel>
-                            <RadioGroup
-                                row
-                                aria-labelledby="meal-type-label"
-                                name="meal-type"
-                            >
-                                <FormControlLabel value="breakfast" control={<Radio />} label="Café da manhã" />
-                                <FormControlLabel value="lunch" control={<Radio />} label="Almoço" />
-                                <FormControlLabel value="dinner" control={<Radio />} label="Jantar" />
-                            </RadioGroup>
-                        </FormControl>
-                        <TextField id="meal-name" label="Observações" variant="outlined" sx={{ mt: 2 }} />
-                    </Box>
+                    <Alert severity="warning">Tipo de refeição: Escolha entre Café da manhã, Almoço ou Jantar.</Alert>
+                    <FormControl>
+                        <FormLabel id="meal-type-label">Tipo de refeição</FormLabel>
+                        <RadioGroup
+                            row
+                            aria-labelledby="meal-type-label"
+                            name="meal-type"
+                            value={mealType}
+                            onChange={(e) => setMealType(e.target.value)}
+                        >
+                            <FormControlLabel value="breakfast" control={<Radio />} label="Café da manhã" />
+                            <FormControlLabel value="lunch" control={<Radio />} label="Almoço" />
+                            <FormControlLabel value="dinner" control={<Radio />} label="Jantar" />
+                        </RadioGroup>
+                    </FormControl>
+                    <TextField
+                        id="meal-observation"
+                        label="Observações"
+                        variant="outlined"
+                        sx={{ mt: 2 }}
+                        value={observation}
+                        onChange={(e) => setObservation(e.target.value)}
+                    />
+                </Box>
                 );
             case 1:
                 return (
-                    <Card sx={{ minWidth: 275 }}>
-                        <CardContent>
-                            <Typography variant="h5" component="div">
-                                Receita Gerada
+                    <Box>
+                        {recipeGeneratedIa ? (
+                            <Card sx={{ minWidth: 275 }}>
+                                <CardContent>
+                                    <Typography variant="h5" component="div">
+                                        Receita Gerada
+                                    </Typography>
+                                    <RecipeCardTrue recipe={recipeGeneratedIa}></RecipeCardTrue>
+                                </CardContent>
+                                <CardActions>
+                                    <Button size="small" onClick={() => generatedRecipeIa()}>Gerar Novamente</Button>
+                                </CardActions>
+                            </Card>
+                        ) : (
+                            <Typography variant="body1" sx={{ mt: 2 }}>
+                                Não foi possível gerar a receita. Por favor, tente novamente mais tarde.
                             </Typography>
-                            <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                                Aqui está a receita gerada para você.
-                            </Typography>
-                        </CardContent>
-                        <CardActions>
-                            <Button size="small" onClick={() => alert('Gerar novamente')}>Gerar Novamente</Button>
-                        </CardActions>
-                    </Card>
+                        )}
+                    </Box>
                 );
             case 2:
-                return (
+                return <>
+                {recipeGeneratedIa && ( 
                     <Card sx={{ minWidth: 275 }}>
                         <CardContent>
                             <Typography variant="h5" component="div">
                                 Receita Final
                             </Typography>
-                            <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                                Aqui está a receita final.
-                            </Typography>
+                            <RecipeCardTrue recipe={recipeGeneratedIa}></RecipeCardTrue>
                         </CardContent>
                     </Card>
-                );
+                )}
+            </>
             default:
                 return 'Desconhecido';
         }
@@ -187,13 +282,8 @@ const RecipeIa: React.FC = () => {
                                         Voltar
                                     </Button>
                                     <Box sx={{ flex: '1 1 auto' }} />
-                                    {isStepOptional(activeStep) && (
-                                        <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
-                                            Pular
-                                        </Button>
-                                    )}
                                     <Button onClick={handleNext}>
-                                        {activeStep === steps.length - 1 ? 'Finalizar' : 'Próximo'}
+                                        {activeStep === steps.length - 1 ? 'Salvar' : 'Próximo'}
                                     </Button>
                                 </Box>
                             </React.Fragment>
