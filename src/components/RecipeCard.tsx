@@ -31,13 +31,13 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
       if (confirmDelete.isConfirmed) {
         const response = await api.delete(`/api/v1/user/recipe/${id}`);
         if (response.status === 204) {
+          closeModal();
           Swal.fire(
             'Excluído!',
             'Sua receita foi excluída.',
             'success'
           );
           fetchRecipes();
-          closeModal();
         }
       }
     } catch (error) {
@@ -54,6 +54,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
   const closeModal = () => {
     setOpenRecipeModal(false);
   };
+
 
   return (
     <>
@@ -73,11 +74,12 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
             <h1 className="text-md text-title font-semibold ">
               {recipeProps.name == "" ? (<span>Nome não adicionado</span>) : (<span>{recipeProps.name}</span>)}
             </h1>
-            <AiOutlineClose
-              size={25}
-              className="cursor-pointer text-title"
-              onClick={closeModal}
-            />
+            <div className="flex items-center">
+              <p className="text-xs text-gray-500 mr-2">
+                Criado em: {recipeProps.createdAt}
+              </p>
+              <AiOutlineClose size={25} className="cursor-pointer text-title" onClick={closeModal} />
+            </div>
           </div>
           <div className="mb-6">
             <h2 className="font-semibold mb-2">Ingredientes</h2>

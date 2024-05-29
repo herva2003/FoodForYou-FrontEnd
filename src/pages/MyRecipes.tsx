@@ -12,13 +12,6 @@ import { IoSearchOutline } from "react-icons/io5";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import Swal from "sweetalert2"
 
-interface GeneratedRecipe {
-  name: string;
-  ingredients: string[];
-  preparationMethod: string[];
-  preparationTime: number;
-}
-
 const MyRecipes: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [filterText, setFilterText] = useState("");
@@ -85,9 +78,9 @@ const MyRecipes: React.FC = () => {
       console.log(response);
   
       if (response.data) {
+        closeModal();
         clearRecipeFields()
         fetchRecipes();
-        closeModal();
         Swal.fire({
           title: "Success!",
           text: "Recipe added successfully.",

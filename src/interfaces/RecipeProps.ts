@@ -4,4 +4,5 @@ export interface RecipeProps {
     ingredients: string[];
     preparationMethod: string[];
     preparationTime: number;
+    createdAt: String;
 }
