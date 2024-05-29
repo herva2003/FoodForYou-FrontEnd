@@ -24,37 +24,41 @@ const SignIn: React.FC = () => {
   }
 
   const handleSignIn = async (data: SignInRequest) => {
-    const { email, password } = data;
-    try {
-      const response = await api.post("/api/v1/auth/login", {
-        login: email,
-        password: password,
-      });
+    handleSetToken("sdsdsd", "sdsd");
+    navigate("/dashboard");
+    //const { email, password } = data;
+    // try {
+    //   const response = await api.post("/api/v1/auth/login", {
+    //     login: email,W
+    //     password: password,
+    //   });
 
-      console.log(response);
-      const responseData = response.data;
-      const { accessToken, refreshToken } = responseData.data;
+    //   console.log(response);
+    //   const responseData = response.data;
+    //   const { accessToken, refreshToken } = responseData.data;
 
-      if (accessToken && refreshToken) {
-        handleSetToken(accessToken, refreshToken);
-        navigate("/dashboard");
-      } else {
-        Swal.fire({
-          title: "Error!",
-          text: "Invalid credentials. Please try again.",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      }
-    } catch (error) {
-      console.log("Error during login request:", error);
-      Swal.fire({
-        title: "Error!",
-        text: "An error occurred while attempting to login.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
+    //   handleSetToken(accessToken, refreshToken);
+    //   navigate("/dashboard");
+    //   if (accessToken && refreshToken) {
+    //     handleSetToken(accessToken, refreshToken);
+    //     navigate("/dashboard");
+    //   } else {
+    //     Swal.fire({
+    //       title: "Error!",
+    //       text: "Invalid credentials. Please try again.",
+    //       icon: "error",
+    //       confirmButtonText: "OK",
+    //     });
+    //   }
+    // } catch (error) {
+    //   console.log("Error during login request:", error);
+    //   Swal.fire({
+    //     title: "Error!",
+    //     text: "An error occurred while attempting to login.",
+    //     icon: "error",
+    //     confirmButtonText: "OK",
+    //   });
+    // }
   };
   
 
