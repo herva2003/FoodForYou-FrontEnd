@@ -35,6 +35,8 @@ const SignIn: React.FC = () => {
       const responseData = response.data;
       const { accessToken, refreshToken } = responseData.data;
 
+      handleSetToken(accessToken, refreshToken);
+      navigate("/dashboard");
       if (accessToken && refreshToken) {
         handleSetToken(accessToken, refreshToken);
         navigate("/dashboard");
