@@ -5,10 +5,11 @@ export interface RecipeProps {
     preparationMethod: string[];
     preparationTime: number;
     createdAt: String;
-    nutritionalValues: NutritionalValues | null;
+    nutritionalValues: NutritionalValues[];
 }
 
 interface NutritionalValues {
+    [x: string]: string | number | readonly string[] | undefined;
     id: string;
     calcium_mg: number;
     iron_mg: number;
@@ -25,4 +26,5 @@ interface NutritionalValues {
     niacin_mg: number;
     vitB6_mg: number;
     vitE_mg: number;
+    doneAt: string;
 }

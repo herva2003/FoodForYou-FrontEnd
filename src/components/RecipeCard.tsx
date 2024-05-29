@@ -160,7 +160,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
             }</p>
           </div>
           <div className="mb-[40px]">
-          <div className={`flex items-center mb-2 ${recipeProps.nutritionalValues ? '' : 'hidden'}`}>
+
+            // n apagar isso 
+          {/* <div className={`flex items-center mb-2 ${recipeProps.nutritionalValues ? '' : 'hidden'}`}>
   <h2 className="font-semibold mr-2">Valores Nutricionais</h2>
   <Switch color="primary" checked={showNutritionalValues} onChange={toggleNutritionalValues} />
 </div>
@@ -186,7 +188,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
                   </TableBody>
                 </Table>
               </TableContainer>
-            )}
+            )} */}
             <Button title="Excluir" backgroundColor="bg-red-500" onClick={() => deleteRecipe(recipeProps.id)}></Button>
           </div>
         </div>
