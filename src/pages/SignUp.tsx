@@ -13,7 +13,7 @@ interface FormData {
   fullName: string;
   email: string;
   password: string;
-  document: string;
+  height: string;
   weight: string;
 }
 
@@ -120,15 +120,15 @@ const SignIn: React.FC = () => {
             <div className="flex justify-between">
               <div className="w-[65%]">
                 <Input
-                  {...register("document")}
-                  placeholder="document"
+                  {...register("height")}
+                  placeholder="height"
                   backgroundColor="bg-dark-white"
                   icon={
-                    <button onClick={() => reset({ document: "" })}>
+                    <button onClick={() => reset({ height: "" })}>
                       <IoIosCloseCircleOutline color="#667085" size={20} />
                     </button>
                   }
-                  label="Document"
+                  label="Height"
                 />
               </div>
               <div className="w-[30%]">
