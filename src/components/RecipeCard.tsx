@@ -126,12 +126,14 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
           <div className="mb-6">
             <h2 className="font-semibold mb-2">Ingredientes</h2>
             {recipeProps.ingredients.length !== 0 ? (
-              <ul className="ml-5 list-disc">
-                {recipeProps.ingredients.map((ingredient: string, index: number) => (
-                  <li key={index}>{ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}</li>
-                ))}
-              </ul>
-            ) : (
+  <ul className="ml-5 list-disc">
+    {recipeProps.ingredients.map((ingredient: { name: string, quantity: number }, index: number) => (
+      <li key={index}>
+        {ingredient.name.charAt(0).toUpperCase() + ingredient.name.slice(1)} - {ingredient.quantity}g
+      </li>
+    ))}
+  </ul>
+) : (
               <p>Nenhum ingrediente especificado</p>
             )}
           </div>

@@ -6,12 +6,12 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
 import { Modal } from "@mui/material";
-import { AiOutlineClockCircle, AiOutlineClose, AiOutlineCloseCircle, AiOutlinePlus } from "react-icons/ai";
+import { AiOutlineClockCircle, AiOutlineClose, AiOutlineCloseCircle } from "react-icons/ai";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
 import { RecipeProps } from "../interfaces/RecipeProps";
-import Swal from "sweetalert2"
-
+import Swal from "sweetalert2";
+import { IngredientRecipeDTO } from "../interfaces/RecipeIADTO";
 
 const MyRecipes: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -19,8 +19,9 @@ const MyRecipes: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const [recipes, setRecipes] = useState<RecipeProps[]>([]);
   const [newRecipeName, setNewRecipeName] = useState("");
-  const [newIngredient, setNewIngredient] = useState("");
   const [ingredientsList, setIngredientsList] = useState<string[]>([]);
+  const [newIngredient, setNewIngredient] = useState("");
+  const [ingredientGrams, setIngredientGrams] = useState<{ [key: string]: string }>({});
   const [newPreparationStep, setNewPreparationStep] = useState("");
   const [preparationMethodList, setPreparationMethodList] = useState<string[]>([]);
   const [newPreparationTime, setNewPreparationTime] = useState(0);
@@ -38,46 +39,43 @@ const MyRecipes: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log(response);
       if (response.data) {
         setRecipes(response.data.data);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
-  const submitAddedRecipe = async (e: { preventDefault: () => void; }) => {
-    e.preventDefault()
+
+  const submitAddedRecipe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateRecipe()) {
+      setShowError(true);
+      return;
+    }
+    Swal.fire({
+      title: "Loading",
+      html: "Loading",
+      timer: 2000,
+      timerProgressBar: true,
+    });
+
     try {
-      if (!validateRecipe()) {
-        setShowError(true); 
-        return;
-      }
-      Swal.fire({
-        title: "Loading",
-        html: "Loading",
-        timer: 2000,
-        timerProgressBar: true,
-      });
-  
       const token = await getToken();
-      console.log(token)
       const formData = getFormData();
       console.log(formData)
-  
+
       const response = await api.post("/api/v1/user/recipe", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       Swal.close();
-  
-      console.log(response);
-  
+
       if (response.data) {
         closeModal();
-        clearRecipeFields()
+        clearRecipeFields();
         fetchRecipes();
         Swal.fire({
           title: "Success!",
@@ -98,16 +96,18 @@ const MyRecipes: React.FC = () => {
       });
     }
   };
-  
 
   const handleDeleteIngredient = (index: number) => {
-    setIngredientsList((prevList) => {
-      const newList = [...prevList];
-      newList.splice(index, 1);
-      return newList;
-    });
+    const ingredientToDelete = ingredientsList[index];
+    setIngredientsList(ingredientsList.filter((_, i) => i !== index));
+    const { [ingredientToDelete]: _, ...rest } = ingredientGrams;
+    setIngredientGrams(rest);
   };
-  
+
+  const handleGramsChange = (ingredient: string, value: string) => {
+    setIngredientGrams({ ...ingredientGrams, [ingredient]: value });
+  };
+
   const handleDeletePreparationStep = (index: number) => {
     setPreparationMethodList((prevList) => {
       const newList = [...prevList];
@@ -115,7 +115,6 @@ const MyRecipes: React.FC = () => {
       return newList;
     });
   };
-  
 
   const closeModal = () => {
     clearRecipeFields();
@@ -123,27 +122,27 @@ const MyRecipes: React.FC = () => {
   };
 
   const addIngredientToList = () => {
-    if (newIngredient.trim() !== "") {
-      setIngredientsList([...ingredientsList, newIngredient]);
-      setNewIngredient("");
-    }
+    if (newIngredient.trim() === "") return;
+    setIngredientsList([...ingredientsList, newIngredient]);
+    setIngredientGrams({ ...ingredientGrams, [newIngredient]: '' });
+    setNewIngredient('');
   };
-  
+
   const addPreparationStepToList = () => {
     if (newPreparationStep.trim() !== "") {
       setPreparationMethodList([...preparationMethodList, newPreparationStep]);
       setNewPreparationStep("");
     }
   };
+
   const resetRecipeItemsInputs = () => {
     setIngredientsList([]);
     setPreparationMethodList([]);
-    setNewPreparationStep("");
-    setNewIngredient("");
     setNewIngredient("");
     setNewPreparationStep("");
-    setShowError(false)
-  }
+    setShowError(false);
+  };
+
   const clearRecipeFields = () => {
     setNewRecipeName("");
     setNewPreparationTime(0);
@@ -151,24 +150,25 @@ const MyRecipes: React.FC = () => {
     setPreparationMethodList([]);
   };
 
-
   const getFormData = (): {} => {
     return {
       name: newRecipeName,
-      ingredients: ingredientsList,
+      ingredients: ingredientsList.map((ingredient) => ({
+        name: ingredient,
+        quantity: ingredientGrams[ingredient],
+      })),
       preparationMethod: preparationMethodList,
       preparationTime: newPreparationTime,
     };
   };
+
   const validateRecipe = () => {
-    if (
-      ingredientsList.length === 0 ||
-      preparationMethodList.length === 0 ||
-      newPreparationTime === 0
-    ) {
-      return false;
-    }
-    return true;
+    return (
+      newRecipeName.trim() !== "" &&
+      ingredientsList.length > 0 &&
+      preparationMethodList.length > 0 &&
+      newPreparationTime > 0
+    );
   };
 
   return (
@@ -216,9 +216,9 @@ const MyRecipes: React.FC = () => {
                 type="text"
                 value={newIngredient}
                 onKeyDown={(e) => {
-                  if (e.key == "Enter") {
-                    e.preventDefault()
-                    addIngredientToList()
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addIngredientToList();
                   }
                 }}
                 onChange={(e) => setNewIngredient(e.target.value)}
@@ -233,20 +233,27 @@ const MyRecipes: React.FC = () => {
                 onClick={addIngredientToList}
               />
             </div>
-            
             <ul className="ml-5 list-disc mb-4">
-  {ingredientsList.map((ingredient, index) => (
-    <li key={index} className="flex items-center">
-      {index + 1}. {ingredient}
-      <button
-        className="ml-2 text-red-500"
-        onClick={() => handleDeleteIngredient(index)}
-      >
-        <AiOutlineCloseCircle />
-      </button>
-    </li>
-  ))}
-</ul>
+              {ingredientsList.map((ingredient, index) => (
+                <li key={index} className="flex items-center">
+                  {index + 1}. {ingredient}
+                  <input
+                    type="number"
+                    value={ingredientGrams[ingredient] || ""}
+                    onChange={(e) => handleGramsChange(ingredient, e.target.value)}
+                    className="ml-2 border rounded w-20 px-2 py-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    placeholder="Gramas"
+                  />
+                  <button
+                    className="ml-2 text-red-500"
+                    type="button"
+                    onClick={() => handleDeleteIngredient(index)}
+                  >
+                    <AiOutlineCloseCircle />
+                  </button>
+                </li>
+              ))}
+            </ul>
             <h2 className="text-md text-title font-semibold mb-2">
               Passos de preparo
             </h2>
@@ -255,9 +262,9 @@ const MyRecipes: React.FC = () => {
                 type="text"
                 value={newPreparationStep}
                 onKeyDown={(e) => {
-                  if (e.key == "Enter") {
-                    e.preventDefault()
-                    addPreparationStepToList()
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addPreparationStepToList();
                   }
                 }}
                 onChange={(e) => setNewPreparationStep(e.target.value)}
@@ -273,18 +280,19 @@ const MyRecipes: React.FC = () => {
               />
             </div>
             <ul className="ml-5 list-decimal mb-4">
-  {preparationMethodList.map((step, index) => (
-    <li className="flex items-center" key={index}>
-      {index + 1}. {step}
-      <button
-        className="ml-2 text-red-500"
-        onClick={() => handleDeletePreparationStep(index)}
-      >
-        <AiOutlineCloseCircle />
-      </button>
-    </li>
-  ))}
-</ul>
+              {preparationMethodList.map((step, index) => (
+                <li className="flex items-center" key={index}>
+                  {index + 1}. {step}
+                  <button
+                    className="ml-2 text-red-500"
+                    type="button"
+                    onClick={() => handleDeletePreparationStep(index)}
+                  >
+                    <AiOutlineCloseCircle />
+                  </button>
+                </li>
+              ))}
+            </ul>
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Tempo de Preparo (minutos)
@@ -298,6 +306,11 @@ const MyRecipes: React.FC = () => {
                 firstIcon={<AiOutlineClockCircle color="#667085" size={20} />}
               />
             </div>
+            {showError && (
+              <div className="text-red-600 mb-4">
+                Por favor, preencha todos os campos.
+              </div>
+            )}
             <div className="flex justify-end items-end mt-[30px] mb-[10px]">
               <Button
                 type="submit"
@@ -305,11 +318,6 @@ const MyRecipes: React.FC = () => {
               />
             </div>
           </form>
-          {showError && (
-        <div className="text-red-600 mb-4">
-          Por favor, preencha todos os campos.
-        </div>
-      )}
         </div>
       </Modal>
       <SidebarPage headerTitle="Minhas Receitas">
@@ -343,7 +351,7 @@ const MyRecipes: React.FC = () => {
                 marginBottom=""
                 marginLeft="ml-[40px]"
                 onClick={() => {
-                  resetRecipeItemsInputs()
+                  resetRecipeItemsInputs();
                   setOpenModal(true);
                 }}
               />

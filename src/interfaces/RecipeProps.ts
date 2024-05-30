@@ -1,7 +1,7 @@
 export interface RecipeProps {
     id: string;
     name: string;
-    ingredients: string[];
+    ingredients: IngredientRecipe[];
     preparationMethod: string[];
     preparationTime: number;
     createdAt: String;
@@ -27,4 +27,11 @@ interface NutritionalValues {
     vitB6_mg: number;
     vitE_mg: number;
     doneAt: string;
+}
+
+
+export interface IngredientRecipe {
+    id: string;
+    name: string;
+    quantity: number;
 }
