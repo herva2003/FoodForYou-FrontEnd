@@ -1,11 +1,11 @@
 import React from "react";
 import SidebarPage from "../components/SidebarPage";
+import DashboardWelcomeCard from "../components/DashboardWelcomeCard";
 
 const Dashboard: React.FC = () => {
   return (
     <SidebarPage headerTitle="Dashboard">
-      <div className="flex flex-col items-center justify-center p-6 m-6 gap-2">
-      </div>
+        <DashboardWelcomeCard login="johndoe@foodforyou.com" fullName="John Doe" height={180} weight={120}></DashboardWelcomeCard>
     </SidebarPage>
   );
 };
