@@ -54,7 +54,7 @@ const SidebarPage: React.FC<SidebarPage> = ({ children, headerTitle }) => {
           {children}
         </div>
       </div>
-      <button className="absolute top-2 right-2 bg-red-500 px-4 py-2 rounded-lg text-white" onClick={logout}>
+      <button className="absolute top-2 right-2 bg-red-500 px-4 mr-2.5 mt-1.5 py-2 rounded-lg text-white" onClick={logout}>
         Sair
       </button>
     </>

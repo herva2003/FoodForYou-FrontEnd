@@ -87,6 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, setVisible }) => {
               className="flex cursor-pointer self-end justify-center py-[20px]">
               <IoMenuSharp size={30} className="" />
             </div>
+            <hr className="m-[-2px]"/>
             <div className="w-full h-[140px] p-[10px]"></div>
             <div className="w-full h-full justify-center">
               <ul className="">

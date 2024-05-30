@@ -22,7 +22,7 @@ const Dashboard: React.FC = () => {
   };
   return (
     <SidebarPage headerTitle="Dashboard">
- <DashboardWelcomeCard 
+    <DashboardWelcomeCard 
           login={userData?.login ?? ""} 
           fullName={userData?.fullName ?? ""} 
           weight={userData?.weight ?? 0}
