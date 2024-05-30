@@ -18,14 +18,16 @@ const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
             <div className="ml-4">
                 <h2 className="font-semibold mb-2">Ingredientes</h2>
                 {recipe.ingredients.length !== 0 ? (
-                    <ul className="ml-5 list-disc">
-                        {recipe.ingredients.map((ingredient: string, index: number) => (
-                            <li key={index}>{ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>Nenhum ingrediente especificado</p>
-                )}
+  <ul className="ml-5 list-disc">
+    {recipe.ingredients.map((ingredient: { name: string, quantity: number }, index: number) => (
+      <li key={index}>
+        {ingredient.name.charAt(0).toUpperCase() + ingredient.name.slice(1)} - {ingredient.quantity}g
+      </li>
+    ))}
+  </ul>
+) : (
+              <p>Nenhum ingrediente especificado</p>
+            )}
             </div>
             <div className="ml-4">
                 <h2 className="font-semibold mb-2">Preparação</h2>
