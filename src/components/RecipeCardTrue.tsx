@@ -4,7 +4,7 @@ import { AiOutlineClockCircle } from "react-icons/ai";
 
 const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
     return (
-        <div className="flex justify-between items-center mb-[40px] border border-gray-200 rounded p-4">
+        <div className="flex justify-between items-center mb-[40px] border border-gray-200 rounded p-4 mt-5">
             <div>
                 <h1 className="text-md text-title font-semibold ">
                     {recipe.name === "" ? (<span>Nome não adicionado</span>) : (<span>{recipe.name}</span>)}

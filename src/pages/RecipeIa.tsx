@@ -168,7 +168,6 @@ const RecipeIa: React.FC = () => {
             case 0:
                 return (
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <Alert severity="warning">Tipo de refeição: Escolha entre Café da manhã, Almoço ou Jantar.</Alert>
                     <FormControl>
                         <FormLabel id="meal-type-label">Tipo de refeição</FormLabel>
                         <RadioGroup
@@ -183,11 +182,13 @@ const RecipeIa: React.FC = () => {
                             <FormControlLabel value="dinner" control={<Radio />} label="Jantar" />
                         </RadioGroup>
                     </FormControl>
+                    <Alert severity="warning" className="mt-2">Observação: Caso você tenha alguma intolerância ou não goste de algum ingrediente.</Alert>
                     <TextField
                         id="meal-observation"
                         label="Observações"
                         variant="outlined"
                         sx={{ mt: 2 }}
+                        className="w-[35%]"
                         value={observation}
                         onChange={(e) => setObservation(e.target.value)}
                     />
@@ -235,8 +236,8 @@ const RecipeIa: React.FC = () => {
 
     return (
         <SidebarPage headerTitle="Geração de Receita">
-            <div className="flex flex-col w-full">
-                <div className="h-[80vh] flex flex-col w-full pr-[100px] mt-[40px]">
+            <div className="flex justify-center w-full">
+                <div className="h-[80vh] w-[75%] flex flex-col pr-[100px] mt-[40px]">
                     <Box sx={{ width: '100%' }}>
                         <Stepper activeStep={activeStep}>
                             {steps.map((label, index) => {
