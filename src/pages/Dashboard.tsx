@@ -1,11 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import SidebarPage from "../components/SidebarPage";
 import DashboardWelcomeCard from "../components/DashboardWelcomeCard";
+import api from "../services/api"
+import { UserProps } from "../interfaces/UserProps";
 
 const Dashboard: React.FC = () => {
+  const [userData, setUserData] = useState<UserProps | null>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await api.get("/api/v1/user/me"); 
+      const userDataFromApi: UserProps = response.data;
+      setUserData(userDataFromApi);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
   return (
     <SidebarPage headerTitle="Dashboard">
-        <DashboardWelcomeCard login="johndoe@foodforyou.com" fullName="John Doe" height={180} weight={120}></DashboardWelcomeCard>
+ <DashboardWelcomeCard 
+          login={userData?.login ?? ""} 
+          fullName={userData?.fullName ?? ""} 
+          weight={userData?.weight ?? 0}
+          height={userData?.height ?? 0} 
+        />
     </SidebarPage>
   );
 };
