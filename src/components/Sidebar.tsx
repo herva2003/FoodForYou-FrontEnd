@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { IoIosArrowBack } from "react-icons/io";
-import { IoIosArrowForward } from "react-icons/io";
 import { SidebarData } from "../../global";
 import { useNavigate } from "react-router-dom";
 import { IoMenuSharp } from "react-icons/io5";
@@ -34,15 +32,16 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, setVisible }) => {
       {visible ? (
         <>
           <div className="absolute top-0 bottom-0 left-0 w-[300px] h-[100vh] bg-white transition-transform">
-            <div
-              onClick={() => {
-                setVisible(false)
-                setSidebarState(false)
-              }}
-              className="flex cursor-pointer self-end ml-auto p-[20px]">
-              <IoMenuSharp size={30} className="ml-auto" />
+            <div className="flex justify-end">
+              <img src="/brand-logo.png" alt="" className="size-[170px] m-5 mr-2 self-center"/>
+              <div className="cursor-pointer p-[20px] size-fit" 
+                onClick={() => {
+                  setVisible(false)
+                  setSidebarState(false)
+                }}>
+                <IoMenuSharp size={30}/>
+              </div>
             </div>
-            <div className="w-full h-[150px] p-[10px]"></div>
             <div className="w-full h-full justify-center">
               <ul className="">
                 {SidebarData.map((item) => (
@@ -88,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, setVisible }) => {
               className="flex cursor-pointer self-end justify-center py-[20px]">
               <IoMenuSharp size={30} className="" />
             </div>
-            <div className="w-full h-[150px] p-[10px]"></div>
+            <div className="w-full h-[140px] p-[10px]"></div>
             <div className="w-full h-full justify-center">
               <ul className="">
                 {SidebarData.map((item) => (
