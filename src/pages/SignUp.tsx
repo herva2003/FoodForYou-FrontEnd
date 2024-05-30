@@ -9,6 +9,9 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import Swal from "sweetalert2";
+import { IoArrowUpOutline, IoKeyOutline, IoPersonOutline, IoVolumeHigh } from "react-icons/io5";
+import { AiOutlineMail } from "react-icons/ai";
+import { RiWeightLine } from "react-icons/ri";
 interface FormData {
   fullName: string;
   email: string;
@@ -56,9 +59,9 @@ const SignIn: React.FC = () => {
   return (
     <div className="h-screen flex w-screen px-8 py-8 border justify-center bg-dark-white">
       <img
-        src="src\assets\Logo.png"
+        src="/brand-logo.png"
         alt="company-logo"
-        className="border border-red-500 absolute top-10 left-10 "
+        className=" absolute top-10 left-10 w-28"
       />
       <img
         src="src\assets\DRIP_20.png"
@@ -68,109 +71,121 @@ const SignIn: React.FC = () => {
       <div className="flex flex-row bg-white rounded-3xl">
         <div className="flex flex-col py-4 w-[560px] h-[550px] mx-28 mt-20">
           <h1 className="font-main font-extrabold text-4xl mb-8">
-            Sign up now
+            Registre-se agora
           </h1>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Input
               {...register("fullName")}
-              placeholder="full name"
+              placeholder="Nome completo"
               backgroundColor="bg-dark-white"
               icon={
                 <button onClick={() => reset({ fullName: "" })}>
                   <IoIosCloseCircleOutline color="#667085" size={20} />
                 </button>
               }
-              label="Full name"
+              label="Nome completo"
+              firstIcon={
+                <IoPersonOutline color="#667085" size={20}></IoPersonOutline>
+              }
             />
             <Input
               {...register("email")}
-              placeholder="email"
               backgroundColor="bg-dark-white"
               icon={
                 <button onClick={() => reset({ email: "" })}>
                   <IoIosCloseCircleOutline color="#667085" size={20} />
                 </button>
               }
+              placeholder="Email"
               label="Email"
+              firstIcon={
+                <AiOutlineMail color="#667085" size={20}></AiOutlineMail>
+              }
             />
             <Input
               {...register("password")}
-              placeholder="password"
               backgroundColor="bg-dark-white"
               icon={
                 <button type="button">
                   {showPassword ? (
                     <FiEye
-                      onClick={() => setShowPassword((state) => !state)}
-                      color="#667085"
-                      size={20}
+                    onClick={() => setShowPassword((state) => !state)}
+                    color="#667085"
+                    size={20}
                     />
                   ) : (
                     <FiEyeOff
-                      onClick={() => setShowPassword((state) => !state)}
-                      color="#667085"
-                      size={20}
+                    onClick={() => setShowPassword((state) => !state)}
+                    color="#667085"
+                    size={20}
                     />
                   )}
                 </button>
               }
               type={showPassword ? "text" : "password"}
-              label="Password"
+              placeholder="Senha"
+              label="Senha"
+              firstIcon={
+                <IoKeyOutline color="#667085" size={20}></IoKeyOutline>
+              }
             />
             <div className="flex justify-between">
-              <div className="w-[65%]">
+              <div className="w-[47%]">
                 <Input
                   {...register("height")}
-                  placeholder="height"
                   backgroundColor="bg-dark-white"
                   icon={
                     <button onClick={() => reset({ height: "" })}>
                       <IoIosCloseCircleOutline color="#667085" size={20} />
                     </button>
                   }
-                  label="Height"
+                  placeholder="Altura (cm)"
+                  label="Altura"
+                  firstIcon={
+                    <IoArrowUpOutline color="#667085" size={20}></IoArrowUpOutline>
+                  }
                 />
               </div>
-              <div className="w-[30%]">
+              <div className="w-[47%]">
                 <Input
                   {...register("weight")}
-                  placeholder="weight"
                   backgroundColor="bg-dark-white"
                   icon={
                     <button onClick={() => reset({ weight: "" })}>
                       <IoIosCloseCircleOutline color="#667085" size={20} />
                     </button>
                   }
-                  label="Weight"
+                  placeholder="Peso (kg)"
+                  label="Peso"
+                  firstIcon={
+                    <RiWeightLine color="#667085" size={20}></RiWeightLine>
+                  }
                 />
+                <p className="text-xs text-subtitle">
+                  Você poderá trocar o peso depois
+                </p>
               </div>
             </div>
-            <p className="text-xs text-subtitle">
-              You will be able change the weight later
-            </p>
 
             <div className="flex my-5">
               <input type="checkbox" className="mr-2" />
               <p className="text-sm">
-                By creating an account, I agree to our Terms of use and Privacy
-                Policy
+                Ao criar a conta, você aceita nossos Termos de Uso e Políticas de Privacidade.
               </p>
             </div>
             <div className="flex mb-10">
               <input type="checkbox" className="mr-2 self-start" />
               <p className="text-sm self-start">
-                By creating an account, I am also consenting to recieve SMS
-                messages and emails, including product new feature updates,
-                events, and marketing promotions
+                Ao criar a conta, você aceita receber mensagens SMS e emails, incluindo atualizações do site, eventos, e promoções.
               </p>
             </div>
 
-            <Button title="Sign Up" marginBottom="mb-[5px]" />
+            <Button title="Criar conta" marginBottom="mb-[5px]" />
           </form>
           <div className="flex justify-center">
-            <p className="text-sm text-title mr-2">Already have an account?</p>
+            <p className="text-sm text-title mr-2">Já possui uma conta?</p>
             <Link to={"/signIn"}>
-              <p className="text-primary text-sm">Sign in</p>
+              <p className="text-primary text-sm">Entrar</p>
             </Link>
           </div>
         </div>

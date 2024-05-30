@@ -11,6 +11,7 @@ import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
 
 import Swal from "sweetalert2"
+import { IoKeyOutline, IoPerson, IoPersonOutline } from "react-icons/io5";
 
 const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -61,15 +62,15 @@ const SignIn: React.FC = () => {
   return (
     <div className="h-screen flex w-screen px-8 py-8 border justify-center">
       <img
-        src="src\assets\Logo.png"
+        src="/brand-logo.png"
         alt="company-logo"
-        className="border border-red-500 absolute top-10 left-10 "
+        className=" absolute top-10 left-10 w-28"
       />
       <div className="flex flex-row items-center">
         <div className="flex flex-col py-4 w-[360px] h-[550px] mx-28">
-          <h1 className="font-main font-extrabold text-4xl mb-2">NFT Access</h1>
+          <h1 className="font-main font-extrabold text-4xl mb-2">FFY Acesso</h1>
           <p className="mb-10 text-title">
-            Please fill your detail to access your account
+            Por favor preencha com suas credenciais para fazer login
           </p>
           <form
             onSubmit={handleSubmit((data) =>
@@ -78,18 +79,21 @@ const SignIn: React.FC = () => {
             <Input
               {...register("email")}
               label="Email"
-              placeholder="email"
+              placeholder="Email"
               backgroundColor="bg-dark-white"
               icon={
                 <button onClick={() => reset({ email: "" })}>
                   <IoIosCloseCircleOutline color="#667085" size={20} />
                 </button>
               }
+              firstIcon={
+                <IoPersonOutline color="#667085" size={20}></IoPersonOutline>
+              }
             />
             <Input
               {...register("password")}
-              label="Password"
-              placeholder="password"
+              label="Senha"
+              placeholder="Senha"
               backgroundColor="bg-dark-white"
               icon={
                 <button type="button">
@@ -109,32 +113,35 @@ const SignIn: React.FC = () => {
                 </button>
               }
               type={showPassword ? "text" : "password"}
+              firstIcon={
+                <IoKeyOutline color="#667085" size={20}></IoKeyOutline>
+              }
             />
 
             <div className="flex items-center justify-between mb-7">
               <div className="flex">
                 <input type="checkbox" />
-                <label className="ml-2">Remember me</label>
+                <label className="ml-2">Lembrar de mim</label>
               </div>
               <Link to={""}>
-                <p className="text-primary">Forgot Password?</p>
+                <p className="text-primary">Esqueceu sua senha?</p>
               </Link>
             </div>
 
             <div>
-              <Button type="submit" title="Sign In" marginBottom="mb-[5px]" />
+              <Button type="submit" title="Entrar" marginBottom="mb-[5px]" />
               <Button
                 outline
                 type="submit"
-                title="Sign in with Google"
+                title="Entrar com o Google"
                 icon={<img src="src\assets\Google.png" alt="" />}
               />
             </div>
           </form>
           <div className="flex justify-center">
-            <p className="text-sm title mr-2">Don't have an account?</p>
+            <p className="text-sm title mr-2">Não tem uma conta?</p>
             <Link to={"/signUp"}>
-              <p className="text-primary text-sm">Sign up</p>
+              <p className="text-primary text-sm">Crie uma conta</p>
             </Link>
           </div>
         </div>
