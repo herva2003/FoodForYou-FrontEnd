@@ -2,6 +2,7 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Input from '../components/Input';
 import SidebarPage from '../components/SidebarPage';
 import Button from '../components/Button';
+import { TextareaAutosize } from '@mui/material';
 
 interface Ingredient {
   _id: string;
@@ -122,26 +123,36 @@ const IA: React.FC = () => {
   return (
     <SidebarPage headerTitle="Identificar Receita">
       <div className="">
-        <div className="h-[80vh] pr-[100px] mt-[40px]">
-          <div className=" h-[100%] overflow-y-scroll">
+        <div className="h-[80vh] pr-[100px] mt-[40px] flex justify-center">
+          <div className="h-[100%] w-[50%]">
             <form onSubmit={handleSubmit}>
               <label className="block mb-2">
-                Adicione o texto da receita:
-                <Input
-                  type="text"
-                  value={textToProcess}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setTextToProcess(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                Escreva a receita abaixo:
               </label>
+              <TextareaAutosize
+                  minRows={5}
+                  className='
+                  w-full
+                  focus:ring-blue-500
+                  focus:outline-none
+                  focus:ring-2
+                  border
+                  border-gray-300
+                  rounded-md
+                  shadow-sm
+                  mb-2
+                  '
+                  value={textToProcess}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setTextToProcess(e.target.value)}
+                >
+              </TextareaAutosize>
               <Button
               type="submit"
-              title="Submit"
+              title="Analisar receita"
               className=""
               />
             </form>
-
-            <h2 className="text-lg font-semibold mb-2">Ingredientes encontrados:</h2>
+            <h2 className="text-md font-semibold my-2">Ingredientes encontrados:</h2>
             <ul className="pl-5 mb-4">
               {result.map((item) => (
                 <li key={item._id} className="flex">
@@ -157,11 +168,12 @@ const IA: React.FC = () => {
             </ul>
             <Button
               onClick={handleSendQuantities}
-              title="Enviar Quantidades"
+              title="Analisar calorias"
+              key={"btnCalcCalories"}
               className=""
             />
-            <div className="mt-4">
-              <h2 className="text-lg font-semibold mb-2">Valores Calculados:</h2>
+            <div className="mt-2">
+              <h2 className="text-md font-semibold my-2">Calorias calculadas:</h2>
               {Object.entries(calculatedValues).map(([key, value]) => (
                 <div key={key} className="mb-2">
                   <h3 className="font-medium">{key}:</h3>
