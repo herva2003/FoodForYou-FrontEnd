@@ -4,12 +4,9 @@ import DashboardWelcomeCard from "../components/DashboardWelcomeCard";
 import api from "../services/api"
 import { UserProps } from "../interfaces/UserProps";
 
+
 const Dashboard: React.FC = () => {
   const [userData, setUserData] = useState<UserProps | null>(null);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
     try {
@@ -20,15 +17,23 @@ const Dashboard: React.FC = () => {
       console.error("Error fetching user data:", error);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+  
   return (
-    <SidebarPage headerTitle="Dashboard">
-    <DashboardWelcomeCard 
-          login={userData?.login ?? ""} 
-          fullName={userData?.fullName ?? ""} 
-          weight={userData?.weight ?? 0}
-          height={userData?.height ?? 0} 
-        />
-    </SidebarPage>
+    <>
+    
+      <SidebarPage headerTitle="Dashboard">
+      <DashboardWelcomeCard 
+        login={userData?.login ?? ""} 
+        fullName={userData?.fullName ?? ""} 
+        weight={userData?.weight ?? 0}
+        height={userData?.height ?? 0}
+      />
+      </SidebarPage>
+    </>
   );
 };
 
