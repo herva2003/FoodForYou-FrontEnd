@@ -2,7 +2,8 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Input from '../components/Input';
 import SidebarPage from '../components/SidebarPage';
 import Button from '../components/Button';
-import { TextareaAutosize } from '@mui/material';
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextareaAutosize } from '@mui/material';
+import Swal from "sweetalert2"
 
 interface Ingredient {
   _id: string;
@@ -27,6 +28,7 @@ const IA: React.FC = () => {
   const [result, setResult] = useState<Ingredient[]>([]);
   const [quantities, setQuantities] = useState<Quantities>({});
   const [calculatedValues, setCalculatedValues] = useState<CalculatedValues>({});
+
   
   const nutritionalValueTranslation: { [key: string]: string } = {
     'Calcium_mg': 'Cálcio',
@@ -59,8 +61,20 @@ const IA: React.FC = () => {
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
+  
     try {
+      Swal.fire({
+        title: "Aguarde...",
+        text: "Processando a receita...",
+        icon: "info",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+  
       const response = await fetch('http://127.0.0.1:5000/process_text', {
         method: 'POST',
         headers: {
@@ -68,11 +82,11 @@ const IA: React.FC = () => {
         },
         body: JSON.stringify({ text_to_process: textToProcess }),
       });
-
+  
       const data: Ingredient[] = await response.json();
-
+  
       setResult(data);
-
+  
       const initialQuantities: Quantities = {};
       data.forEach(ingredient => {
         initialQuantities[ingredient._id] = {
@@ -81,11 +95,28 @@ const IA: React.FC = () => {
         };
       });
       setQuantities(initialQuantities);
+  
+      Swal.close();
+      Swal.fire({
+        title: "Sucesso!",
+        text: "A receita foi processada com sucesso.",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
+      Swal.fire({
+        title: "Erro!",
+        text: "Houve um erro ao processar a receita. Por favor, tente novamente mais tarde.",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
       console.error('Error processing text:', error);
     }
   };
 
+  
   const handleQuantityChange = (ingredientId: string, newQuantity: string) => {
     setQuantities(prevQuantities => ({
       ...prevQuantities,
@@ -97,13 +128,25 @@ const IA: React.FC = () => {
   };
 
   const handleSendQuantities = async () => {
-    const quantitiesToSend = Object.keys(quantities).map(key => ({
-      _id: key,
-      Descrip: quantities[key].Descrip,
-      quantity: quantities[key].quantity,
-    }));
-
     try {
+      Swal.fire({
+        title: "Aguarde...",
+        text: "Enviando quantidades...",
+        icon: "info",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+  
+      const quantitiesToSend = Object.keys(quantities).map(key => ({
+        _id: key,
+        Descrip: quantities[key].Descrip,
+        quantity: quantities[key].quantity,
+      }));
+  
       const response = await fetch('http://127.0.0.1:5000/send_quantities', {
         method: 'POST',
         headers: {
@@ -111,20 +154,35 @@ const IA: React.FC = () => {
         },
         body: JSON.stringify(quantitiesToSend),
       });
-
+  
       const data: CalculatedValues = await response.json();
-
-      setCalculatedValues(data);
+  
+      setCalculatedValues(data.nutritional_values);
+  
+      Swal.fire({
+        title: "Sucesso!",
+        text: "As quantidades foram enviadas com sucesso.",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
+      Swal.fire({
+        title: "Erro!",
+        text: "Houve um erro ao enviar as quantidades. Por favor, tente novamente mais tarde.",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
       console.error('Error sending quantities:', error);
     }
   };
-
+  
   return (
     <SidebarPage headerTitle="Identificar Receita">
       <div className="">
         <div className="h-[80vh] pr-[100px] mt-[40px] flex justify-center">
-          <div className="h-[100%] w-[50%]">
+          <div className="h-[100%] w-[80%]">
             <form onSubmit={handleSubmit}>
               <label className="block mb-2">
                 Escreva a receita abaixo:
@@ -172,23 +230,32 @@ const IA: React.FC = () => {
               key={"btnCalcCalories"}
               className=""
             />
-            <div className="mt-2">
-              <h2 className="text-md font-semibold my-2">Calorias calculadas:</h2>
-              {Object.entries(calculatedValues).map(([key, value]) => (
-                <div key={key} className="mb-2">
-                  <h3 className="font-medium">{key}:</h3>
-                  {typeof value === 'object' && value !== null ? (
-                    Object.entries(value).map(([subKey, subValue]) => (
-                      <p key={subKey}>
-                        {nutritionalValueTranslation[subKey] || key}: {JSON.stringify(subValue)}
-                      </p>
-                    ))
-                  ) : (
-                    <p>{value}</p>
-                  )}
-                </div>
-              ))}
-            </div>
+<div className="mt-2">
+  <h2 className="text-md font-semibold my-2">Calorias calculadas:</h2>
+  {Object.keys(calculatedValues).length > 0 && (
+    <TableContainer component={Paper} style={{ maxHeight: '400px', overflow: 'auto' }}>
+      <Table aria-label="calculated-nutritional-values">
+        <TableHead>
+          <TableRow>
+            <TableCell>Nutriente</TableCell>
+            <TableCell align="right">Valor</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+        {Object.entries(calculatedValues).map(([nutrient, values]) => (
+  <TableRow key={nutrient}>
+    <TableCell component="th" scope="row">{nutritionalValueTranslation[nutrient]}</TableCell>
+    <TableCell component="th" align="right" scope="row">{values}</TableCell>
+  </TableRow>
+))}
+
+        </TableBody>
+      </Table>
+    </TableContainer>
+  )}
+</div>
+
+
           </div>
         </div>
       </div>

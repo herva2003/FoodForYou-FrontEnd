@@ -26,70 +26,95 @@ const RecipeIa: React.FC = () => {
     const [observation, setObservation] = useState<string>('');
     const [recipeGeneratedIa, setRecipeGeneratedIA] = useState<RecipeIADTO | null>(null);
     const generatedRecipeIa = async () => {
-        Swal.showLoading();
+        Swal.fire({
+          title: "Aguarde...",
+          text: "Gerando receita...",
+          icon: "info",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+      
         try {
-            const recipeInfo =  getData();
-            const token = await getToken();
-            const response = await api.post<RecipeIADTO>("/api/v1/recipe/generate", recipeInfo, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            console.log(response);
-            if (response.data) {
-                Swal.close();
-                setRecipeGeneratedIA(response.data);
-                setActiveStep(1);
-            }
+          const recipeInfo = getData();
+          const token = await getToken();
+          const response = await api.post<RecipeIADTO>("/api/v1/recipe/generate", recipeInfo, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+      
+          console.log(response);
+          if (response.data) {
+            Swal.close();
+            setRecipeGeneratedIA(response.data);
+            setActiveStep(1);
+          }
         } catch (error) {
+          console.error(error);
+          Swal.close();
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Não foi possível gerar a receita. Tente novamente mais tarde.',
+          });
+        }
+      };
+      
+
+      const saveRecipe = async () => {
+        if (!recipeGeneratedIa) {
+          return;
+        }
+      
+        const confirmResult = await Swal.fire({
+          title: 'Confirmar',
+          text: 'Tem certeza que deseja salvar esta receita?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sim',
+          cancelButtonText: 'Cancelar'
+        });
+      
+        if (confirmResult.isConfirmed) {
+          Swal.fire({
+            title: "Aguarde...",
+            text: "Salvando a receita...",
+            icon: "info",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+      
+          try {
+            const token = await getToken();
+            await api.post("/api/v1/user/recipe", recipeGeneratedIa, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            clearFields();
+            Swal.close();
+            Swal.fire({
+              icon: 'success',
+              title: 'Sucesso',
+              text: 'Receita salva com sucesso!',
+            });
+            setActiveStep(0);
+          } catch (error) {
             console.error(error);
             Swal.close();
             Swal.fire({
-                icon: 'error',
-                title: 'Erro',
-                text: 'Não foi possível gerar a receita. Tente novamente mais tarde.',
+              icon: 'error',
+              title: 'Erro',
+              text: 'Não foi possível salvar a receita. Tente novamente mais tarde.',
             });
+          }
         }
-    };
-
-    const saveRecipe = async () => {
-        if (!recipeGeneratedIa) {
-            return;
-        }
-
-        const confirmResult = await Swal.fire({
-            title: 'Confirmar',
-            text: 'Tem certeza que deseja salvar esta receita?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sim',
-            cancelButtonText: 'Cancelar'
-        });
-    
-        if (confirmResult.isConfirmed) {
-            Swal.showLoading();
-            try {
-                const token = await getToken();
-                await api.post("/api/v1/user/recipe", recipeGeneratedIa, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                clearFields();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Sucesso',
-                    text: 'Receita salva com sucesso!',
-                });
-                setActiveStep(0);
-            } catch (error) {
-                console.error(error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro',
-                    text: 'Não foi possível salvar a receita. Tente novamente mais tarde.',
-                });
-            }
-        }
-    };
-    
+      };
+      
 
     const getData = (): RecipeInfoDTO => {
         return {
