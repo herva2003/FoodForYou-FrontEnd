@@ -262,7 +262,7 @@ const RecipeIa: React.FC = () => {
     return (
         <SidebarPage headerTitle="Geração de Receita">
             <div className="flex justify-center w-full">
-                <div className="h-[80vh] w-[75%] flex flex-col pr-[100px] mt-[40px]">
+                <div className="h-[80vh] w-[80%] flex flex-col pr-[100px] mt-[40px]">
                     <Box sx={{ width: '100%' }}>
                         <Stepper activeStep={activeStep}>
                             {steps.map((label, index) => {

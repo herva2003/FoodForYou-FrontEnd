@@ -11,7 +11,7 @@ const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
                 </h1>
                 <div className="flex items-center">
                     <p className="text-xs text-gray-500 mr-2">
-                    Gereado em: {recipe.generatedAt}
+                    Gerado em: {recipe.generatedAt}
                     </p>
                 </div>
             </div>
@@ -30,17 +30,17 @@ const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
             )}
             </div>
             <div className="ml-4">
-                <h2 className="font-semibold mb-2">Preparação</h2>
-                {recipe.preparationMethod.length !== 0 ? (
-                    <ul className="ml-5 list-decimal">
-                        {recipe.preparationMethod.map((prep: string, index: number) => (
-                            <li key={index}>{prep.charAt(0).toUpperCase() + prep.slice(1)}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>Nenhuma preparação adicionada</p>
-                )}
-            </div>
+    <h2 className="font-semibold mb-2">Preparação</h2>
+    {recipe.preparationMethod.length !== 0 ? (
+        <ul className="ml-5l">
+            {recipe.preparationMethod.map((prep: string, index: number) => (
+                <li key={index}>{prep}</li>
+            ))}
+        </ul>
+    ) : (
+        <p>Nenhum método de preparação encontrado.</p>
+    )}
+</div>
             <div className="ml-4">
                 <h2 className="font-semibold mb-2">Tempo de preparo</h2>
                 <p className="flex items-center"><AiOutlineClockCircle color="#667085" size={20}></AiOutlineClockCircle>&nbsp;{
