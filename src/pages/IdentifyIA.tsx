@@ -31,32 +31,32 @@ const IA: React.FC = () => {
 
   
   const nutritionalValueTranslation: { [key: string]: string } = {
-    'Calcium_mg': 'Cálcio',
-    'Carb_g': 'Carboidratos',
-    'Copper_mcg': 'Cobre',
-    'Energy_kcal': 'Energia',
-    'Fat_g': 'Gordura',
-    'Fiber_g': 'Fibra',
-    'Folate_mcg': 'Folato',
-    'Iron_mg': 'Ferro',
-    'Magnesium_mg': 'Magnésio',
-    'Manganese_mg': 'Manganês',
-    'Niacin_mg': 'Niacina',
-    'Phosphorus_mg': 'Fósforo',
-    'Potassium_mg': 'Potássio',
-    'Protein_g': 'Proteína',
-    'Riboflavin_mg': 'Riboflavina',
-    'Selenium_mcg': 'Selênio',
-    'Sodium_mg': 'Sódio',
-    'Sugar_g': 'Açúcar',
-    'Thiamin_mg': 'Tiamina',
-    'VitA_mcg': 'Vitamina A',
-    'VitB12_mcg': 'Vitamina B12',
-    'VitB6_mg': 'Vitamina B6',
-    'VitC_mg': 'Vitamina C',
-    'VitD2_mcg': 'Vitamina D2',
-    'VitE_mg': 'Vitamina E',
-    'Zinc_mg': 'Zinco',
+    'Calcium_mg': 'Cálcio mg',
+    'Carb_g': 'Carboidratos g',
+    'Copper_mcg': 'Cobre mcg',
+    'Energy_kcal': 'Energia kcal',
+    'Fat_g': 'Gordura g',
+    'Fiber_g': 'Fibra g',
+    'Folate_mcg': 'Folato mcg',
+    'Iron_mg': 'Ferro mg',
+    'Magnesium_mg': 'Magnésio mg',
+    'Manganese_mg': 'Manganês mg',
+    'Niacin_mg': 'Niacina mg',
+    'Phosphorus_mg': 'Fósforo mg',
+    'Potassium_mg': 'Potássio mg',
+    'Protein_g': 'Proteína g',
+    'Riboflavin_mg': 'Riboflavina mg',
+    'Selenium_mcg': 'Selênio mcg',
+    'Sodium_mg': 'Sódio mg',
+    'Sugar_g': 'Açúcar g',
+    'Thiamin_mg': 'Tiamina mg',
+    'VitA_mcg': 'Vitamina A mcg',
+    'VitB12_mcg': 'Vitamina B12 mcg',
+    'VitB6_mg': 'Vitamina B6 mg',
+    'VitC_mg': 'Vitamina C mg',
+    'VitD2_mcg': 'Vitamina D2 mcg',
+    'VitE_mg': 'Vitamina E mg',
+    'Zinc_mg': 'Zinco mg',
   };
   
   const handleSubmit = async (e: FormEvent) => {
@@ -231,7 +231,7 @@ const IA: React.FC = () => {
               className=""
             />
 <div className="mt-2">
-  <h2 className="text-md font-semibold my-2">Calorias calculadas:</h2>
+  <h2 className="text-md font-semibold my-2">Valores nutricionais da receita:</h2>
   {Object.keys(calculatedValues).length > 0 && (
     <TableContainer component={Paper} style={{ maxHeight: '400px', overflow: 'auto' }}>
       <Table aria-label="calculated-nutritional-values">

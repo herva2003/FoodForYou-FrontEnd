@@ -10,12 +10,16 @@ import { AiOutlineClose, AiOutlineMail } from "react-icons/ai";
 import Input from "./Input";
 import { IoArrowUpOutline, IoPersonOutline } from "react-icons/io5";
 import { RiWeightLine } from "react-icons/ri";
+import { all } from "axios";
 
 export default function DashboardWelcomeCard(props: UserProps) {
     const [fullName, setFullName] = useState(props.fullName); 
     const [email, setEmail] = useState(props.login); 
     const [height, setHeight] = useState(props.height.toString()); 
     const [weight, setWeight] = useState(props.weight.toString()); 
+    const [diets, setDiets] = useState(props.diets.toString()); 
+    const [allergies, setAllergies] = useState(props.allergies.toString()); 
+    const [intolerances, setIntolerances] = useState(props.intolerances.toString()); 
     const [openModal, setOpenModal] = useState(false);
     const [showError, setShowError] = useState(false);
     const { getToken } = useAuth();
@@ -26,6 +30,9 @@ export default function DashboardWelcomeCard(props: UserProps) {
         setEmail(props.login)
         setHeight(props.height.toString())
         setWeight(props.weight.toString())
+        setDiets(props.diets.toString())
+        setAllergies(props.allergies.toString())
+        setIntolerances(props.intolerances.toString())
     };
     
     const getFormData = (): {} => {
@@ -34,6 +41,9 @@ export default function DashboardWelcomeCard(props: UserProps) {
             login: email, 
             height: parseFloat(height),
             weight: parseFloat(weight),
+            diets: diets.split(","),
+            allergies: allergies.split(","),
+            intolerances: intolerances.split(","),
         };
     };
     
@@ -153,35 +163,6 @@ export default function DashboardWelcomeCard(props: UserProps) {
                             }
                         />
                     </div>
-                    {/* <div className="mb-4">
-                        <Input
-                            backgroundColor="bg-dark-white"
-                            icon={
-                            <button type="button">
-                                {showPassword ? (
-                                <FiEye
-                                onClick={() => setShowPassword((state) => !state)}
-                                color="#667085"
-                                size={20}
-                                />
-                                ) : (
-                                <FiEyeOff
-                                onClick={() => setShowPassword((state) => !state)}
-                                color="#667085"
-                                size={20}
-                                />
-                                )}
-                            </button>
-                            }
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Senha"
-                            label="Senha"
-                            // ref={}
-                            firstIcon={
-                            <IoKeyOutline color="#667085" size={20}></IoKeyOutline>
-                            }
-                        />
-                    </div> */}
                     <div className="flex justify-between">
                         <div className="w-[47%]">
                             <Input
@@ -212,6 +193,42 @@ export default function DashboardWelcomeCard(props: UserProps) {
                             />
                         </div>
                     </div>
+                    <div className="flex justify-between">
+                    <div className="w-[30%]">
+                            <Input
+                                backgroundColor="bg-dark-white"
+                                placeholder="Dietas"
+                                label="Dietas"
+                                value={diets}
+                                onChange={(e) => {
+                                    setDiets(e.target.value)
+                                }}
+                            />
+                        </div>
+                        <div className="w-[30%]">
+                            <Input
+                                backgroundColor="bg-dark-white"
+                                placeholder="Alergias"
+                                label="Alergias"
+                                value={allergies}
+                                onChange={(e) => {
+                                    setAllergies(e.target.value)
+                                }}
+                            />
+                        </div>
+                        <div className="w-[30%]">
+                            <Input
+                                backgroundColor="bg-dark-white"
+                                placeholder="Intolerâncias"
+                                label="Intolerâncias"
+                                value={intolerances}
+                                onChange={(e) => {
+                                    setIntolerances(e.target.value)
+                                }}
+                            />
+                        </div>
+
+                    </div>
                     {showError && (
                     <div className="text-red-600 mb-4">
                         Por favor, preencha todos os campos.
@@ -225,16 +242,18 @@ export default function DashboardWelcomeCard(props: UserProps) {
             </Modal>
             <Card variant="outlined" className="w-[97.5%] p-8 mt-9">
                 <div className="flex items-center mb-0">
-                    <h1 className="font-semibold text-5xl text-title">Olá {props.fullName}!</h1>
+                    <h1 className="font-semibold text-3xl text-title">Olá {props.fullName}!</h1>
                     <GiHand className="text-6xl text-title ml-4"/>
                 </div>
-                <h2 className="text-3xl text-black/50 font-semibold mb-6">Você está no seu Dashboard.</h2>
                 <div className="text-title mb-6">
-                    <p className="text-3xl font-semibold mb-2">Seus dados atuais são:</p>
-                    <ul className="text-3xl">
+                    <p className="text-2xl font-semibold mb-2">Seus dados atuais são:</p>
+                    <ul className="text-1xl">
                         <li>Email: <span className="font-semibold">{props.login}</span></li>
                         <li>Altura: <span className="font-semibold">{props.height}cm</span></li>
                         <li>Peso atual: <span className="font-semibold">{props.weight}kg</span></li>
+                        <li>Dietas: <span className="font-semibold">{props.diets}</span></li>
+                        <li>Alergias: <span className="font-semibold">{props.allergies}</span></li>
+                        <li>intolerâncias: <span className="font-semibold">{props.intolerances}</span></li>
                     </ul>
                 </div>
                 <Button title="Alterar dados" type="button" width="w-1/4" onClick={() => {
