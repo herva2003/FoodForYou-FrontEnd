@@ -38,6 +38,7 @@ const Dashboard: React.FC = () => {
           diets={userData?.diets ?? ""}
           allergies={userData?.allergies ?? ""}
           intolerances={userData?.intolerances ?? ""  }
+          fetchData={fetchData}
         />
         <div className="mt-8">
           <div className="flex justify-center items-center mb-4">

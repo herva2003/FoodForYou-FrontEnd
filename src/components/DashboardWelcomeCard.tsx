@@ -12,7 +12,11 @@ import { IoArrowUpOutline, IoPersonOutline } from "react-icons/io5";
 import { RiWeightLine } from "react-icons/ri";
 import { all } from "axios";
 
-export default function DashboardWelcomeCard(props: UserProps) {
+interface DashboardWelcomeCardProps extends UserProps {
+    fetchData: () => void; 
+  }
+
+export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
     const [fullName, setFullName] = useState(props.fullName); 
     const [email, setEmail] = useState(props.login); 
     const [height, setHeight] = useState(props.height.toString()); 
@@ -79,7 +83,6 @@ export default function DashboardWelcomeCard(props: UserProps) {
           const token = await getToken();
           const formData = getFormData();
           console.log(formData)
-    
           const response = await api.put("/api/v1/user/", formData, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -89,6 +92,7 @@ export default function DashboardWelcomeCard(props: UserProps) {
           Swal.close();
     
           if (response.data) {
+            props.fetchData();
             closeModal();
             Swal.fire({
               title: "Success!",
