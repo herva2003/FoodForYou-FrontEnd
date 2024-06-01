@@ -4,6 +4,37 @@ import SidebarPage from '../components/SidebarPage';
 import Button from '../components/Button';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextareaAutosize } from '@mui/material';
 import Swal from "sweetalert2"
+import api from "../services/api"
+import { useAuth } from "../context/authContext";
+
+interface NutritionalValues {
+  Calcium_mg: number;
+  Carb_g: number;
+  Copper_mcg: number;
+  Energy_kcal: number;
+  Fat_g: number;
+  Fiber_g: number;
+  Folate_mcg: number;
+  Iron_mg: number;
+  Magnesium_mg: number;
+  Manganese_mg: number;
+  Niacin_mg: number;
+  Phosphorus_mg: number;
+  Potassium_mg: number;
+  Protein_g: number;
+  Riboflavin_mg: number;
+  Selenium_mcg: number;
+  Sodium_mg: number;
+  Sugar_g: number;
+  Thiamin_mg: number;
+  VitA_mcg: number;
+  VitB6_mg: number;
+  VitB12_mcg: number;
+  VitC_mg: number;
+  VitD2_mcg: number;
+  VitE_mg: number;
+  Zinc_mg: number;
+}
 
 interface Ingredient {
   _id: string;
@@ -28,7 +59,8 @@ const IA: React.FC = () => {
   const [result, setResult] = useState<Ingredient[]>([]);
   const [quantities, setQuantities] = useState<Quantities>({});
   const [calculatedValues, setCalculatedValues] = useState<CalculatedValues>({});
-
+  const [calculatedValuesTrue, setCalculatedValuesTrue] = useState<NutritionalValues>();
+  const { getToken } = useAuth();
   
   const nutritionalValueTranslation: { [key: string]: string } = {
     'Calcium_mg': 'Cálcio mg',
@@ -158,6 +190,7 @@ const IA: React.FC = () => {
       const data: CalculatedValues = await response.json();
   
       setCalculatedValues(data.nutritional_values);
+      setCalculatedValuesTrue(data.nutritional_values);
   
       Swal.fire({
         title: "Sucesso!",
@@ -177,7 +210,42 @@ const IA: React.FC = () => {
       console.error('Error sending quantities:', error);
     }
   };
+
+  const handleSaveCalculatedValues = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.post("/api/v1/user/nv/", calculatedValuesTrue, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
   
+      if (response) {
+        Swal.fire({
+          title: 'Salvo!',
+          text: 'Os valores nutricionais foram salvos com sucesso.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        setResult([]);
+        setQuantities({});
+        setCalculatedValues({});
+        setTextToProcess('');
+      } else {
+        throw new Error('Failed to save nutritional values');
+      }
+    } catch (error) {
+      Swal.fire({
+        title: 'Erro!',
+        text: 'Houve um erro ao salvar os valores nutricionais. Por favor, tente novamente mais tarde.',
+        icon: 'error',
+        timer: 3000,
+        showConfirmButton: false,
+      });
+      console.error('Error saving nutritional values:', error);
+    }
+  };
+  
+
   return (
     <SidebarPage headerTitle="Identificar Receita">
       <div className="">
@@ -254,6 +322,11 @@ const IA: React.FC = () => {
     </TableContainer>
   )}
 </div>
+<Button
+              onClick={handleSaveCalculatedValues}
+              title="Salvar Valores"
+              className=""
+            />
 
 
           </div>
