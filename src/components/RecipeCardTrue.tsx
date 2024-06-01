@@ -3,6 +3,27 @@ import { RecipeIADTO } from "../interfaces/RecipeIADTO";
 import { AiOutlineClockCircle } from "react-icons/ai";
 
 const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
+
+    const formatDate = (date) => {
+        const d = new Date(date);
+      
+        const pad = (num, size) => {
+          let s = String(num);
+          while (s.length < size) s = "0" + s;
+          return s;
+        };
+      
+        const day = pad(d.getDate(), 2);
+        const month = pad(d.getMonth() + 1, 2);
+        const year = d.getFullYear();
+        const hours = pad(d.getHours(), 2);
+        const minutes = pad(d.getMinutes(), 2);
+        const seconds = pad(d.getSeconds(), 2);
+        const milliseconds = pad(d.getMilliseconds(), 3);
+      
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+      };
+      
     return (
         <div className="flex justify-between items-center mb-[40px] border border-gray-200 rounded p-4 mt-5">
             <div>

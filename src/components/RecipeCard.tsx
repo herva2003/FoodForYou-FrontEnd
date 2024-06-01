@@ -162,35 +162,6 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
             }</p>
           </div>
           <div className="mb-[40px]">
-
-            // n apagar isso 
-          {/* <div className={`flex items-center mb-2 ${recipeProps.nutritionalValues ? '' : 'hidden'}`}>
-  <h2 className="font-semibold mr-2">Valores Nutricionais</h2>
-  <Switch color="primary" checked={showNutritionalValues} onChange={toggleNutritionalValues} />
-</div>
-
-            {showNutritionalValues && recipeProps.nutritionalValues && (
-              <TableContainer component={Paper} className="mb-4">
-                <Table aria-label="nutritional-values-table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Nutriente</TableCell>
-                      <TableCell align="right">Quantidade (mg)</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {Object.entries(recipeProps.nutritionalValues).map(([key, value]) => (
-                      <TableRow key={key}>
-                        <TableCell component="th" scope="row">
-                          {nutritionalValueTranslation[key]}
-                        </TableCell>
-                        <TableCell align="right">{value}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )} */}
             <Button title="Excluir" backgroundColor="bg-red-500" onClick={() => deleteRecipe(recipeProps.id)}></Button>
           </div>
         </div>

@@ -22,7 +22,7 @@ const RecipeIa: React.FC = () => {
     const { getToken } = useAuth();
     const [activeStep, setActiveStep] = useState(0);
     const [skipped, setSkipped] = useState(new Set<number>());
-    const [mealType, setMealType] = useState<string>('');
+    const [mealType, setMealType] = useState<string>('breakfast');
     const [observation, setObservation] = useState<string>('');
     const [recipeGeneratedIa, setRecipeGeneratedIA] = useState<RecipeIADTO | null>(null);
     const generatedRecipeIa = async () => {
@@ -61,7 +61,6 @@ const RecipeIa: React.FC = () => {
           });
         }
       };
-      
 
       const saveRecipe = async () => {
         if (!recipeGeneratedIa) {
@@ -155,17 +154,6 @@ const RecipeIa: React.FC = () => {
         }
     };
     
-
-    // const handleNext = () => {
-    //     let newSkipped = skipped;
-    //     if (isStepSkipped(activeStep)) {
-    //         newSkipped = new Set(newSkipped.values());
-    //         newSkipped.delete(activeStep);
-    //     }
-
-    //     setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    //     setSkipped(newSkipped);
-    // };
 
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
