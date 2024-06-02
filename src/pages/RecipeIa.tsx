@@ -25,6 +25,32 @@ const RecipeIa: React.FC = () => {
     const [mealType, setMealType] = useState<string>('breakfast');
     const [observation, setObservation] = useState<string>('');
     const [recipeGeneratedIa, setRecipeGeneratedIA] = useState<RecipeIADTO | null>(null);
+    const [validationIngredient, setValidationIngredient] = useState([]);
+    useEffect(() => {
+        validateIngredients();
+      }, []);
+    const validateIngredients = async () => {
+        try {
+          const token = await getToken();
+          const response = await api.get("/api/v1/user/ingredient", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+      
+          if (response.data) {
+            const ValidationIngredient = response.data.data;
+            setValidationIngredient(ValidationIngredient);
+          }
+        } catch (error) {
+          console.error("Error validating ingredients:", error);
+          Swal.fire({
+            title: "Erro!",
+            text: "Ocorreu um erro ao validar os ingredientes. Por favor, tente novamente mais tarde.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      };
+   
     const generatedRecipeIa = async () => {
         Swal.fire({
           title: "Aguarde...",
@@ -138,22 +164,34 @@ const RecipeIa: React.FC = () => {
     };
 
     const handleNext = async () => {
-        if(activeStep === 0) {
-           await generatedRecipeIa();
-        } else if(activeStep === 2) {
-            await saveRecipe();
+        if (validationIngredient.length < 5) {
+            Swal.fire({
+                title: "Atenção!",
+                text: "Você precisa adicionar pelo menos 5 ingredientes antes de gerar a receita.",
+                icon: "warning",
+                confirmButtonText: "OK",
+            });
+            return; 
         }
         else {
-            let newSkipped = skipped;
-            if (isStepSkipped(activeStep)) {
-                newSkipped = new Set(newSkipped.values());
-                newSkipped.delete(activeStep);
-            }
-    
-            setActiveStep((prevActiveStep) => prevActiveStep + 1);
-            setSkipped(newSkipped);
+  
+            if (activeStep === 0) {
+                await generatedRecipeIa();
+            } else if (activeStep === 2) {
+                await saveRecipe();
+            } else {
+                let newSkipped = skipped;
+                if (isStepSkipped(activeStep)) {
+                    newSkipped = new Set(newSkipped.values());
+                    newSkipped.delete(activeStep);
+                }
+                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                setSkipped(newSkipped);
         }
+      
     };
+}
+    
     
 
     const handleBack = () => {
