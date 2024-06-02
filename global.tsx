@@ -1,6 +1,6 @@
 import { MdSpaceDashboard } from "react-icons/md";
 import { FiBook, FiBookmark } from "react-icons/fi";
-import { FaRobot } from "react-icons/fa";
+import { FaRobot, FaUtensils } from "react-icons/fa";
 
 export const SidebarData = [
   {
@@ -20,12 +20,12 @@ export const SidebarData = [
   },
   {
     name: "Gerar Receita",
-    icon: FaRobot,
+    icon: FaUtensils,
     link: "/recipeIa",
   },
   {
     name: "Identificar Receita",
-    icon: FiBookmark,
+    icon: FaRobot,
     link: "/IdentifyIA",
   }
 ];
