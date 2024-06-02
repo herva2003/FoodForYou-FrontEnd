@@ -64,9 +64,9 @@ const SignIn: React.FC = () => {
         className=" absolute top-10 left-10 w-28"
       />
       <img
-        src="src\assets\DRIP_20.png"
+        src="src/assets/Spaghetti food image.png"
         alt=""
-        className="w-[600px] h-[600px] bg-dark-white rounded-3xl self-center"
+        className="w-[600px] h-[500px] mt-14 bg-dark-white rounded-3xl self-center"
       />
       <div className="flex flex-row bg-white rounded-3xl">
         <div className="flex flex-col py-4 w-[560px] h-[550px] mx-28 mt-20">

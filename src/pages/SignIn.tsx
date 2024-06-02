@@ -147,9 +147,9 @@ const SignIn: React.FC = () => {
         </div>
 
         <img
-          src="src\assets\DRIP_20.png"
+          src="src/assets/Food Image.png"
           alt=""
-          className="w-[50%] h-[896px] max-h-[100%] bg-dark-white rounded-3xl"
+          className="w-[60%] h-[896px] max-h-[100%] bg-dark-white rounded-3xl justify-center"
         />
       </div>
     </div>
