@@ -64,16 +64,16 @@ const Ingredients: React.FC = () => {
         console.log(response);
         setCheckeds([]);
         Swal.fire({
-          title: "Deleted!",
-          text: "Your ingredients have been deleted.",
+          title: "Deletado!",
+          text: "Seus ingredientes foram deletados com sucesso.",
           icon: "success",
         });
       }
     } catch (error) {
       console.log(error);
       Swal.fire({
-        title: "Error!",
-        text: "An error occurred while deleting ingredients.",
+        title: "Erro!",
+        text: "Ocorreu um erro ao deletar os ingredientes.",
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -82,13 +82,13 @@ const Ingredients: React.FC = () => {
 
   const handleConfirmDelete = () => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      title: "Você tem certeza?",
+      text: "Esta ação não pode ser revertida!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonText: "Sim, deletar!",
     }).then((result) => {
       if (result.isConfirmed) {
         handleDeleteIngredients();
@@ -112,8 +112,8 @@ const Ingredients: React.FC = () => {
         setOpenModal(false);
         setSelectedIngredients([]);
         Swal.fire({
-          title: "Success!",
-          text: "Ingredients added successfully.",
+          title: "Sucesso!",
+          text: "Ingredientes adicionados com sucesso.",
           icon: "success",
           confirmButtonText: "OK",
         });
@@ -121,8 +121,8 @@ const Ingredients: React.FC = () => {
     } catch (error) {
       console.log(error);
       Swal.fire({
-        title: "Error!",
-        text: "An error occurred while adding ingredients.",
+        title: "Erro!",
+        text: "Ocorreu um erro ao adicionar os ingredientes.",
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -193,7 +193,7 @@ const Ingredients: React.FC = () => {
           <div className="w-[70vw] h-[90vh] bg-white rounded-[4px] py-[20px] px-[40px]">
             <div className="flex justify-between items-center mb-[40px]">
               <h1 className="text-md text-title font-semibold ">
-                Selecione os itens que deseja adicionar a sua lista
+                Selecione os itens que deseja adicionar à sua lista
               </h1>
               <AiOutlineCloseCircle
                 size={30}
