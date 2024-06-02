@@ -5,6 +5,7 @@ import { AiOutlineClockCircle } from "react-icons/ai";
 const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
     const nutritionalValueTranslation: { [key: string]: string } = {
         'Calcium_mg': 'Cálcio mg',
+        'Saturated_fats_g': 'Gorduras Saturadas',
         'Carb_g': 'Carboidratos g',
         'Copper_mcg': 'Cobre mcg',
         'Energy_kcal': 'Energia kcal',
@@ -18,7 +19,7 @@ const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
         'Phosphorus_mg': 'Fósforo mg',
         'Potassium_mg': 'Potássio mg',
         'Protein_g': 'Proteína g',
-        'riboflavin_mg': 'Riboflavina mg',
+        'Riboflavin_mg': 'Riboflavina mg',
         'Selenium_mcg': 'Selênio mcg',
         'Sodium_mg': 'Sódio mg',
         'Sugar_g': 'Açúcar g',
@@ -31,6 +32,8 @@ const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
         'VitE_mg': 'Vitamina E mg',
         'Zinc_mg': 'Zinco mg',
       };
+
+      console.log(recipe.nutritionalValues)
 
     return (
         <>
@@ -93,7 +96,8 @@ const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {Object.entries(recipe.nutritionalValues).map(([key, value], index) => (
+                            {Object.entries(recipe.nutritionalValues)
+                            .map(([key, value], index) => (
                                 <TableRow key={index}>
                                     <TableCell component="th" scope="row">
                                         {nutritionalValueTranslation[key]}

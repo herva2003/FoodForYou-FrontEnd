@@ -58,6 +58,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
 
   const nutritionalValueTranslation: { [key: string]: string } = {
     'calcium_mg': 'Cálcio',
+    'saturated_fats_g': 'Gorduras Saturadas',
     'carb_g': 'Carboidratos',
     'copper_mcg': 'Cobre',
     'energy_kcal': 'Energia',
@@ -89,6 +90,8 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
     setShowNutritionalValues(!showNutritionalValues);
   };
 
+
+  console.log(recipeProps.nutritionalValues)
   return (
     <>
       <Modal
