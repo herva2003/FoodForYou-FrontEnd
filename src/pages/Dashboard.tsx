@@ -11,7 +11,7 @@ const Dashboard: React.FC = () => {
   const [userData, setUserData] = useState<UserProps | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [chartType, setChartType] = useState<'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea' | 'bubble' | 'scatter'>('line');
+  const [chartType, setChartType] = useState<'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea'>('line');
 
   const fetchData = async () => {
     try {
@@ -68,15 +68,13 @@ const Dashboard: React.FC = () => {
               />
             </div>
             <div>
-              <select value={chartType} onChange={(e) => setChartType(e.target.value as 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea' | 'bubble' | 'scatter')}>
+              <select value={chartType} onChange={(e) => setChartType(e.target.value as 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea')}>
                 <option value="line">Linha</option>
                 <option value="bar">Barra</option>
                 <option value="pie">Torta</option>
                 <option value="doughnut">Rosca</option>
                 <option value="radar">Radar</option>
                 <option value="polarArea">Área Polar</option>
-                <option value="bubble">Bolha</option>
-                <option value="scatter">Dispersão</option>
               </select>
             </div>
           </div>

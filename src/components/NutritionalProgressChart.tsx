@@ -43,7 +43,7 @@ interface NutritionalData {
 interface NutritionalProgressChartProps {
     startDate: Date | null;
     endDate: Date | null;
-    chartType: 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea' | 'bubble' | 'scatter';
+    chartType: 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea';
 }
 
 
@@ -170,12 +170,6 @@ const NutritionalProgressChart: React.FC<NutritionalProgressChartProps> = ({ sta
       break;
     case 'polarArea':
       ChartComponent = PolarArea;
-      break;
-    case 'bubble':
-      ChartComponent = Bubble;
-      break;
-    case 'scatter':
-      ChartComponent = Scatter;
       break;
     default:
       return null;

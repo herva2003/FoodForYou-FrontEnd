@@ -38,6 +38,7 @@ const RecipeIa: React.FC = () => {
           }
         });
       
+        console.log(recipeGeneratedIa)
         try {
           const recipeInfo = getData();
           const token = await getToken();

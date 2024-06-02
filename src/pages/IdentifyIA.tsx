@@ -178,6 +178,8 @@ const IA: React.FC = () => {
         Descrip: quantities[key].Descrip,
         quantity: quantities[key].quantity,
       }));
+
+      console.log(quantitiesToSend)
   
       const response = await fetch('http://127.0.0.1:5000/send_quantities', {
         method: 'POST',
@@ -249,7 +251,7 @@ const IA: React.FC = () => {
   return (
     <SidebarPage headerTitle="Identificar Receita">
       <div className="">
-        <div className="h-[80vh] pr-[100px] mt-[40px] flex justify-center">
+      <div className="h-[80vh] pr-[100px] mt-[40px] flex justify-center overflow-auto">
           <div className="h-[100%] w-[80%]">
             <form onSubmit={handleSubmit}>
               <label className="block mb-2">

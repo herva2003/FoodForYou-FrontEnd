@@ -160,11 +160,39 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipeProps, fetchRecipes }) =>
                   <span>{recipeProps.preparationTime} minutos</span>
                 )
             }</p>
+  {recipeProps.nutritionalValues && (
+              <div className="ml-4">
+                <h2 className="font-semibold mb-2">Valores Nutricionais</h2>
+                <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                  <Table stickyHeader aria-label="nutritional values table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Nutrientes</TableCell>
+                        <TableCell align="right">Valor</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {Object.entries(recipeProps.nutritionalValues)
+                        .filter(([key]) => key !== 'id')
+                        .map(([key, value], index) => (
+                          <TableRow key={index}>
+                            <TableCell component="th" scope="row">
+                              {nutritionalValueTranslation[key]}
+                            </TableCell>
+                            <TableCell align="right">{value}</TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
+            )}
           </div>
           <div className="mb-[40px]">
             <Button title="Excluir" backgroundColor="bg-red-500" onClick={() => deleteRecipe(recipeProps.id)}></Button>
           </div>
         </div>
+        
       </Modal>
       <div className="w-[99%] h-[50px] bg-white flex items-center justify-between px-[10px] my-[10px] rounded-[4px] shadow-sm">
         <h1 className="text-title">{recipeProps.name}</h1>
