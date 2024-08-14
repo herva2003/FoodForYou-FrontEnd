@@ -362,6 +362,7 @@ const MyRecipes: React.FC = () => {
                   key={recipe.id}
                   recipeProps={recipe}
                   fetchRecipes={fetchRecipes}
+                  
                 />
               ))}
             </div>
