@@ -8,6 +8,7 @@ import Ingredients from "./pages/Ingredients";
 import RecipeIa from "./pages/RecipeIa";
 import IdentifyIA from "./pages/IdentifyIA"
 import HomePage from "./pages/HomePage";
+import Community from "./pages/Community";
 
 export const AuthRoute = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ export const AuthRoute = createBrowserRouter([
   {
     path: "/signUp",
     element: <SignUp />,
+  },
+  {
+    path: "/community",
+    element: <Community />,
   },
   {
     path: "/*",
@@ -48,6 +53,10 @@ export const Route = createBrowserRouter([
   {
     path: "/IdentifyIA",
     element: <IdentifyIA />,
+  },
+  {
+    path: "/community",
+    element: <Community />,
   },
   {
     path: "/*",
