@@ -6,6 +6,8 @@ export interface RecipeProps {
     preparationTime: number;
     createdAt: String;
     nutritionalValues: NutritionalValues;
+    description: string;
+    image: string;
 }
 
 interface NutritionalValues {

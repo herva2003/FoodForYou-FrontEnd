@@ -27,5 +27,10 @@ export const SidebarData = [
     name: "Identificar Receita",
     icon: FaRobot,
     link: "/IdentifyIA",
+  },
+  {
+    name: "Comunidade",
+    icon: FaRobot,
+    link: "/Community",
   }
 ];
