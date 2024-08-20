@@ -4,7 +4,7 @@ import { RecipeProps } from '../interfaces/RecipeProps';
 interface RecipeCard2Props {
   recipe: RecipeProps;
 }
-  
+
 const RecipeCard2: React.FC<RecipeCard2Props> = ({ recipe }) => {
   if (!recipe.nutritionalValues) {
     return <div>Dados nutricionais não disponíveis</div>;
