@@ -19,5 +19,5 @@ export default {
       main: ["Inter", "sans-serif"],
     },
   },
-  plugins: [],
+  plugins: [require('daisyui')],
 };

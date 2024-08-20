@@ -123,13 +123,12 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
             padding: "20px",
           }}
         >
-          <div className="flex justify-between items-center mb-[40px]">
+          <div className="flex justify-between items-center">
             <h1 className="text-md text-title font-semibold ">
               {recipeProps.name === "" ? (
                 <span>Nome não adicionado</span>
               ) : (
                 <span>{recipeProps.name}</span>
-              
               )}
             </h1>
             <div className="flex items-center">
@@ -143,6 +142,18 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               />
             </div>
           </div>
+          <div className="flex m-4 items-center gap-2">
+            <FaStar className="text-yellow-400" />
+            <p className="text-sm font-bold text-gray-900 ">4.95</p>
+            <span className="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"></span>
+            <a
+              href="#carousel-section"
+              className="text-sm font-medium text-gray-900 underline hover:no-underline"
+            >
+              73 reviews
+            </a>
+          </div>
+
           <div className="mb-6">
             <h2 className="font-semibold mb-2">Ingredientes</h2>
             {recipeProps.ingredients.length !== 0 ? (
@@ -228,7 +239,106 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               backgroundColor="bg-red-500"
               onClick={() => deleteRecipe(recipeProps.id)}
             ></Button>
-          </div>          
+          </div>
+          <div id="carousel-section" className="carousel carousel-start rounded-box space-x-4 p-4 max-w-fit">
+
+            {/* Carousel Items */}
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
+                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
+                <div className="text-yellow-400 flex flex-row">
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStarHalfAlt />
+                </div>
+            </div>
+
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
+                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
+                <div className="text-yellow-400 flex flex-row">
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStarHalfAlt />
+                </div>
+            </div>
+
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
+                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
+                <div className="text-yellow-400 flex flex-row">
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStarHalfAlt />
+                </div>
+            </div>
+
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
+                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
+                <div className="text-yellow-400 flex flex-row">
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStarHalfAlt />
+                </div>
+            </div>
+
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
+                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
+                <div className="text-yellow-400 flex flex-row">
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStarHalfAlt />
+                </div>
+            </div>
+
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
+                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
+                <div className="text-yellow-400 flex flex-row">
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStarHalfAlt />
+                </div>
+            </div>
+
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
+                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
+                <div className="text-yellow-400 flex flex-row">
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStarHalfAlt />
+                </div>
+            </div>
+
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
+                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
+                <div className="text-yellow-400 flex flex-row">
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStar />
+                  <FaStarHalfAlt />
+                </div>
+            </div>
+          </div>
         </div>
       </Modal>
       <div className="w-[99%] h-[50px] bg-white flex items-center justify-between px-[10px] my-[10px] rounded-[4px] shadow-sm">
