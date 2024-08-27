@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@mui/material";
 import { IoIosEye } from "react-icons/io";
-import Button from "./Button";
+// import Button from "./Button";
 import { AiOutlineClockCircle, AiOutlineClose } from "react-icons/ai";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import api from "../services/api";
@@ -119,7 +119,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
             maxHeight: "90%",
             overflowY: "auto",
             background: "white",
-            borderRadius: "4px",
+            borderRadius: "12px",
             padding: "20px",
           }}
         >
@@ -154,10 +154,10 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
             </a>
           </div>
 
-          <div className="mb-6">
-            <h2 className="font-semibold mb-2">Ingredientes</h2>
+          <div className="mb-6 flex items-center flex-col p-4 gap-2">
+            <h2 className="font-semibold text-lg">Ingredients</h2>
             {recipeProps.ingredients.length !== 0 ? (
-              <ul className="ml-5 list-disc">
+              <ul className="list-none">
                 {recipeProps.ingredients.map(
                   (
                     ingredient: { name: string; quantity: number },
@@ -175,10 +175,10 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               <p>Nenhum ingrediente especificado</p>
             )}
           </div>
-          <div className="mb-6">
-            <h2 className="font-semibold mb-2">Preparação</h2>
+          <div className="flex flex-col items-center">
+            <h2 className="font-semibold text-lg mb-2">Preparation</h2>
             {recipeProps.preparationMethod.length !== 0 ? (
-              <ul className="ml-5 list-decimal">
+              <ul className="list-decimal">
                 {recipeProps.preparationMethod.map(
                   (prep: string, index: number) => (
                     <li key={index}>
@@ -191,8 +191,8 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               <p>Nenhuma preparação adicionada</p>
             )}
           </div>
-          <div className="mb-[40px]">
-            <h2 className="font-semibold mb-2">Tempo de preparo</h2>
+          <div className="m-[40px] flex flex-col items-center">
+            <h2 className="font-semibold mb-2">Preparation Time</h2>
             <p className="flex items-center">
               <AiOutlineClockCircle
                 color="#667085"
@@ -202,7 +202,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               {recipeProps.preparationTime === 0 ? (
                 <span>Tempo não especificado</span>
               ) : (
-                <span>{recipeProps.preparationTime} minutos</span>
+                <span>{recipeProps.preparationTime} minutes</span>
               )}
             </p>
             {recipeProps.nutritionalValues && (
@@ -233,104 +233,21 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               </div>
             )}
           </div>
-          <div className="mb-[40px]">
-            <Button
-              title="Excluir"
-              backgroundColor="bg-red-500"
+          <div className="flex justify-center mb-16">
+            <button
+              className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-16 border border-red-500 hover:border-transparent rounded"
               onClick={() => deleteRecipe(recipeProps.id)}
-            ></Button>
+            >
+              Excluir
+            </button>
           </div>
+
           <div id="carousel-section" className="carousel carousel-start rounded-box space-x-4 p-4 max-w-fit">
-
             {/* Carousel Items */}
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
-                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
-                <div className="text-yellow-400 flex flex-row">
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStarHalfAlt />
-                </div>
-            </div>
-
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
-                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
-                <div className="text-yellow-400 flex flex-row">
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStarHalfAlt />
-                </div>
-            </div>
-
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
-                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
-                <div className="text-yellow-400 flex flex-row">
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStarHalfAlt />
-                </div>
-            </div>
-
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
-                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
-                <div className="text-yellow-400 flex flex-row">
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStarHalfAlt />
-                </div>
-            </div>
-
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
-                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
-                <div className="text-yellow-400 flex flex-row">
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStarHalfAlt />
-                </div>
-            </div>
-
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
-                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
-                <div className="text-yellow-400 flex flex-row">
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStarHalfAlt />
-                </div>
-            </div>
-
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
-                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
-                <div className="text-yellow-400 flex flex-row">
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStarHalfAlt />
-                </div>
-            </div>
-
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-neutral rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-white text-lg">Theodoro Mimura</p>
-                <p>This podcast is amazing! The storytelling and production quality are top-notch. I can't wait for the next episode!</p>
-                <div className="text-yellow-400 flex flex-row">
+            <div className="carousel-item flex flex-col break-words max-w-sm bg-zinc-100 rounded-box p-4 gap-6 items-center">              
+                <p className="font-bold text-black text-lg">Theodoro Mimura</p>
+                <p>This recipe is amazing! The ingredients and production quality are top-notch. I can't wait for the next dinner!</p>
+                <div className="text-yellow-500 flex flex-row text-xl">
                   <FaStar />
                   <FaStar />
                   <FaStar />
