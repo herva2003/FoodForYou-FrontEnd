@@ -1,17 +1,14 @@
 import React, { useState } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-
 import { useForm } from "react-hook-form";
-
 import Button from "../components/Button";
 import api from "../services/api";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
-
-import Swal from "sweetalert2"
-import { IoKeyOutline, IoPerson, IoPersonOutline } from "react-icons/io5";
+import Swal from "sweetalert2";
+import { IoKeyOutline, IoPersonOutline } from "react-icons/io5";
 
 const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +34,9 @@ const SignIn: React.FC = () => {
       const { accessToken, refreshToken } = responseData.data;
 
       if (accessToken && refreshToken) {
-        handleSetToken(accessToken, refreshToken);
+        console.log("Access Token:", accessToken);
+        console.log("Refresh Token:", refreshToken);
+        handleSetToken(accessToken, refreshToken); // Atualizar o contexto de autenticação e armazenar no localStorage
         navigate("/dashboard");
       } else {
         Swal.fire({
@@ -57,25 +56,17 @@ const SignIn: React.FC = () => {
       });
     }
   };
-  
 
   return (
     <div className="h-screen flex w-screen px-8 py-8 border justify-center">
-      <img
-        src="/brand-logo.png"
-        alt="company-logo"
-        className=" absolute top-10 left-10 w-28"
-      />
+      <img src="/brand-logo.png" alt="company-logo" className="absolute top-10 left-10 w-28" />
       <div className="flex flex-row items-center">
         <div className="flex flex-col py-4 w-[360px] h-[550px] mx-28">
           <h1 className="font-main font-extrabold text-4xl mb-2">FFY Acesso</h1>
           <p className="mb-10 text-title">
             Por favor preencha com suas credenciais para fazer login
           </p>
-          <form
-            onSubmit={handleSubmit((data) =>
-              handleSignIn(data as SignInRequest)
-            )}>
+          <form onSubmit={handleSubmit((data) => handleSignIn(data as SignInRequest))}>
             <Input
               {...register("email")}
               label="Email"
@@ -98,17 +89,9 @@ const SignIn: React.FC = () => {
               icon={
                 <button type="button">
                   {showPassword ? (
-                    <FiEye
-                      onClick={() => setShowPassword((state) => !state)}
-                      color="#667085"
-                      size={20}
-                    />
+                    <FiEye onClick={() => setShowPassword((state) => !state)} color="#667085" size={20} />
                   ) : (
-                    <FiEyeOff
-                      onClick={() => setShowPassword((state) => !state)}
-                      color="#667085"
-                      size={20}
-                    />
+                    <FiEyeOff onClick={() => setShowPassword((state) => !state)} color="#667085" size={20} />
                   )}
                 </button>
               }
@@ -134,7 +117,7 @@ const SignIn: React.FC = () => {
                 outline
                 type="submit"
                 title="Entrar com o Google"
-                icon={<img src="src\assets\Google.png" alt="" />}
+                icon={<img src="src/assets/Google.png" alt="" />}
               />
             </div>
           </form>

@@ -1,4 +1,5 @@
 export interface UserProps{
+    id: string
     login: string
     fullName: string
     height: number

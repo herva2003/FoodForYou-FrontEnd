@@ -8,7 +8,7 @@ const App: React.FC = () => {
   const { token } = useAuth();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
   }, [token]);

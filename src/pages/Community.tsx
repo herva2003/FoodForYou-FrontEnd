@@ -53,7 +53,7 @@ const Community: React.FC = () => {
           </div>
         </div>
         <div className="mt-8">
-          {showForum ? <Forum /> : <CommunityFeed recipes={recipes} />}
+          {showForum ? <Forum /> : <CommunityFeed recipes={recipes} userId={userData?.id ?? ''} />}
         </div>
       </div>
     </SidebarPage>
