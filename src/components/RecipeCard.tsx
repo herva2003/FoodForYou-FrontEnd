@@ -2,7 +2,6 @@ import React, { memo, useState } from "react";
 import {
   Modal,
   Paper,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -11,7 +10,6 @@ import {
   TableRow,
 } from "@mui/material";
 import { IoIosEye } from "react-icons/io";
-// import Button from "./Button";
 import { AiOutlineClockCircle, AiOutlineClose } from "react-icons/ai";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import api from "../services/api";
@@ -30,6 +28,8 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
 }) => {
   const [openModalRecipe, setOpenRecipeModal] = useState(false);
   const [showNutritionalValues, setShowNutritionalValues] = useState(true);
+  const [newReview, setNewReview] = useState("");
+  const [rating, setRating] = useState(0);
 
   const deleteRecipe = async (id: string) => {
     try {
@@ -63,6 +63,29 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
     setOpenRecipeModal(false);
   };
 
+  const toggleNutritionalValues = () => {
+    setShowNutritionalValues(!showNutritionalValues);
+  };
+
+  const handleAddReview = async () => {
+    try {
+      const response = await api.post(`/api/v1/user/recipe/${recipeProps.id}/review`, {
+        description: newReview,
+        rating,
+      });
+
+      if (response.status === 201) {
+        Swal.fire("Sucesso!", "Sua review foi adicionada.", "success");
+        fetchRecipes(); // Atualiza a lista de receitas
+        setNewReview(""); // Limpa o campo de texto
+        setRating(0); // Reseta a classificação
+      }
+    } catch (error) {
+      Swal.fire("Erro!", "Houve um erro ao adicionar a review.", "error");
+      console.error("Error adding review:", error);
+    }
+  };
+
   const nutritionalValueTranslation: { [key: string]: string } = {
     calcium_mg: "Cálcio",
     saturated_fats_g: "Gorduras Saturadas",
@@ -93,11 +116,6 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
     zinc_mg: "Zinco",
   };
 
-  const toggleNutritionalValues = () => {
-    setShowNutritionalValues(!showNutritionalValues);
-  };
-
-  console.log(recipeProps.nutritionalValues);
   return (
     <>
       <Modal
@@ -155,7 +173,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           </div>
 
           <div className="mb-6 flex items-center flex-col p-4 gap-2">
-            <h2 className="font-semibold text-lg">Ingredients</h2>
+            <h2 className="font-semibold text-lg">Ingredientes</h2>
             {recipeProps.ingredients.length !== 0 ? (
               <ul className="list-none">
                 {recipeProps.ingredients.map(
@@ -176,7 +194,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
             )}
           </div>
           <div className="flex flex-col items-center">
-            <h2 className="font-semibold text-lg mb-2">Preparation</h2>
+            <h2 className="font-semibold text-lg mb-2">Preparo</h2>
             {recipeProps.preparationMethod.length !== 0 ? (
               <ul className="list-decimal">
                 {recipeProps.preparationMethod.map(
@@ -192,7 +210,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
             )}
           </div>
           <div className="m-[40px] flex flex-col items-center">
-            <h2 className="font-semibold mb-2">Preparation Time</h2>
+            <h2 className="font-semibold mb-2">Tempo de Preparo</h2>
             <p className="flex items-center">
               <AiOutlineClockCircle
                 color="#667085"
@@ -202,7 +220,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               {recipeProps.preparationTime === 0 ? (
                 <span>Tempo não especificado</span>
               ) : (
-                <span>{recipeProps.preparationTime} minutes</span>
+                <span>{recipeProps.preparationTime} minutos</span>
               )}
             </p>
             {recipeProps.nutritionalValues && (
@@ -235,75 +253,56 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           </div>
           <div className="flex justify-center mb-16">
             <button
-              className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-16 border border-red-500 hover:border-transparent rounded"
+              className="bg-red-500 text-white py-2 px-4 rounded mr-2"
               onClick={() => deleteRecipe(recipeProps.id)}
             >
-              Excluir
+              Excluir Receita
+            </button>
+            <button
+              className="bg-blue-500 text-white py-2 px-4 rounded"
+              onClick={toggleNutritionalValues}
+            >
+              {showNutritionalValues ? "Ocultar Valores Nutricionais" : "Mostrar Valores Nutricionais"}
             </button>
           </div>
-
           <div className="flex flex-col items-center mb-4">
             <h2 className="font-semibold text-lg">Adicionar Review</h2>
             <textarea
               rows={4}
               className="border rounded p-2 w-full"
               placeholder="Escreva seu comentário..."
-              // value={newReview}
-              // onChange={(e) => setNewReview(e.target.value)}
+              value={newReview}
+              onChange={(e) => setNewReview(e.target.value)}
             />
             <div className="flex items-center my-2">
-              {/* {[1, 2, 3, 4, 5].map((star) => (
+              {[1, 2, 3, 4, 5].map((star) => (
                 <span
                   key={star}
-                  // onClick={() => setRating(star)}
+                  onClick={() => setRating(star)}
                   className="cursor-pointer"
                 >
-                  {star <= rating ? <FaStar className="text-yellow-500" /> : <FaStarHalfAlt className="text-yellow-500" />}
+                  {star <= rating ? (
+                    <FaStar className="text-yellow-500" />
+                  ) : (
+                    <FaStarHalfAlt className="text-yellow-500" />
+                  )}
                 </span>
-              ))} */}
+              ))}
             </div>
             <button
               className="bg-blue-500 text-white py-2 px-4 rounded"
-              // onClick={handleAddReview}
+              onClick={handleAddReview}
             >
               Adicionar Review
             </button>
           </div>
-
-          <div id="carousel-section" className="carousel carousel-start rounded-box space-x-4 p-4 max-w-fit">
-            {/* Carousel Items */}
-            <div className="carousel-item flex flex-col break-words max-w-sm bg-zinc-100 rounded-box p-4 gap-6 items-center">              
-                <p className="font-bold text-black text-lg">Theodoro Mimura</p>
-                <p>This recipe is amazing! The ingredients and production quality are top-notch. I can't wait for the next dinner!</p>
-                <div className="text-yellow-500 flex flex-row text-xl">
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStar />
-                  <FaStarHalfAlt />
-                </div>
-            </div>
-          </div>
-          
-
         </div>
       </Modal>
-      <div className="w-[99%] h-[50px] bg-white flex items-center justify-between px-[10px] my-[10px] rounded-[4px] shadow-sm">
-        <h1 className="text-title">{recipeProps.name}</h1>
-        <div className="flex items-center">
-          <button
-            type="button"
-            className="h-[32px] w-[32px] rounded-[4px] border flex justify-center items-center"
-            onClick={() => {
-              setOpenRecipeModal(true);
-            }}
-          >
-            <IoIosEye color="#667085" size={20} />
-          </button>
-          <span className="ml-[10px]">
-            {recipeProps.preparationTime} minutos
-          </span>
-        </div>
+
+      <div className="recipe-card" onClick={() => setOpenRecipeModal(true)}>
+        {/* Aqui você pode adicionar uma prévia da receita, como uma imagem e título */}
+        <h3>{recipeProps.name}</h3>
+        <IoIosEye />
       </div>
     </>
   );
