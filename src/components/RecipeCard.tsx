@@ -242,6 +242,34 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
             </button>
           </div>
 
+          <div className="flex flex-col items-center mb-4">
+            <h2 className="font-semibold text-lg">Adicionar Review</h2>
+            <textarea
+              rows={4}
+              className="border rounded p-2 w-full"
+              placeholder="Escreva seu comentário..."
+              // value={newReview}
+              // onChange={(e) => setNewReview(e.target.value)}
+            />
+            <div className="flex items-center my-2">
+              {/* {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  // onClick={() => setRating(star)}
+                  className="cursor-pointer"
+                >
+                  {star <= rating ? <FaStar className="text-yellow-500" /> : <FaStarHalfAlt className="text-yellow-500" />}
+                </span>
+              ))} */}
+            </div>
+            <button
+              className="bg-blue-500 text-white py-2 px-4 rounded"
+              // onClick={handleAddReview}
+            >
+              Adicionar Review
+            </button>
+          </div>
+
           <div id="carousel-section" className="carousel carousel-start rounded-box space-x-4 p-4 max-w-fit">
             {/* Carousel Items */}
             <div className="carousel-item flex flex-col break-words max-w-sm bg-zinc-100 rounded-box p-4 gap-6 items-center">              
@@ -256,6 +284,8 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
                 </div>
             </div>
           </div>
+          
+
         </div>
       </Modal>
       <div className="w-[99%] h-[50px] bg-white flex items-center justify-between px-[10px] my-[10px] rounded-[4px] shadow-sm">
