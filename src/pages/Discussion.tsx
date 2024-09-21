@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { TextField, Button, List, ListItem, ListItemText, Divider } from '@mui/material';
 import api from '../services/api';
+import { useAuth } from "../context/authContext";
 
 interface Message {
   id: string;
@@ -21,6 +22,7 @@ const Discussion: React.FC = () => {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const { getToken } = useAuth();
 
   const fetchTopic = async () => {
     try {
@@ -42,8 +44,8 @@ const Discussion: React.FC = () => {
 
   const createMessage = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.post(
+      const token = await getToken();
+      await api.post(
         `/api/v1/topics/${id}/messages`,
         { content: newMessage, createdBy: 'Usuário Atual' },
         {

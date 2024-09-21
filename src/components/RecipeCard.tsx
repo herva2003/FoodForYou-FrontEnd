@@ -11,7 +11,6 @@ import {
   TableRow,
 } from "@mui/material";
 import { IoIosEye } from "react-icons/io";
-// import Button from "./Button";
 import { AiOutlineClockCircle, AiOutlineClose } from "react-icons/ai";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import api from "../services/api";

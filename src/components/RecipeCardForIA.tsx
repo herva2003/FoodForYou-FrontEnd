@@ -2,7 +2,7 @@ import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody
 import { RecipeIADTO } from "../interfaces/RecipeIADTO";
 import { AiOutlineClockCircle } from "react-icons/ai";
 
-const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
+const RecipeCardForIA = ({ recipe }: { recipe: RecipeIADTO }) => {
     const nutritionalValueTranslation: { [key: string]: string } = {
         'Calcium_mg': 'Cálcio mg',
         'Saturated_fats_g': 'Gorduras Saturadas',
@@ -113,4 +113,4 @@ const RecipeCardTrue = ({ recipe }: { recipe: RecipeIADTO }) => {
     );
 };
 
-export default RecipeCardTrue;
+export default RecipeCardForIA;

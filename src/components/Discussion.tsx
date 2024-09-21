@@ -65,7 +65,7 @@ const Discussion: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-dark-white">
+    <div className="flex h-screen bg-dark-whitesaAS">
       <Sidebar visible={sidebarVisible} setVisible={setSidebarVisible} />
       <div className={`flex-1 p-4 flex flex-col ${sidebarVisible ? 'ml-[300px]' : 'ml-[56px]'}`}>
         <h1 className="text-2xl font-bold mb-4">{topic.title}</h1>

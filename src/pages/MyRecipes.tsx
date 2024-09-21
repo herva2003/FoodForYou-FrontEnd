@@ -11,13 +11,23 @@ import { IoIosCloseCircleOutline } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import Swal from "sweetalert2";
+import FlatList from "flatlist-react";
+import IngredientCard from "../components/IngredientCard";
+import SelectedIngredientCard from "../components/SelectedIngredientCard";
 import { IngredientRecipeDTO } from "../interfaces/RecipeIADTO";
+
+interface SelectedIngredientsProps {
+  name: string;
+  id: string;
+}
 
 const MyRecipes: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [visible, setVisible] = useState(false);
   const [recipes, setRecipes] = useState<RecipeProps[]>([]);
+  const [ingredients, setIngredients] = useState<IngredientRecipeDTO[]>([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<SelectedIngredientsProps[]>([]);
   const [newRecipeName, setNewRecipeName] = useState("");
   const [ingredientsList, setIngredientsList] = useState<string[]>([]);
   const [newIngredient, setNewIngredient] = useState("");
@@ -30,6 +40,7 @@ const MyRecipes: React.FC = () => {
 
   useEffect(() => {
     fetchRecipes();
+    fetchIngredients(); // Buscar ingredientes quando o componente for montado
   }, []);
 
   const fetchRecipes = async () => {
@@ -44,6 +55,21 @@ const MyRecipes: React.FC = () => {
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const fetchIngredients = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.get("/api/v1/user/ingredient", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data) {
+        setIngredients(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching ingredients:', error);
     }
   };
 
@@ -63,7 +89,7 @@ const MyRecipes: React.FC = () => {
     try {
       const token = await getToken();
       const formData = getFormData();
-      console.log(formData)
+      console.log(formData);
 
       const response = await api.post("/api/v1/user/recipe", formData, {
         headers: {
@@ -121,10 +147,10 @@ const MyRecipes: React.FC = () => {
     setOpenModal(false);
   };
 
-  const addIngredientToList = () => {
-    if (newIngredient.trim() === "") return;
-    setIngredientsList([...ingredientsList, newIngredient]);
-    setIngredientGrams({ ...ingredientGrams, [newIngredient]: '' });
+  const addIngredientToList = (name: string) => {
+    if (name.trim() === "") return;
+    setIngredientsList([...ingredientsList, name]);
+    setIngredientGrams({ ...ingredientGrams, [name]: '' });
     setNewIngredient('');
   };
 
@@ -171,6 +197,25 @@ const MyRecipes: React.FC = () => {
     );
   };
 
+  const handleIngredientCheck = (data: { checked: boolean; id: string; name: string }) => {
+    const { checked, id, name } = data;
+
+    if (checked === true) {
+      addIngredientToList(name);
+    } else {
+      const index = ingredientsList.indexOf(name);
+      if (index > -1) {
+        handleDeleteIngredient(index);
+      }
+    }
+  };
+
+  const blank = () => (
+    <div className="flex justify-center">
+      <h1 className="text-sm- text-subtitle">A lista está vazia</h1>
+    </div>
+  );
+
   return (
     <>
       <Modal
@@ -212,25 +257,40 @@ const MyRecipes: React.FC = () => {
               Ingredientes
             </h2>
             <div className="mb-4 flex">
-              <input
-                type="text"
+              <Input
                 value={newIngredient}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addIngredientToList();
-                  }
-                }}
                 onChange={(e) => setNewIngredient(e.target.value)}
-                className="shadow appearance-none border rounded w-4/5 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Novo Ingrediente"
+                firstIcon={<IoSearchOutline color="#667085" size={20} />}
+                icon={
+                  <button onClick={() => setNewIngredient("")}>
+                    <IoIosCloseCircleOutline color="#667085" size={20} />
+                  </button>
+                }
               />
               <Button
                 type="button"
                 disabled={newIngredient.trim() === ""}
                 title="Adicionar"
                 width="w-1/5"
-                onClick={addIngredientToList}
+                onClick={() => addIngredientToList(newIngredient)}
+              />
+            </div>
+            <div className="flex flex-col h-[60vh] overflow-hidden overflow-y-scroll no-scrollbar rounded-[4px]">
+              <FlatList
+                renderWhenEmpty={blank}
+                list={ingredients}
+                renderOnScroll
+                renderItem={(item, index) => (
+                  <div className="mb-5">
+                    <IngredientCard
+                      handleIngredientCheck={(data) => handleIngredientCheck(data)}
+                      key={index}
+                      value={item.descrip}
+                      id={item.id}
+                    />
+                  </div>
+                )}
               />
             </div>
             <ul className="ml-5 list-disc mb-4">
@@ -362,7 +422,6 @@ const MyRecipes: React.FC = () => {
                   key={recipe.id}
                   recipeProps={recipe}
                   fetchRecipes={fetchRecipes}
-                  
                 />
               ))}
             </div>

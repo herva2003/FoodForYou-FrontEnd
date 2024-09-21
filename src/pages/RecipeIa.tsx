@@ -14,7 +14,7 @@ import Swal from "sweetalert2"
 import { RecipeInfoDTO } from "../interfaces/RecipeInfoDTO";
 import { RecipeIADTO } from "../interfaces/RecipeIADTO";
 
-import RecipeCardTrue from "../components/RecipeCardTrue";
+import RecipeCardForIA from "../components/RecipeCardForIA";
 
 const steps = ['Selecionar configurações', 'Escolher receita', 'Fazer receita'];
 
@@ -255,7 +255,7 @@ const RecipeIa: React.FC = () => {
                                     <Typography variant="h5" component="div">
                                         Receita Gerada
                                     </Typography>
-                                    <RecipeCardTrue recipe={recipeGeneratedIa}></RecipeCardTrue>
+                                    <RecipeCardForIA recipe={recipeGeneratedIa}></RecipeCardForIA>
                                 </CardContent>
                                 <CardActions>
                                     <Button size="small" onClick={() => generatedRecipeIa()}>Gerar Novamente</Button>
@@ -276,7 +276,7 @@ const RecipeIa: React.FC = () => {
                             <Typography variant="h5" component="div">
                                 Receita Final
                             </Typography>
-                            <RecipeCardTrue recipe={recipeGeneratedIa}></RecipeCardTrue>
+                            <RecipeCardForIA recipe={recipeGeneratedIa}></RecipeCardForIA>
                         </CardContent>
                     </Card>
                 )}

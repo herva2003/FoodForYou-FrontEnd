@@ -6,12 +6,12 @@ import { Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, T
 import { AiOutlineClockCircle, AiOutlineClose } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa6';
 
-interface RecipeCard2Props {
+interface RecipeCardForCommunityProps {
   recipe: RecipeProps;
   userId: string;
 }
 
-const RecipeCard2: React.FC<RecipeCard2Props> = ({ recipe, userId }) => {
+const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe, userId }) => {
   const [isLiked, setIsLiked] = useState(recipe.likes.includes(userId));
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -280,4 +280,4 @@ const RecipeCard2: React.FC<RecipeCard2Props> = ({ recipe, userId }) => {
   );
 };
 
-export default RecipeCard2;
+export default RecipeCardForCommunity;

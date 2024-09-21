@@ -9,6 +9,8 @@ export interface RecipeIADTO {
 }
 
 export interface IngredientRecipeDTO {
+    id: string;
+    descrip: string;
     name: string;
     quantity: number;
 }
