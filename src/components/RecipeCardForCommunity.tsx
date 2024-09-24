@@ -1,20 +1,16 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { RecipeProps } from '../interfaces/RecipeProps';
 import { Comment } from '../interfaces/Comment';
+import { Like } from '../interfaces/Like';
 import { Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Button } from '@mui/material';
 import { AiOutlineClockCircle, AiOutlineClose } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa6';
-import { useAuth } from '../context/authContext';
-import  api  from '../services/api';
+import api from '../services/api';
+import { useAuth } from "../context/authContext";
 
 interface RecipeCardForCommunityProps {
   recipe: RecipeProps;
   userId: string;
-}
-
-interface CommentDTO {
-  content: string
 }
 
 const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe, userId }) => {
@@ -23,20 +19,30 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe,
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<Comment[]>(recipe.comments);
   const [openModal, setOpenModal] = useState(false);
-  const {getToken} = useAuth()
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    console.log('userId:', userId);
+  }, [userId]);
+
+  console.log('RecipeCardForCommunity rendered with recipe:', recipe);
 
   const handleLike = async () => {
+    console.log('handleLike called');
     try {
-      const token = getToken()
-      await axios.post(
-        `http://localhost:8080/api/v1/recipes/${recipe.id}/like`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const token = await getToken();
+      console.log('token:', token);
+      console.log(`Sending POST request to /api/v1/recipes/like/${recipe.id}`);
+  
+      const data = { userId: userId } as Like;
+      console.log('data:', data);
+  
+      const response = await api.post(`/api/v1/recipes/like/${recipe.id}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('Successfully liked the recipe', response);
       setIsLiked(true);
     } catch (error) {
       console.error('Error liking recipe:', error);
@@ -44,31 +50,27 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe,
   };
 
   const handleAddComment = async () => {
-
     try {
-      const token = getToken()
-      const data = {content: newComment, id: recipe.id} as CommentDTO
-      console.log(token)
+      const data = { content: newComment, id: recipe.id } as Comment;
 
       const response = await api.post(`/api/v1/recipe/comment`, data);
 
-      if(response) {
-
+      if (response) {
         setComments([...comments, response.data]);
-        setNewComment('')
+        setNewComment('');
       }
-
-    ;
     } catch (error) {
       console.error('Error adding comment:', error);
     }
   };
 
   const handleOpenModal = () => {
+    console.log('Opening modal');
     setOpenModal(true);
   };
 
   const handleCloseModal = () => {
+    console.log('Closing modal');
     setOpenModal(false);
   };
 
@@ -116,7 +118,10 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe,
         <div className="mt-4">
           <button
             className={`bg-blue-500 text-white px-4 py-2 rounded mr-2 ${isLiked ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={handleLike}
+            onClick={() => {
+              console.log('Like button clicked');
+              handleLike();
+            }}
             disabled={isLiked}
           >
             Curtir
