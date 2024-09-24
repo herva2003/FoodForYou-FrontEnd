@@ -24,9 +24,16 @@ const Discussion: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const { getToken } = useAuth();
 
+
+
   const fetchTopic = async () => {
     try {
-      const response = await api.get(`/api/v1/topics/${id}`);
+      const token = await getToken();
+      const response = await api.get(`/api/v1/topics/${id}`,  {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setTopic(response.data);
     } catch (error) {
       console.error('Error fetching topic:', error);
@@ -35,7 +42,12 @@ const Discussion: React.FC = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await api.get(`/api/v1/topics/${id}/messages`);
+      const token = await getToken();
+      const response = await api.get(`/api/v1/topics/${id}/messages`,  {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setMessages(response.data);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -55,7 +67,7 @@ const Discussion: React.FC = () => {
         }
       );
       setNewMessage('');
-      fetchMessages(); // Atualize as mensagens após criar uma nova mensagem
+      fetchMessages();
     } catch (error) {
       console.error('Error creating message:', error);
     }

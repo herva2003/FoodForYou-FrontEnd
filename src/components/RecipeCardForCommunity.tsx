@@ -5,10 +5,16 @@ import { Comment } from '../interfaces/Comment';
 import { Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Button } from '@mui/material';
 import { AiOutlineClockCircle, AiOutlineClose } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa6';
+import { useAuth } from '../context/authContext';
+import  api  from '../services/api';
 
 interface RecipeCardForCommunityProps {
   recipe: RecipeProps;
   userId: string;
+}
+
+interface CommentDTO {
+  content: string
 }
 
 const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe, userId }) => {
@@ -17,15 +23,17 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe,
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<Comment[]>(recipe.comments);
   const [openModal, setOpenModal] = useState(false);
+  const {getToken} = useAuth()
 
   const handleLike = async () => {
     try {
+      const token = getToken()
       await axios.post(
         `http://localhost:8080/api/v1/recipes/${recipe.id}/like`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -36,18 +44,21 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe,
   };
 
   const handleAddComment = async () => {
+
     try {
-      const response = await axios.post(
-        `http://localhost:8080/api/v1/recipes/${recipe.id}/comment`,
-        { content: newComment },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      setComments([...comments, response.data]);
-      setNewComment('');
+      const token = getToken()
+      const data = {content: newComment, id: recipe.id} as CommentDTO
+      console.log(token)
+
+      const response = await api.post(`/api/v1/recipe/comment`, data);
+
+      if(response) {
+
+        setComments([...comments, response.data]);
+        setNewComment('')
+      }
+
+    ;
     } catch (error) {
       console.error('Error adding comment:', error);
     }

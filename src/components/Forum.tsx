@@ -3,6 +3,7 @@ import { TextField, Button, List, ListItem, ListItemText, Divider, Dialog, Dialo
 import { Add as AddIcon } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../context/authContext';
 
 interface Topic {
   id: string;
@@ -12,15 +13,28 @@ interface Topic {
   createdAt: string;
 }
 
+interface TopicDTO {
+  title: string,
+  description: string,
+  createdBy: string, 
+}
+
 const Forum: React.FC = () => {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [newTopic, setNewTopic] = useState({ title: '', description: '', createdBy: 'Usuário Atual' });
+  const [title, setTitle] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [createdBy, setCreatedBy] = useState<string>(''); 
   const [open, setOpen] = useState(false);
+
+  const {getToken} = useAuth();
 
   const fetchTopics = async () => {
     try {
-      const response = await api.get('/api/v1/topics');
+      const token = await getToken();
+      const response = await api.get('/api/v1/topics/',{
+        headers: { Authorization: `Bearer ${token}` },
+  });
       setTopics(response.data);
     } catch (error) {
       console.error('Error fetching topics:', error);
@@ -29,10 +43,26 @@ const Forum: React.FC = () => {
 
   const createTopic = async () => {
     try {
-      await api.post('/api/v1/topics', newTopic);
-      setNewTopic({ title: '', description: '', createdBy: 'Usuário Atual' });
-      fetchTopics();
-      handleClose();
+      const token = await getToken();
+      const data = { title, description, createdBy } as TopicDTO;
+
+      const response = await api.post('/api/v1/topics/', data, {
+            headers: { Authorization: `Bearer ${token}` },
+      });
+
+
+
+      console.log(data)
+      console.log(response)
+
+      if (response) {
+        setTitle('');
+        setDescription('');
+        setCreatedBy(''); 
+
+        await fetchTopics(); 
+        handleClose(); 
+      }
     } catch (error) {
       console.error('Error creating topic:', error);
     }
@@ -91,8 +121,8 @@ const Forum: React.FC = () => {
             label="Título do Tópico"
             type="text"
             fullWidth
-            value={newTopic.title}
-            onChange={(e) => setNewTopic({ ...newTopic, title: e.target.value })}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -101,15 +131,15 @@ const Forum: React.FC = () => {
             fullWidth
             multiline
             rows={4}
-            value={newTopic.description}
-            onChange={(e) => setNewTopic({ ...newTopic, description: e.target.value })}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
             Cancelar
           </Button>
-          <Button onClick={createTopic} color="primary" disabled={!newTopic.title || !newTopic.description}>
+          <Button onClick={createTopic} color="primary" disabled={!title || !description}>
             Criar
           </Button>
         </DialogActions>
