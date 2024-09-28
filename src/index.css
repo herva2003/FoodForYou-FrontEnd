@@ -24,3 +24,9 @@ body,
     scrollbar-width: none; /* Firefox */
   }
 }
+
+/* Custom styles */
+.placeholder-center::placeholder {
+  text-align: center; /* Center the placeholder text */
+  /* color: black; */
+}

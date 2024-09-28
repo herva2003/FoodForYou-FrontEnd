@@ -126,7 +126,7 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
-                <div className="min-w-[50vw] min-h-[50vh] bg-white rounded-[4px] py-[20px] px-[40px]">
+                <div className="min-w-[50vw] min-h-[50vh] bg-white rounded-[25px] py-[20px] px-[40px]">
                 <div className="flex justify-between items-center mb-[40px]">
                     <h1 className="text-md text-title font-bold ">
                     Alterar informações de cadastro
@@ -243,10 +243,10 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
                 </form>
                 </div>
             </Modal>
-            <Card variant="outlined" className="w-[97.5%] p-8 mt-9">
+            <div className="w-[90%] p-12 mt-9 ml-16 bg-white shadow-lg rounded-lg">
                 <div className="flex items-center mb-0">
                     <h1 className="font-semibold text-3xl text-title">Olá {props.fullName}!</h1>
-                    <GiHand className="text-6xl text-title ml-4"/>
+                    {/* <GiHand className="text-6xl text-title ml-4"/> */}
                 </div>
                 <div className="text-title mb-6">
                     <p className="text-2xl font-semibold mb-2">Seus dados atuais são:</p>
@@ -263,7 +263,7 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
                     resetUserFields();
                     setOpenModal(true)
                 }}></Button>
-            </Card>
+            </div>
         </>
     )
 }

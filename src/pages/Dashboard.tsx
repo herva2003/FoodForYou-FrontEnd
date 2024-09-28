@@ -31,17 +31,16 @@ const Dashboard: React.FC = () => {
     <SidebarPage headerTitle="Dashboard">
       <div className="h-[80vh] pr-[100px] overflow-y-auto">
         <DashboardWelcomeCard 
-          login={userData?.login ?? ""} 
-          fullName={userData?.fullName ?? ""} 
+          login={userData?.login ?? ""}
+          fullName={userData?.fullName ?? ""}
           weight={userData?.weight ?? 0}
           height={userData?.height ?? 0}
           diets={userData?.diets ?? ""}
           allergies={userData?.allergies ?? ""}
-          intolerances={userData?.intolerances ?? ""  }
-          fetchData={fetchData}
-        />
+          intolerances={userData?.intolerances ?? ""}
+          fetchData={fetchData} id={""}        />
         <div className="mt-8">
-          <div className="flex justify-center items-center mb-4">
+          <div className="flex justify-center items-center bg-white shadow-lg rounded-lg mx-64 border  p-4">
             <div className="mr-4">
               <DatePicker
                 selected={startDate}
@@ -51,7 +50,7 @@ const Dashboard: React.FC = () => {
                 endDate={endDate}
                 isClearable
                 placeholderText="Start Date"
-                className="border p-2 rounded"
+                className="border p-2 rounded-lg placeholder-center"
               />
             </div>
             <div className="mr-4">
@@ -64,10 +63,10 @@ const Dashboard: React.FC = () => {
                 minDate={startDate}
                 isClearable
                 placeholderText="End Date"
-                className="border p-2 rounded"
+                className="border p-2 rounded-lg placeholder-center text-black"
               />
             </div>
-            <div>
+            <div className="rounded-lg border p-2">
               <select value={chartType} onChange={(e) => setChartType(e.target.value as 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea')}>
                 <option value="line">Linha</option>
                 <option value="bar">Barra</option>
