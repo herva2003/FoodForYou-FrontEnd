@@ -38,7 +38,8 @@ const Dashboard: React.FC = () => {
           diets={userData?.diets ?? ""}
           allergies={userData?.allergies ?? ""}
           intolerances={userData?.intolerances ?? ""}
-          fetchData={fetchData} id={""}        />
+          fetchData={fetchData} id={""}        
+        />
         <div className="mt-8 flex flex-col items-center">
           <div className="flex justify-center items-center bg-white shadow-lg rounded-lg mx-64 border p-4">
             <div className="mr-4">
@@ -66,7 +67,7 @@ const Dashboard: React.FC = () => {
                 className="border p-2 rounded-lg placeholder-center text-black"
               />
             </div>
-            <div className="rounded-lg border p-2">
+            {/* <div className="rounded-lg border p-2">
               <select value={chartType} onChange={(e) => setChartType(e.target.value as 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea')}>
                 <option value="line">Linha</option>
                 <option value="bar">Barra</option>
@@ -75,12 +76,19 @@ const Dashboard: React.FC = () => {
                 <option value="radar">Radar</option>
                 <option value="polarArea">Área Polar</option>
               </select>
-            </div>
+            </div> */}
           </div>
-          <div className="mt-[50px] border w-[80%] bg-white shadow-lg rounded-lg p-8 flex justify-center">
-            <NutritionalProgressChart chartType={"line"} startDate={startDate} endDate={endDate} />
+          <div className="mt-[50px] w-[80%] shadow-lg rounded-lg p-2 flex flex-col gap-4 justify-center">
+            <div className="flex flex-row gap-8">
+              <div className="bg-white shadow-lg rounded-lg flex-1 p-4 h-[300px]"> {/* Adjust the height here */}
+                <NutritionalProgressChart chartType="line" startDate={startDate} endDate={endDate} />
+              </div>
+              <div className="bg-white shadow-lg rounded-lg flex-1 p-4 h-[300px]"> {/* Adjust the height here */}
+                <NutritionalProgressChart chartType="bar" startDate={startDate} endDate={endDate} />
+              </div>
+            </div>           
+            
           </div>
-          
         </div>
       </div>
     </SidebarPage>
