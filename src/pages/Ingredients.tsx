@@ -34,8 +34,43 @@ const Ingredients: React.FC = () => {
   const [selectedIngredients, setSelectedIngredients] = useState<
     SelectedIngredientsProps[]
   >([]);
+  const [tabIndex, setTabIndex] = useState(0);
 
   const { getToken } = useAuth();
+
+  const addIngredients = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.post(
+        "/api/v1/user/ingredient",
+        selectedIngredients,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response) {
+        console.log("addIngredients response:", response);
+        getIngredients();
+        setOpenModal(false);
+        setSelectedIngredients([]);
+        Swal.fire({
+          title: "Sucesso!",
+          text: "Ingredientes adicionados com sucesso.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.log("addIngredients error:", error);
+      Swal.fire({
+        title: "Erro!",
+        text: "Ocorreu um erro ao adicionar os ingredientes.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
 
   const getIngredients = async () => {
     try {
@@ -45,14 +80,15 @@ const Ingredients: React.FC = () => {
       });
 
       if (response.data) {
+        console.log("getIngredients response:", response);
         handleSetIngredients(response.data.data);
       }
     } catch (error) {
-      console.log(error);
+      console.log("getIngredients error:", error);
     }
   };
 
-  const handleDeleteIngredients = async () => {
+  const deleteIngredients = async () => {
     try {
       const token = await getToken();
       const response = await api.delete("/api/v1/user/ingredient/", {
@@ -61,7 +97,7 @@ const Ingredients: React.FC = () => {
       });
 
       if (response) {
-        console.log(response);
+        console.log("deleteIngredients response:", response);
         setCheckeds([]);
         Swal.fire({
           title: "Deletado!",
@@ -70,7 +106,85 @@ const Ingredients: React.FC = () => {
         });
       }
     } catch (error) {
-      console.log(error);
+      console.log("deleteIngredients error:", error);
+      Swal.fire({
+        title: "Erro!",
+        text: "Ocorreu um erro ao deletar os ingredientes.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  const addShoppingList = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.post(
+        "/api/v1/user/shoppList",
+        selectedIngredients,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response) {
+        console.log("addShoppingList response:", response);
+        getShoppingList();
+        setOpenModal(false);
+        setSelectedIngredients([]);
+        Swal.fire({
+          title: "Sucesso!",
+          text: "Ingredientes adicionados com sucesso.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.log("addShoppingList error:", error);
+      Swal.fire({
+        title: "Erro!",
+        text: "Ocorreu um erro ao adicionar os ingredientes.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  const getShoppingList = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.get("/api/v1/user/shoppList", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data) {
+        console.log("getShoppingList response:", response);
+        handleSetIngredients(response.data.data);
+      }
+    } catch (error) {
+      console.log("getShoppingList error:", error);
+    }
+  };
+
+  const deleteShoppingList = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.delete("/api/v1/user/shoppList/", {
+        data: checkeds,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response) {
+        console.log("deleteShoppingList response:", response);
+        setCheckeds([]);
+        Swal.fire({
+          title: "Deletado!",
+          text: "Seus ingredientes foram deletados com sucesso.",
+          icon: "success",
+        });
+      }
+    } catch (error) {
+      console.log("deleteShoppingList error:", error);
       Swal.fire({
         title: "Erro!",
         text: "Ocorreu um erro ao deletar os ingredientes.",
@@ -91,44 +205,15 @@ const Ingredients: React.FC = () => {
       confirmButtonText: "Sim, deletar!",
     }).then((result) => {
       if (result.isConfirmed) {
-        handleDeleteIngredients();
+        if (tabIndex === 0) {
+          deleteIngredients();
+        } else {
+          deleteShoppingList();
+        }
       }
     });
   };
 
-  const submitAddedIngredients = async () => {
-    try {
-      const token = await getToken();
-      const response = await api.post(
-        "/api/v1/user/ingredient",
-        selectedIngredients,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (response) {
-        getIngredients();
-        setOpenModal(false);
-        setSelectedIngredients([]);
-        Swal.fire({
-          title: "Sucesso!",
-          text: "Ingredientes adicionados com sucesso.",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      Swal.fire({
-        title: "Erro!",
-        text: "Ocorreu um erro ao adicionar os ingredientes.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
-  };
-  
   const sortedIngredients: any = ingredients.sort((a, b) =>
     a.descrip.localeCompare(b.descrip)
   );
@@ -149,7 +234,7 @@ const Ingredients: React.FC = () => {
       setSelectedIngredients((prev) => [...prev, newItem]);
     }
   };
-  
+
   const blank = () => (
     <div className="flex justify-center">
       {" "}
@@ -172,10 +257,18 @@ const Ingredients: React.FC = () => {
   };
 
   useEffect(() => {
-    getIngredients()
+    if (tabIndex === 0) {
+      getIngredients();
+    } else {
+      getShoppingList();
+    }
     setVisible(checkeds.length > 0);
-  }, [checkeds]);
+  }, [checkeds, tabIndex]);
 
+  const tabs = [
+    { index: 0, label: 'Lista de Ingredientes' },
+    { index: 1, label: 'Lista de Compras' },
+  ];
 
   return (
     <>
@@ -226,7 +319,7 @@ const Ingredients: React.FC = () => {
               <Button
                 title="Salvar"
                 width="w-[10%]"
-                onClick={submitAddedIngredients}
+                onClick={tabIndex === 0 ? addIngredients : addShoppingList}
               />
             </div>
           </div>
@@ -234,6 +327,17 @@ const Ingredients: React.FC = () => {
       </div>
       <SidebarPage headerTitle="Ingredientes">
         <div className="flex flex-col w-full">
+          <div className="tabs">
+            {tabs.map(tab => (
+              <button
+                key={tab.index}
+                className={`tab ${tabIndex === tab.index ? 'bg-blue-500 text-white' : ''}`}
+                onClick={() => setTabIndex(tab.index)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
           <div className="h-[80vh] flex flex-col w-full pr-[100px] mt-[40px]">
             <Input
               value={filterText}
@@ -247,7 +351,9 @@ const Ingredients: React.FC = () => {
               }
             />
             <div className="flex justify-between items-center mt-[40px]">
-              <h1 className="text-md text-subtitle self-end">Sua lista</h1>
+              <h1 className="text-md text-subtitle self-end">
+                {tabIndex === 0 ? "Sua lista" : "Sua lista de compras"}
+              </h1>
               <div className="flex">
                 {visible ? (
                   <Button

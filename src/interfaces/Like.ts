@@ -1,3 +1,3 @@
 export interface Like{
-    userId: string;
+    userId: Object;
 }

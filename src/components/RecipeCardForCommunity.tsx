@@ -19,31 +19,17 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe,
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<Comment[]>(recipe.comments);
   const [openModal, setOpenModal] = useState(false);
+  const [likes, setLikes] = useState<string[]>([]);
   const { getToken } = useAuth();
-
-  useEffect(() => {
-    console.log('userId:', userId);
-  }, [userId]);
-
-  console.log('RecipeCardForCommunity rendered with recipe:', recipe);
 
   const handleLike = async () => {
     console.log('handleLike called');
     try {
-      const token = await getToken();
-      console.log('token:', token);
-      console.log(`Sending POST request to /api/v1/recipes/like/${recipe.id}`);
-  
       const data = { userId: userId } as Like;
-      console.log('data:', data);
-  
-      const response = await api.post(`/api/v1/recipes/like/${recipe.id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log('Successfully liked the recipe', response);
-      setIsLiked(true);
+      const response = await api.post(`/api/v1/recipes/${recipe.id}/likes`, data);
+      if (response) {
+        setIsLiked(true);
+      }
     } catch (error) {
       console.error('Error liking recipe:', error);
     }
@@ -52,9 +38,7 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe,
   const handleAddComment = async () => {
     try {
       const data = { content: newComment, id: recipe.id } as Comment;
-
       const response = await api.post(`/api/v1/recipe/comment`, data);
-
       if (response) {
         setComments([...comments, response.data]);
         setNewComment('');
@@ -132,6 +116,16 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe,
           >
             Comentar
           </button>
+        </div>
+        
+        {/* Display Likes */}
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold">Curtidas:</h3>
+          <ul className="list-disc list-inside">
+            {likes.map((like, index) => (
+              <li key={index}>{like}</li>
+            ))}
+          </ul>
         </div>
 
         <Modal
