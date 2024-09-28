@@ -39,8 +39,8 @@ const Dashboard: React.FC = () => {
           allergies={userData?.allergies ?? ""}
           intolerances={userData?.intolerances ?? ""}
           fetchData={fetchData} id={""}        />
-        <div className="mt-8">
-          <div className="flex justify-center items-center bg-white shadow-lg rounded-lg mx-64 border  p-4">
+        <div className="mt-8 flex flex-col items-center">
+          <div className="flex justify-center items-center bg-white shadow-lg rounded-lg mx-64 border p-4">
             <div className="mr-4">
               <DatePicker
                 selected={startDate}
@@ -77,9 +77,10 @@ const Dashboard: React.FC = () => {
               </select>
             </div>
           </div>
-          <div className="mt-[50px]">
-            <NutritionalProgressChart chartType={chartType} startDate={startDate} endDate={endDate} />
+          <div className="mt-[50px] border w-[80%] bg-white shadow-lg rounded-lg p-8 flex justify-center">
+            <NutritionalProgressChart chartType={"line"} startDate={startDate} endDate={endDate} />
           </div>
+          
         </div>
       </div>
     </SidebarPage>
