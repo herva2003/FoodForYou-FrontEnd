@@ -191,8 +191,6 @@ const RecipeIa: React.FC = () => {
       
     };
 }
-    
-    
 
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);

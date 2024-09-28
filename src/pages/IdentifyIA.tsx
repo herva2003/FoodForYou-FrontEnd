@@ -1,11 +1,16 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Input from '../components/Input';
 import SidebarPage from '../components/SidebarPage';
-import Button from '../components/Button';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextareaAutosize } from '@mui/material';
-import Swal from "sweetalert2"
-import api from "../services/api"
+import Swal from "sweetalert2";
+import api from "../services/api";
 import { useAuth } from "../context/authContext";
+import Box from '@mui/material/Box';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 interface NutritionalValues {
   Calcium_mg: number;
@@ -54,6 +59,8 @@ interface CalculatedValues {
   [key: string]: any;
 }
 
+const steps = ['Analisar Receita', 'Analisar Calorias', 'Salvar Valores'];
+
 const IA: React.FC = () => {
   const [textToProcess, setTextToProcess] = useState<string>('');
   const [result, setResult] = useState<Ingredient[]>([]);
@@ -61,7 +68,9 @@ const IA: React.FC = () => {
   const [calculatedValues, setCalculatedValues] = useState<CalculatedValues>({});
   const [calculatedValuesTrue, setCalculatedValuesTrue] = useState<NutritionalValues>();
   const { getToken } = useAuth();
-  
+  const [activeStep, setActiveStep] = useState(0);
+  const [skipped, setSkipped] = useState(new Set<number>());
+
   const nutritionalValueTranslation: { [key: string]: string } = {
     'Calcium_mg': 'Cálcio mg',
     'Carb_g': 'Carboidratos g',
@@ -90,10 +99,10 @@ const IA: React.FC = () => {
     'VitE_mg': 'Vitamina E mg',
     'Zinc_mg': 'Zinco mg',
   };
-  
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-  
+
     try {
       Swal.fire({
         title: "Aguarde...",
@@ -106,7 +115,7 @@ const IA: React.FC = () => {
           Swal.showLoading();
         }
       });
-  
+
       const response = await fetch('http://127.0.0.1:5000/process_text', {
         method: 'POST',
         headers: {
@@ -114,11 +123,11 @@ const IA: React.FC = () => {
         },
         body: JSON.stringify({ text_to_process: textToProcess }),
       });
-  
+
       const data: Ingredient[] = await response.json();
-  
+
       setResult(data);
-  
+
       const initialQuantities: Quantities = {};
       data.forEach(ingredient => {
         initialQuantities[ingredient._id] = {
@@ -127,7 +136,7 @@ const IA: React.FC = () => {
         };
       });
       setQuantities(initialQuantities);
-  
+
       Swal.close();
       Swal.fire({
         title: "Sucesso!",
@@ -148,7 +157,6 @@ const IA: React.FC = () => {
     }
   };
 
-  
   const handleQuantityChange = (ingredientId: string, newQuantity: string) => {
     setQuantities(prevQuantities => ({
       ...prevQuantities,
@@ -172,15 +180,15 @@ const IA: React.FC = () => {
           Swal.showLoading();
         }
       });
-  
+
       const quantitiesToSend = Object.keys(quantities).map(key => ({
         _id: key,
         Descrip: quantities[key].Descrip,
         quantity: quantities[key].quantity,
       }));
 
-      console.log(quantitiesToSend)
-  
+      console.log(quantitiesToSend);
+
       const response = await fetch('http://127.0.0.1:5000/send_quantities', {
         method: 'POST',
         headers: {
@@ -188,12 +196,12 @@ const IA: React.FC = () => {
         },
         body: JSON.stringify(quantitiesToSend),
       });
-  
+
       const data: CalculatedValues = await response.json();
-  
+
       setCalculatedValues(data.nutritional_values);
       setCalculatedValuesTrue(data.nutritional_values);
-  
+
       Swal.fire({
         title: "Sucesso!",
         text: "As quantidades foram enviadas com sucesso.",
@@ -219,7 +227,7 @@ const IA: React.FC = () => {
       const response = await api.post("/api/v1/user/nv/", calculatedValuesTrue, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       if (response) {
         Swal.fire({
           title: 'Salvo!',
@@ -246,40 +254,76 @@ const IA: React.FC = () => {
       console.error('Error saving nutritional values:', error);
     }
   };
-  
 
-  return (
-    <SidebarPage headerTitle="Identificar Receita">
-      <div className="">
-      <div className="h-[80vh] pr-[100px] mt-[40px] flex justify-center overflow-auto">
-          <div className="h-[100%] w-[80%]">
-            <form onSubmit={handleSubmit}>
-              <label className="block mb-2">
-                Escreva a receita abaixo:
-              </label>
-              <TextareaAutosize
-                  minRows={5}
-                  className='
-                  w-full
-                  focus:ring-blue-500
-                  focus:outline-none
-                  focus:ring-2
-                  border
-                  border-gray-300
-                  rounded-md
-                  shadow-sm
-                  mb-2
-                  '
-                  value={textToProcess}
-                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setTextToProcess(e.target.value)}
-                >
-              </TextareaAutosize>
-              <Button
+  const isStepOptional = (step: number) => {
+    return step === 1;
+  };
+
+  const isStepSkipped = (step: number) => {
+    return skipped.has(step);
+  };
+
+  const handleNext = async () => {
+    if (activeStep === 0) {
+      await handleSubmit(new Event('submit') as FormEvent);
+    } else if (activeStep === 1) {
+      await handleSendQuantities();
+    } else if (activeStep === steps.length - 1) {
+      await handleSaveCalculatedValues();
+    }
+
+    let newSkipped = skipped;
+    if (isStepSkipped(activeStep)) {
+      newSkipped = new Set(newSkipped.values());
+      newSkipped.delete(activeStep);
+    }
+
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setSkipped(newSkipped);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleReset = () => {
+    setActiveStep(0);
+  };
+
+  const renderStepContent = (step: number) => {
+    switch (step) {
+      case 0:
+        return (
+          <form onSubmit={handleSubmit}>
+            <label className="block mb-2">
+              Escreva a receita abaixo:
+            </label>
+            <TextareaAutosize
+              minRows={5}
+              className='
+              w-full
+              focus:ring-blue-500
+              focus:outline-none
+              focus:ring-2
+              border
+              border-gray-300
+              rounded-md
+              shadow-sm
+              mb-2
+              '
+              value={textToProcess}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setTextToProcess(e.target.value)}
+            />
+            <Button
               type="submit"
               title="Analisar receita"
               className=""
-              />
-            </form>
+            />
+          </form>
+        );
+      case 1:
+        return (
+          <>
             <h2 className="text-md font-semibold my-2">Ingredientes encontrados:</h2>
             <ul className="pl-5 mb-4">
               {result.map((item) => (
@@ -300,38 +344,100 @@ const IA: React.FC = () => {
               key={"btnCalcCalories"}
               className=""
             />
-<div className="mt-2">
-  <h2 className="text-md font-semibold my-2">Valores nutricionais da receita:</h2>
-  {Object.keys(calculatedValues).length > 0 && (
-    <TableContainer component={Paper} style={{ maxHeight: '400px', overflow: 'auto' }}>
-      <Table aria-label="calculated-nutritional-values">
-        <TableHead>
-          <TableRow>
-            <TableCell>Nutriente</TableCell>
-            <TableCell align="right">Valor</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-        {Object.entries(calculatedValues).map(([nutrient, values]) => (
-  <TableRow key={nutrient}>
-    <TableCell component="th" scope="row">{nutritionalValueTranslation[nutrient]}</TableCell>
-    <TableCell component="th" align="right" scope="row">{values}</TableCell>
-  </TableRow>
-))}
-
-        </TableBody>
-      </Table>
-    </TableContainer>
-  )}
-</div>
-<Button
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h2 className="text-md font-semibold my-2">Valores nutricionais da receita:</h2>
+            {Object.keys(calculatedValues).length > 0 && (
+              <TableContainer component={Paper} style={{ maxHeight: '400px', overflow: 'auto' }}>
+                <Table aria-label="calculated-nutritional-values">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Nutriente</TableCell>
+                      <TableCell align="right">Valor</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(calculatedValues).map(([nutrient, values]) => (
+                      <TableRow key={nutrient}>
+                        <TableCell component="th" scope="row">{nutritionalValueTranslation[nutrient]}</TableCell>
+                        <TableCell component="th" align="right" scope="row">{values}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+            <Button
               onClick={handleSaveCalculatedValues}
               title="Salvar Valores"
               className=""
             />
+          </>
+        );
+      default:
+        return 'Desconhecido';
+    }
+  };
 
-
-          </div>
+  return (
+    <SidebarPage headerTitle="Identificar Receita">
+      <div className="flex justify-center w-full">
+        <div className="h-[80vh] w-[80%] flex flex-col pr-[100px] mt-[40px]">
+          <Box sx={{ width: '100%' }}>
+            <Stepper activeStep={activeStep}>
+              {steps.map((label, index) => {
+                const stepProps: { completed?: boolean } = {};
+                const labelProps: { optional?: React.ReactNode } = {};
+                if (isStepOptional(index)) {
+                  labelProps.optional = (
+                    <Typography variant="caption"></Typography>
+                  );
+                }
+                if (isStepSkipped(index)) {
+                  stepProps.completed = false;
+                }
+                return (
+                  <Step key={label} {...stepProps}>
+                    <StepLabel {...labelProps}>{label}</StepLabel>
+                  </Step>
+                );
+              })}
+            </Stepper>
+            {activeStep === steps.length ? (
+              <React.Fragment>
+                <Typography sx={{ mt: 2, mb: 1 }}>
+                  Todas as etapas concluídas - Receita adicionada 
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                  <Box sx={{ flex: '1 1 auto' }} />
+                  <Button onClick={handleReset}>Resetar</Button>
+                </Box>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Box sx={{ mt: 2, mb: 1 }}>
+                  {renderStepContent(activeStep)}
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                  <Button
+                    color="inherit"
+                    disabled={activeStep === 0}
+                    onClick={handleBack}
+                    sx={{ mr: 1 }}
+                  >
+                    Voltar
+                  </Button>
+                  <Box sx={{ flex: '1 1 auto' }} />
+                  <Button onClick={handleNext}>
+                    {activeStep === steps.length - 1 ? 'Salvar' : 'Próximo'}
+                  </Button>
+                </Box>
+              </React.Fragment>
+            )}
+          </Box>
         </div>
       </div>
     </SidebarPage>
