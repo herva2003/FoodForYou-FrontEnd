@@ -10,7 +10,6 @@ import { AiOutlineClose, AiOutlineMail } from "react-icons/ai";
 import Input from "./Input";
 import { IoArrowUpOutline, IoPersonOutline } from "react-icons/io5";
 import { RiWeightLine } from "react-icons/ri";
-import { all } from "axios";
 
 interface DashboardWelcomeCardProps extends UserProps {
     fetchData: () => void; 

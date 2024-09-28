@@ -7,13 +7,16 @@ import { IoIosCloseCircleOutline } from "react-icons/io";
 import SidebarPage from "../components/SidebarPage";
 import Button from "../components/Button";
 import { Modal } from "@mui/material";
-import { AiOutlineCloseCircle } from "react-icons/ai";
+import { AiOutlineClose } from "react-icons/ai";
 import Dropdown from "../components/Dropdown";
 import SelectedIngredientCard from "../components/SelectedIngredientCard";
 import api from "../services/api";
 import { IoSearchOutline } from "react-icons/io5";
 import { useAuth } from "../context/authContext";
 import Swal from "sweetalert2";
+import { UserProps } from '../interfaces/UserProps';
+import IngredientsWelcomeCard from "../components/IngredientsWelcomeCard";
+import ShoppingListWelcomeCard from "../components/ShoppingListWelcomeCard";
 
 interface SelectedIngredientsProps {
   name: string;
@@ -25,6 +28,7 @@ interface CheckedIngredientsProps {
 }
 
 const Ingredients: React.FC = () => {
+  const [userData, setUserData] = useState<UserProps | null>(null);
   const { ingredients } = useIngredients();
   const { handleSetIngredients } = useIngredients();
   const [openModal, setOpenModal] = useState(false);
@@ -37,6 +41,16 @@ const Ingredients: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0);
 
   const { getToken } = useAuth();
+
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get('/api/v1/user/me');
+      const userDataFromApi: UserProps = response.data;
+      setUserData(userDataFromApi);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
 
   const addIngredients = async () => {
     try {
@@ -257,6 +271,7 @@ const Ingredients: React.FC = () => {
   };
 
   useEffect(() => {
+    fetchUserData();
     if (tabIndex === 0) {
       getIngredients();
     } else {
@@ -288,7 +303,7 @@ const Ingredients: React.FC = () => {
               <h1 className="text-md text-title font-semibold ">
                 Selecione os itens que deseja adicionar à sua lista
               </h1>
-              <AiOutlineCloseCircle
+              <AiOutlineClose
                 size={30}
                 className="cursor-pointer text-title"
                 onClick={closeModal}
@@ -327,6 +342,11 @@ const Ingredients: React.FC = () => {
       </div>
       <SidebarPage headerTitle="Ingredientes">
         <div className="flex flex-col w-full">
+          {tabIndex === 0 ? (
+            <IngredientsWelcomeCard userName={userData?.fullName ?? "User"} />
+          ) : (
+            <ShoppingListWelcomeCard userName={userData?.fullName ?? "User"} />
+          )}
           <div className="tabs">
             {tabs.map(tab => (
               <button
