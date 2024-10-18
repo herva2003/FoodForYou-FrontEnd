@@ -14,7 +14,7 @@ import api from "../services/api";
 import { IoSearchOutline } from "react-icons/io5";
 import { useAuth } from "../context/authContext";
 import Swal from "sweetalert2";
-import { UserProps } from '../interfaces/UserProps';
+import { UserProps } from "../interfaces/UserProps";
 import IngredientsWelcomeCard from "../components/IngredientsWelcomeCard";
 import ShoppingListWelcomeCard from "../components/ShoppingListWelcomeCard";
 
@@ -44,11 +44,11 @@ const Ingredients: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await api.get('/api/v1/user/me');
+      const response = await api.get("/api/v1/user/me");
       const userDataFromApi: UserProps = response.data;
       setUserData(userDataFromApi);
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error("Error fetching user data:", error);
     }
   };
 
@@ -239,7 +239,7 @@ const Ingredients: React.FC = () => {
   };
 
   const handleAddSelectedIngredient = (name: string, id: string) => {
-    const isAlreadyAdded = selectedIngredients.some(item => item.id === id);
+    const isAlreadyAdded = selectedIngredients.some((item) => item.id === id);
     if (!isAlreadyAdded) {
       const newItem: SelectedIngredientsProps = {
         name: name,
@@ -281,8 +281,8 @@ const Ingredients: React.FC = () => {
   }, [checkeds, tabIndex]);
 
   const tabs = [
-    { index: 0, label: 'Lista de Ingredientes' },
-    { index: 1, label: 'Lista de Compras' },
+    { index: 0, label: "Lista de Ingredientes" },
+    { index: 1, label: "Lista de Compras" },
   ];
 
   return (
@@ -297,7 +297,8 @@ const Ingredients: React.FC = () => {
           }}
           open={openModal}
           aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description">
+          aria-describedby="modal-modal-description"
+        >
           <div className="w-[70vw] h-[90vh] bg-white rounded-[4px] py-[20px] px-[40px]">
             <div className="flex justify-between items-center mb-[40px]">
               <h1 className="text-md text-title font-semibold ">
@@ -348,10 +349,12 @@ const Ingredients: React.FC = () => {
             <ShoppingListWelcomeCard userName={userData?.fullName ?? "User"} />
           )}
           <div className="tabs">
-            {tabs.map(tab => (
+            {tabs.map((tab) => (
               <button
                 key={tab.index}
-                className={`tab ${tabIndex === tab.index ? 'bg-blue-500 text-white' : ''}`}
+                className={`tab ${
+                  tabIndex === tab.index ? "bg-blue-500 text-white" : ""
+                }`}
                 onClick={() => setTabIndex(tab.index)}
               >
                 {tab.label}

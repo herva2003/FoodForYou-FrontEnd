@@ -22,11 +22,6 @@ interface RecipeCardProps {
   fetchRecipes: () => void;
 }
 
-
-// dsdkasdkasdkas
-
-
-
 const RecipeCard: React.FC<RecipeCardProps> = ({
   recipeProps,
   fetchRecipes,
@@ -81,9 +76,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
 
       if (response.status === 201) {
         Swal.fire("Sucesso!", "Sua review foi adicionada.", "success");
-        fetchRecipes(); // Atualiza a lista de receitas
-        setNewReview(""); // Limpa o campo de texto
-        setRating(0); // Reseta a classificação
+        fetchRecipes();
+        setNewReview("");
+        setRating(0);
       }
     } catch (error) {
       Swal.fire("Erro!", "Houve um erro ao adicionar a review.", "error");
@@ -305,7 +300,6 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       </Modal>
 
       <div className="recipe-card" onClick={() => setOpenRecipeModal(true)}>
-        {/* Aqui você pode adicionar uma prévia da receita, como uma imagem e título */}
         <h3>{recipeProps.name}</h3>
         <IoIosEye />
       </div>

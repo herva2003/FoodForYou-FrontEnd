@@ -5,44 +5,83 @@ import api from "../services/api";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
-import { Modal } from "@mui/material";
-import { AiOutlineClockCircle, AiOutlineClose, AiOutlineCloseCircle } from "react-icons/ai";
+import { Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  AiOutlineClockCircle,
+  AiOutlineClose,
+  AiOutlineCloseCircle,
+} from "react-icons/ai";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import Swal from "sweetalert2";
-import FlatList from "flatlist-react";
+import { useIngredients } from "../context/ingredientsContext";
+import Dropdown from "../components/Dropdown";
 
-interface Ingredient {
-  _id: string;
-  Descrip: string;
+interface CalculatedValues {
+  [key: string]: any;
 }
+
+interface SelectedIngredientsProps {
+  name: string;
+  id: string;
+}
+
+const nutritionalValueTranslation: { [key: string]: string } = {
+  'Calcium_mg': 'Cálcio mg',
+  'Carb_g': 'Carboidratos g',
+  'Copper_mcg': 'Cobre mcg',
+  'Energy_kcal': 'Energia kcal',
+  'Fat_g': 'Gordura g',
+  'Fiber_g': 'Fibra g',
+  'Folate_mcg': 'Folato mcg',
+  'Iron_mg': 'Ferro mg',
+  'Magnesium_mg': 'Magnésio mg',
+  'Manganese_mg': 'Manganês mg',
+  'Niacin_mg': 'Niacina mg',
+  'Phosphorus_mg': 'Fósforo mg',
+  'Potassium_mg': 'Potássio mg',
+  'Protein_g': 'Proteína g',
+  'Riboflavin_mg': 'Riboflavina mg',
+  'Selenium_mcg': 'Selênio mcg',
+  'Sodium_mg': 'Sódio mg',
+  'Sugar_g': 'Açúcar g',
+  'Thiamin_mg': 'Tiamina mg',
+  'VitA_mcg': 'Vitamina A mcg',
+  'VitB12_mcg': 'Vitamina B12 mcg',
+  'VitB6_mg': 'Vitamina B6 mg',
+  'VitC_mg': 'Vitamina C mg',
+  'VitD2_mcg': 'Vitamina D2 mcg',
+  'VitE_mg': 'Vitamina E mg',
+  'Zinc_mg': 'Zinco mg',
+};
 
 const MyRecipes: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [filterText, setFilterText] = useState("");
-  const [ingredientSearchText, setIngredientSearchText] = useState("");
-  const [visible, setVisible] = useState(false);
+  const [ingredientSearchText] = useState("");
+  const [visible] = useState(false);
   const [recipes, setRecipes] = useState<RecipeProps[]>([]);
   const [newRecipeName, setNewRecipeName] = useState("");
-  const [ingredientsList, setIngredientsList] = useState<Ingredient[]>([]);
+  const [ingredientsList, setIngredientsList] = useState<string[]>([]);
   const [ingredientGrams, setIngredientGrams] = useState<{ [key: string]: string }>({});
   const [newPreparationStep, setNewPreparationStep] = useState("");
   const [preparationMethodList, setPreparationMethodList] = useState<string[]>([]);
   const [newPreparationTime, setNewPreparationTime] = useState(0);
   const [showError, setShowError] = useState(false);
-  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const { getToken } = useAuth();
+  const { handleSetIngredients } = useIngredients();
+  const [selectedIngredients, setSelectedIngredients] = useState<SelectedIngredientsProps[]>([]);
+  const [nutritionalValues, setNutritionalValues] = useState<CalculatedValues>({});
 
   useEffect(() => {
     fetchRecipes();
+    fetchIngredients(ingredientSearchText);
   }, []);
 
   useEffect(() => {
-    if (openModal) {
-      fetchAllIngredients();
-    }
-  }, [openModal]);
+    fetchIngredients(ingredientSearchText);
+  }, [ingredientSearchText]);
 
   const fetchRecipes = async () => {
     try {
@@ -59,15 +98,15 @@ const MyRecipes: React.FC = () => {
     }
   };
 
-  const fetchAllIngredients = async () => {
+  const fetchIngredients = async (query = "") => {
     try {
       const token = await getToken();
-      const response = await api.get("/api/v1/ingredients", {
+      const response = await api.get(`/api/v1/user/ingredient?search=${query}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.data) {
-        setAllIngredients(response.data.data);
+        handleSetIngredients(response.data.data);
       }
     } catch (error) {
       console.error("Error fetching ingredients:", error);
@@ -76,7 +115,7 @@ const MyRecipes: React.FC = () => {
 
   const submitAddedRecipe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateRecipe()) {
+    if (!validateRecipe() || Object.keys(nutritionalValues).length === 0) {
       setShowError(true);
       return;
     }
@@ -90,7 +129,6 @@ const MyRecipes: React.FC = () => {
     try {
       const token = await getToken();
       const formData = getFormData();
-      console.log(formData);
 
       const response = await api.post("/api/v1/user/recipe", formData, {
         headers: {
@@ -103,6 +141,7 @@ const MyRecipes: React.FC = () => {
       if (response.data) {
         closeModal();
         clearRecipeFields();
+        setNutritionalValues({});
         fetchRecipes();
         Swal.fire({
           title: "Success!",
@@ -127,7 +166,7 @@ const MyRecipes: React.FC = () => {
   const handleDeleteIngredient = (index: number) => {
     const ingredientToDelete = ingredientsList[index];
     setIngredientsList(ingredientsList.filter((_, i) => i !== index));
-    const { [ingredientToDelete.Descrip]: _, ...rest } = ingredientGrams;
+    const { [ingredientToDelete]: _, ...rest } = ingredientGrams;
     setIngredientGrams(rest);
   };
 
@@ -145,13 +184,8 @@ const MyRecipes: React.FC = () => {
 
   const closeModal = () => {
     clearRecipeFields();
+    setNutritionalValues({});
     setOpenModal(false);
-  };
-
-  const addIngredientToList = (ingredient: Ingredient) => {
-    if (ingredientsList.some((ing) => ing._id === ingredient._id)) return;
-    setIngredientsList([...ingredientsList, ingredient]);
-    setIngredientGrams({ ...ingredientGrams, [ingredient.Descrip]: '' });
   };
 
   const addPreparationStepToList = () => {
@@ -166,6 +200,7 @@ const MyRecipes: React.FC = () => {
     setPreparationMethodList([]);
     setNewPreparationStep("");
     setShowError(false);
+    setNutritionalValues({});
   };
 
   const clearRecipeFields = () => {
@@ -173,17 +208,19 @@ const MyRecipes: React.FC = () => {
     setNewPreparationTime(0);
     setIngredientsList([]);
     setPreparationMethodList([]);
+    setNutritionalValues({});
   };
 
   const getFormData = (): {} => {
     return {
       name: newRecipeName,
       ingredients: ingredientsList.map((ingredient) => ({
-        name: ingredient.Descrip,
-        quantity: ingredientGrams[ingredient.Descrip],
+        name: ingredient,
+        quantity: ingredientGrams[ingredient],
       })),
       preparationMethod: preparationMethodList,
       preparationTime: newPreparationTime,
+      nutritionalValues: nutritionalValues,
     };
   };
 
@@ -196,9 +233,41 @@ const MyRecipes: React.FC = () => {
     );
   };
 
-  const filteredIngredients = allIngredients.filter((ingredient) =>
-    ingredient.Descrip.toLowerCase().includes(ingredientSearchText.toLowerCase())
-  );
+  const handleAddSelectedIngredient = (name: string, id: string) => {
+    const isAlreadyAdded = selectedIngredients.some((item) => item.id === id);
+    if (!isAlreadyAdded) {
+      const newItem: SelectedIngredientsProps = { name, id };
+      setSelectedIngredients((prev) => [...prev, newItem]);
+
+      if (!ingredientsList.includes(name)) {
+        setIngredientsList((prev) => [...prev, name]);
+        setIngredientGrams((prev) => ({ ...prev, [name]: "" }));
+      }
+    }
+  };
+
+  const handleSendIngredients = async () => {
+    try {
+      const ingredientsToSend = selectedIngredients.map((ingredient) => ({
+        _id: ingredient.id,
+        Descrip: ingredient.name,
+        quantity: parseInt(ingredientGrams[ingredient.name] || "0", 10),
+      }));
+
+      const response = await fetch('http://127.0.0.1:5000/process_ingredients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ingredientsToSend),
+      });
+
+      const data: CalculatedValues = await response.json();
+      setNutritionalValues(data.nutritional_values);
+    } catch (error) {
+      console.error('Error sending ingredients:', error);
+    }
+  };
 
   return (
     <>
@@ -212,9 +281,9 @@ const MyRecipes: React.FC = () => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <div className="min-w-[50vw] min-h-[50vh] bg-white rounded-[4px] py-[20px] px-[40px]">
+        <div className="w-[70vw] h-[75vh] bg-white rounded-[4px] py-[40px] px-[40px] overflow-auto">
           <div className="flex justify-between items-center mb-[40px]">
-            <h1 className="text-md text-title font-bold ">
+            <h1 className="text-md text-title font-bold">
               Adicionar nova receita
             </h1>
             <AiOutlineClose
@@ -236,58 +305,70 @@ const MyRecipes: React.FC = () => {
                 placeholder="Nome da Receita"
               />
             </div>
-            <h2 className="text-md text-title font-semibold mb-2">
-              Ingredientes
-            </h2>
-            <div className="mb-4 flex">
-              <Input
-                value={ingredientSearchText}
-                onChange={(e) => setIngredientSearchText(e.target.value)}
-                placeholder="Buscar Ingrediente"
-                firstIcon={<IoSearchOutline color="#667085" size={20} />}
-                icon={
-                  <button onClick={() => setIngredientSearchText("")}>
-                    <IoIosCloseCircleOutline color="#667085" size={20} />
-                  </button>
-                }
-              />
+            <div className="flex flex-col mb-4 relative">
+              <label className="block text-title text-md font-semibold mb-2">
+                Ingredientes
+              </label>
+              <div className="relative z-10">
+                <Dropdown onClick={handleAddSelectedIngredient} />
+              </div>
             </div>
-            <div className="mb-4 h-[150px] overflow-y-scroll border p-2 rounded">
-              <FlatList
-                list={filteredIngredients}
-                renderItem={(ingredient, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center cursor-pointer hover:bg-gray-200 p-2 rounded"
-                    onClick={() => addIngredientToList(ingredient)}
-                  >
-                    <span>{ingredient.Descrip}</span>
-                  </div>
-                )}
-                renderWhenEmpty={() => <div className="text-center">Nenhum ingrediente encontrado</div>}
-              />
-            </div>
-            <ul className="ml-5 list-disc mb-4">
+            <div className="ml-5 mb-6">
               {ingredientsList.map((ingredient, index) => (
-                <li key={index} className="flex items-center">
-                  {index + 1}. {ingredient.Descrip}
-                  <input
-                    type="number"
-                    value={ingredientGrams[ingredient.Descrip] || ""}
-                    onChange={(e) => handleGramsChange(ingredient.Descrip, e.target.value)}
-                    className="ml-2 border rounded w-20 px-2 py-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="Gramas"
-                  />
-                  <button
-                    className="ml-2 text-red-500"
-                    type="button"
-                    onClick={() => handleDeleteIngredient(index)}
-                  >
-                    <AiOutlineCloseCircle />
-                  </button>
-                </li>
+                <div key={index} className="flex items-center mb-2">
+                  <div className="w-2/5">
+                    <span>
+                      {index + 1}. {ingredient}
+                    </span>
+                  </div>
+                  <div className="flex-grow flex justify-start items-center pl-4">
+                    <input
+                      type="number"
+                      value={ingredientGrams[ingredient] || ""}
+                      onChange={(e) => handleGramsChange(ingredient, e.target.value)}
+                      className="w-[100px] text-left"
+                      placeholder="Gramas"
+                    />
+                    <button
+                      className="ml-2 text-red-500"
+                      type="button"
+                      onClick={() => handleDeleteIngredient(index)}
+                    >
+                      <AiOutlineCloseCircle />
+                    </button>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
+            <button
+              type="button"
+              onClick={handleSendIngredients}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Calcular Valores Nutricionais
+            </button>
+            {Object.keys(nutritionalValues).length > 0 && (
+              <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                <Table stickyHeader aria-label="nutritional values table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Nutrientes</TableCell>
+                      <TableCell align="right">Valor</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(nutritionalValues).map(([key, value], index) => (
+                      <TableRow key={index}>
+                        <TableCell component="th" scope="row">
+                          {nutritionalValueTranslation[key] || key}
+                        </TableCell>
+                        <TableCell align="right">{value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
             <h2 className="text-md text-title font-semibold mb-2">
               Passos de preparo
             </h2>
@@ -313,9 +394,9 @@ const MyRecipes: React.FC = () => {
                 onClick={addPreparationStepToList}
               />
             </div>
-            <ul className="ml-5 list-decimal mb-4">
+            <ul className="ml-5 list-decimal">
               {preparationMethodList.map((step, index) => (
-                <li className="flex items-center" key={index}>
+                <li className="flex items-center mb-2" key={index}>
                   {index + 1}. {step}
                   <button
                     className="ml-2 text-red-500"
@@ -346,10 +427,7 @@ const MyRecipes: React.FC = () => {
               </div>
             )}
             <div className="flex justify-end items-end mt-[30px] mb-[10px]">
-              <Button
-                type="submit"
-                title="Salvar"
-              />
+              <Button type="submit" title="Salvar" />
             </div>
           </form>
         </div>
