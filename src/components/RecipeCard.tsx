@@ -16,6 +16,7 @@ import api from "../services/api";
 import Swal from "sweetalert2";
 import { FaStar } from "react-icons/fa6";
 import { FaStarHalfAlt } from "react-icons/fa";
+import { useAuth } from "../context/authContext"; // Importe o useAuth
 
 interface RecipeCardProps {
   recipeProps: RecipeProps;
@@ -26,8 +27,10 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   recipeProps,
   fetchRecipes,
 }) => {
+  const { getToken } = useAuth(); // Obtenha a função getToken do contexto de autenticação
   const [openModalRecipe, setOpenRecipeModal] = useState(false);
   const [showNutritionalValues, setShowNutritionalValues] = useState(true);
+  const [newReviewTitle, setNewReviewTitle] = useState(""); // Adicione estado para o título da review
   const [newReview, setNewReview] = useState("");
   const [rating, setRating] = useState(0);
 
@@ -64,21 +67,32 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   };
 
   const toggleNutritionalValues = () => {
+    console.log("Toggling nutritional values"); // Debugging log
     setShowNutritionalValues(!showNutritionalValues);
   };
 
   const handleAddReview = async () => {
     try {
-      const response = await api.post(`/api/v1/user/recipe/${recipeProps.id}/review`, {
-        description: newReview,
-        rating,
-      });
+      const token = await getToken();
+      const response = await api.post(
+        `/api/v1/review/`,
+        {
+          title: newReviewTitle,
+          description: newReview,
+          rating: rating,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (response.status === 201) {
         Swal.fire("Sucesso!", "Sua review foi adicionada.", "success");
-        fetchRecipes();
+        setNewReviewTitle("");
         setNewReview("");
         setRating(0);
+        closeModal();
+        fetchRecipes();
       }
     } catch (error) {
       Swal.fire("Erro!", "Houve um erro ao adicionar a review.", "error");
@@ -223,7 +237,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
                 <span>{recipeProps.preparationTime} minutos</span>
               )}
             </p>
-            {recipeProps.nutritionalValues && (
+            {recipeProps.nutritionalValues && showNutritionalValues && (
               <div className="ml-4">
                 <h2 className="font-semibold mb-2">Valores Nutricionais</h2>
                 <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
@@ -262,11 +276,20 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               className="bg-blue-500 text-white py-2 px-4 rounded"
               onClick={toggleNutritionalValues}
             >
-              {showNutritionalValues ? "Ocultar Valores Nutricionais" : "Mostrar Valores Nutricionais"}
+              {showNutritionalValues
+                ? "Ocultar Valores Nutricionais"
+                : "Mostrar Valores Nutricionais"}
             </button>
           </div>
           <div className="flex flex-col items-center mb-4">
             <h2 className="font-semibold text-lg">Adicionar Review</h2>
+            <input
+              type="text"
+              className="border rounded p-2 w-full mb-2"
+              placeholder="Título da review"
+              value={newReviewTitle}
+              onChange={(e) => setNewReviewTitle(e.target.value)}
+            />
             <textarea
               rows={4}
               className="border rounded p-2 w-full"
