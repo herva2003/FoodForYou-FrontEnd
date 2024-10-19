@@ -67,15 +67,17 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   };
 
   const toggleNutritionalValues = () => {
-    console.log("Toggling nutritional values"); // Debugging log
+    console.log("Toggling nutritional values");
     setShowNutritionalValues(!showNutritionalValues);
   };
 
   const handleAddReview = async () => {
     try {
       const token = await getToken();
+      console.log(`Adding review with token: ${token}`);
+
       const response = await api.post(
-        `/api/v1/review/`,
+        `/api/v1/review/?recipeId=${recipeProps.id}`,
         {
           title: newReviewTitle,
           description: newReview,
@@ -88,15 +90,15 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
 
       if (response.status === 201) {
         Swal.fire("Sucesso!", "Sua review foi adicionada.", "success");
+        fetchRecipes();
         setNewReviewTitle("");
         setNewReview("");
         setRating(0);
         closeModal();
-        fetchRecipes();
       }
     } catch (error) {
-      Swal.fire("Erro!", "Houve um erro ao adicionar a review.", "error");
       console.error("Error adding review:", error);
+      Swal.fire("Erro!", "Houve um erro ao adicionar a review.", "error");
     }
   };
 
