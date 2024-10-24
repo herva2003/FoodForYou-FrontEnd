@@ -4,6 +4,9 @@ import SidebarPage from '../components/SidebarPage';
 import CommunityWelcomeCard from '../components/CommunityWelcomeCard';
 import CommunityFeed from '../components/CommunityFeed';
 import Forum from '../components/Forum';
+import Input from '../components/Input'; // Importação do componente Input
+import { IoIosCloseCircleOutline } from 'react-icons/io';
+import { IoSearchOutline } from 'react-icons/io5';
 import api from '../services/api';
 import { UserProps } from '../interfaces/UserProps';
 import { RecipeProps } from '../interfaces/RecipeProps';
@@ -11,9 +14,11 @@ import { RecipeProps } from '../interfaces/RecipeProps';
 const Community: React.FC = () => {
   const [userData, setUserData] = useState<UserProps | null>(null);
   const [recipes, setRecipes] = useState<RecipeProps[]>([]);
+  const [filteredRecipes, setFilteredRecipes] = useState<RecipeProps[]>([]);
   const [showForum, setShowForum] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchUserData = async () => {
     try {
@@ -41,6 +46,14 @@ const Community: React.FC = () => {
     fetchRecipes(page);
   }, [page]);
 
+  useEffect(() => {
+    setFilteredRecipes(
+      recipes.filter(recipe =>
+        recipe.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, recipes]);
+
   const handleNextPage = () => {
     if (hasMore) {
       setPage(prevPage => prevPage + 1);
@@ -67,8 +80,28 @@ const Community: React.FC = () => {
             <span>{showForum ? 'Fórum' : 'Receitas'}</span>
           </div>
         </div>
+        {!showForum && (
+          <div className="mb-4 w-full">
+            <Input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Buscar..."
+              firstIcon={<IoSearchOutline color="#667085" size={20} />}
+              icon={
+                <button onClick={() => setSearchQuery('')}>
+                  <IoIosCloseCircleOutline color="#667085" size={20} />
+                </button>
+              }
+              className="bg-white border-none w-full"
+            />
+          </div>
+        )}
         <div className="mt-8">
-          {showForum ? <Forum /> : <CommunityFeed recipes={recipes} userId={userData?.id ?? ''} />}
+          {showForum ? (
+            <Forum />
+          ) : (
+            <CommunityFeed recipes={filteredRecipes} userId={userData?.id ?? ''} />
+          )}
         </div>
         <div className="flex justify-between mt-4">
           <Button

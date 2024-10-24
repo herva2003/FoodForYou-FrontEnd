@@ -5,7 +5,16 @@ import api from "../services/api";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
-import { Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  Modal,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import {
   AiOutlineClockCircle,
   AiOutlineClose,
@@ -28,32 +37,32 @@ interface SelectedIngredientsProps {
 }
 
 const nutritionalValueTranslation: { [key: string]: string } = {
-  'Calcium_mg': 'Cálcio mg',
-  'Carb_g': 'Carboidratos g',
-  'Copper_mcg': 'Cobre mcg',
-  'Energy_kcal': 'Energia kcal',
-  'Fat_g': 'Gordura g',
-  'Fiber_g': 'Fibra g',
-  'Folate_mcg': 'Folato mcg',
-  'Iron_mg': 'Ferro mg',
-  'Magnesium_mg': 'Magnésio mg',
-  'Manganese_mg': 'Manganês mg',
-  'Niacin_mg': 'Niacina mg',
-  'Phosphorus_mg': 'Fósforo mg',
-  'Potassium_mg': 'Potássio mg',
-  'Protein_g': 'Proteína g',
-  'Riboflavin_mg': 'Riboflavina mg',
-  'Selenium_mcg': 'Selênio mcg',
-  'Sodium_mg': 'Sódio mg',
-  'Sugar_g': 'Açúcar g',
-  'Thiamin_mg': 'Tiamina mg',
-  'VitA_mcg': 'Vitamina A mcg',
-  'VitB12_mcg': 'Vitamina B12 mcg',
-  'VitB6_mg': 'Vitamina B6 mg',
-  'VitC_mg': 'Vitamina C mg',
-  'VitD2_mcg': 'Vitamina D2 mcg',
-  'VitE_mg': 'Vitamina E mg',
-  'Zinc_mg': 'Zinco mg',
+  Calcium_mg: "Cálcio mg",
+  Carb_g: "Carboidratos g",
+  Copper_mcg: "Cobre mcg",
+  Energy_kcal: "Energia kcal",
+  Fat_g: "Gordura g",
+  Fiber_g: "Fibra g",
+  Folate_mcg: "Folato mcg",
+  Iron_mg: "Ferro mg",
+  Magnesium_mg: "Magnésio mg",
+  Manganese_mg: "Manganês mg",
+  Niacin_mg: "Niacina mg",
+  Phosphorus_mg: "Fósforo mg",
+  Potassium_mg: "Potássio mg",
+  Protein_g: "Proteína g",
+  Riboflavin_mg: "Riboflavina mg",
+  Selenium_mcg: "Selênio mcg",
+  Sodium_mg: "Sódio mg",
+  Sugar_g: "Açúcar g",
+  Thiamin_mg: "Tiamina mg",
+  VitA_mcg: "Vitamina A mcg",
+  VitB12_mcg: "Vitamina B12 mcg",
+  VitB6_mg: "Vitamina B6 mg",
+  VitC_mg: "Vitamina C mg",
+  VitD2_mcg: "Vitamina D2 mcg",
+  VitE_mg: "Vitamina E mg",
+  Zinc_mg: "Zinco mg",
 };
 
 const MyRecipes: React.FC = () => {
@@ -64,15 +73,23 @@ const MyRecipes: React.FC = () => {
   const [recipes, setRecipes] = useState<RecipeProps[]>([]);
   const [newRecipeName, setNewRecipeName] = useState("");
   const [ingredientsList, setIngredientsList] = useState<string[]>([]);
-  const [ingredientGrams, setIngredientGrams] = useState<{ [key: string]: string }>({});
+  const [ingredientGrams, setIngredientGrams] = useState<{
+    [key: string]: string;
+  }>({});
   const [newPreparationStep, setNewPreparationStep] = useState("");
-  const [preparationMethodList, setPreparationMethodList] = useState<string[]>([]);
+  const [preparationMethodList, setPreparationMethodList] = useState<string[]>(
+    []
+  );
   const [newPreparationTime, setNewPreparationTime] = useState(0);
   const [showError, setShowError] = useState(false);
   const { getToken } = useAuth();
   const { handleSetIngredients } = useIngredients();
-  const [selectedIngredients, setSelectedIngredients] = useState<SelectedIngredientsProps[]>([]);
-  const [nutritionalValues, setNutritionalValues] = useState<CalculatedValues>({});
+  const [selectedIngredients, setSelectedIngredients] = useState<
+    SelectedIngredientsProps[]
+  >([]);
+  const [nutritionalValues, setNutritionalValues] = useState<CalculatedValues>(
+    {}
+  );
 
   useEffect(() => {
     fetchRecipes();
@@ -101,9 +118,12 @@ const MyRecipes: React.FC = () => {
   const fetchIngredients = async (query = "") => {
     try {
       const token = await getToken();
-      const response = await api.get(`/api/v1/user/ingredient?search=${query}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get(
+        `/api/v1/user/ingredient?search=${query}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (response.data) {
         handleSetIngredients(response.data.data);
@@ -254,18 +274,21 @@ const MyRecipes: React.FC = () => {
         quantity: parseInt(ingredientGrams[ingredient.name] || "0", 10),
       }));
 
-      const response = await fetch('http://127.0.0.1:5000/process_ingredients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(ingredientsToSend),
-      });
+      const response = await fetch(
+        "http://127.0.0.1:5000/process_ingredients",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(ingredientsToSend),
+        }
+      );
 
       const data: CalculatedValues = await response.json();
       setNutritionalValues(data.nutritional_values);
     } catch (error) {
-      console.error('Error sending ingredients:', error);
+      console.error("Error sending ingredients:", error);
     }
   };
 
@@ -325,7 +348,9 @@ const MyRecipes: React.FC = () => {
                     <input
                       type="number"
                       value={ingredientGrams[ingredient] || ""}
-                      onChange={(e) => handleGramsChange(ingredient, e.target.value)}
+                      onChange={(e) =>
+                        handleGramsChange(ingredient, e.target.value)
+                      }
                       className="w-[100px] text-left"
                       placeholder="Gramas"
                     />
@@ -357,14 +382,16 @@ const MyRecipes: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Object.entries(nutritionalValues).map(([key, value], index) => (
-                      <TableRow key={index}>
-                        <TableCell component="th" scope="row">
-                          {nutritionalValueTranslation[key] || key}
-                        </TableCell>
-                        <TableCell align="right">{value}</TableCell>
-                      </TableRow>
-                    ))}
+                    {Object.entries(nutritionalValues).map(
+                      ([key, value], index) => (
+                        <TableRow key={index}>
+                          <TableCell component="th" scope="row">
+                            {nutritionalValueTranslation[key] || key}
+                          </TableCell>
+                          <TableCell align="right">{value}</TableCell>
+                        </TableRow>
+                      )
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -470,11 +497,15 @@ const MyRecipes: React.FC = () => {
             </div>
             <div className="w-full h-[100%] mt-[20px] overflow-y-scroll">
               {recipes.map((recipe: RecipeProps) => (
-                <RecipeCard
+                <div
                   key={recipe.id}
-                  recipeProps={recipe}
-                  fetchRecipes={fetchRecipes}
-                />
+                  className="mb-4 p-4 border rounded-lg shadow-sm hover:bg-blue-100 transition duration-200"
+                >
+                  <RecipeCard
+                    recipeProps={recipe}
+                    fetchRecipes={fetchRecipes}
+                  />
+                </div>
               ))}
             </div>
           </div>

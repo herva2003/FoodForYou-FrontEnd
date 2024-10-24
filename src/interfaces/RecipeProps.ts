@@ -12,6 +12,7 @@ export interface RecipeProps {
   image: string;
   likes: string[];
   comments: Comment[];
+  reviewsCount: number[];
 }
 
 interface NutritionalValues {

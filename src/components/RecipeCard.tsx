@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useState, useEffect } from "react";
 import {
   Modal,
   Paper,
@@ -9,14 +9,14 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { IoIosEye } from "react-icons/io";
 import { AiOutlineClockCircle, AiOutlineClose } from "react-icons/ai";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import api from "../services/api";
 import Swal from "sweetalert2";
 import { FaStar } from "react-icons/fa6";
 import { FaStarHalfAlt } from "react-icons/fa";
-import { useAuth } from "../context/authContext"; // Importe o useAuth
+import { useAuth } from "../context/authContext";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 interface RecipeCardProps {
   recipeProps: RecipeProps;
@@ -27,12 +27,36 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   recipeProps,
   fetchRecipes,
 }) => {
-  const { getToken } = useAuth(); // Obtenha a função getToken do contexto de autenticação
+  const { getToken } = useAuth();
   const [openModalRecipe, setOpenRecipeModal] = useState(false);
   const [showNutritionalValues, setShowNutritionalValues] = useState(true);
-  const [newReviewTitle, setNewReviewTitle] = useState(""); // Adicione estado para o título da review
+  const [newReviewTitle, setNewReviewTitle] = useState("");
   const [newReview, setNewReview] = useState("");
   const [rating, setRating] = useState(0);
+  const [reviewsCount, setReviewsCount] = useState(0);
+  const [showReviewForm, setShowReviewForm] = useState(false); // New state for review form visibility
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (openModalRecipe) {
+      fetchReviewsCount();
+    }
+  }, [openModalRecipe]);
+
+  const fetchReviewsCount = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.get(`/api/v1/review/count?recipeId=${recipeProps.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data) {
+        setReviewsCount(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews count:", error);
+    }
+  };
 
   const deleteRecipe = async (id: string) => {
     try {
@@ -94,7 +118,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
         setNewReviewTitle("");
         setNewReview("");
         setRating(0);
-        closeModal();
+        setShowReviewForm(false); // Hide the review form after submission
       }
     } catch (error) {
       console.error("Error adding review:", error);
@@ -181,10 +205,10 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
             <p className="text-sm font-bold text-gray-900 ">4.95</p>
             <span className="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"></span>
             <a
-              href="#carousel-section"
               className="text-sm font-medium text-gray-900 underline hover:no-underline"
-            >
-              73 reviews
+              onClick={() => navigate(`/reviews/${recipeProps.id}`, { state: { recipeProps } })}
+              >
+              {reviewsCount} reviews
             </a>
           </div>
 
@@ -267,9 +291,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               </div>
             )}
           </div>
-          <div className="flex justify-center mb-16">
+          <div className="flex justify-center mb-4 gap-2">
             <button
-              className="bg-red-500 text-white py-2 px-4 rounded mr-2"
+              className="bg-red-500 text-white py-2 px-4 rounded"
               onClick={() => deleteRecipe(recipeProps.id)}
             >
               Excluir Receita
@@ -282,51 +306,58 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
                 ? "Ocultar Valores Nutricionais"
                 : "Mostrar Valores Nutricionais"}
             </button>
-          </div>
-          <div className="flex flex-col items-center mb-4">
-            <h2 className="font-semibold text-lg">Adicionar Review</h2>
-            <input
-              type="text"
-              className="border rounded p-2 w-full mb-2"
-              placeholder="Título da review"
-              value={newReviewTitle}
-              onChange={(e) => setNewReviewTitle(e.target.value)}
-            />
-            <textarea
-              rows={4}
-              className="border rounded p-2 w-full"
-              placeholder="Escreva seu comentário..."
-              value={newReview}
-              onChange={(e) => setNewReview(e.target.value)}
-            />
-            <div className="flex items-center my-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  onClick={() => setRating(star)}
-                  className="cursor-pointer"
-                >
-                  {star <= rating ? (
-                    <FaStar className="text-yellow-500" />
-                  ) : (
-                    <FaStarHalfAlt className="text-yellow-500" />
-                  )}
-                </span>
-              ))}
-            </div>
             <button
-              className="bg-blue-500 text-white py-2 px-4 rounded"
-              onClick={handleAddReview}
+              className="bg-green-500 text-white py-2 px-4 rounded"
+              onClick={() => setShowReviewForm(!showReviewForm)}
             >
-              Adicionar Review
+              {showReviewForm ? "Ocultar Avaliação" : "Adicionar Avaliação"}
             </button>
           </div>
+          {showReviewForm && (
+            <div className="flex flex-col items-center mb-4">
+              <h2 className="font-semibold text-lg">Adicionar Review</h2>
+              <input
+                type="text"
+                className="border rounded p-2 w-full mb-2"
+                placeholder="Título da review"
+                value={newReviewTitle}
+                onChange={(e) => setNewReviewTitle(e.target.value)}
+              />
+              <textarea
+                rows={4}
+                className="border rounded p-2 w-full"
+                placeholder="Escreva seu comentário..."
+                value={newReview}
+                onChange={(e) => setNewReview(e.target.value)}
+              />
+              <div className="flex items-center my-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => setRating(star)}
+                    className="cursor-pointer"
+                  >
+                    {star <= rating ? (
+                      <FaStar className="text-yellow-500" />
+                    ) : (
+                      <FaStarHalfAlt className="text-yellow-500" />
+                    )}
+                  </span>
+                ))}
+              </div>
+              <button
+                className="bg-blue-500 text-white py-2 px-4 rounded"
+                onClick={handleAddReview}
+              >
+                Adicionar Review
+              </button>
+            </div>
+          )}
         </div>
       </Modal>
 
       <div className="recipe-card" onClick={() => setOpenRecipeModal(true)}>
         <h3>{recipeProps.name}</h3>
-        <IoIosEye />
       </div>
     </>
   );

@@ -24,8 +24,6 @@ const Discussion: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const { getToken } = useAuth();
 
-
-
   const fetchTopic = async () => {
     try {
       const token = await getToken();

@@ -46,7 +46,6 @@ interface NutritionalProgressChartProps {
     chartType: 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea';
 }
 
-
 const normalizeDate = (date: Date) => {
   const newDate = new Date(date);
   newDate.setHours(0, 0, 0, 0);
@@ -66,6 +65,7 @@ const NutritionalProgressChart: React.FC<NutritionalProgressChartProps> = ({ sta
       const response = await api.get("/api/v1/user/nv", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('receitas:', response.data.data)
       setMockData(response.data.data);
     } catch (error) {
       console.error('Error fetching nutritional data:', error);

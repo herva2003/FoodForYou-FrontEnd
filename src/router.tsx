@@ -6,9 +6,10 @@ import Dashboard from "./pages/Dashboard";
 import MyRecipes from "./pages/MyRecipes";
 import Ingredients from "./pages/Ingredients";
 import RecipeIa from "./pages/RecipeIa";
-import IdentifyIA from "./pages/IdentifyIA"
+import IdentifyIA from "./pages/IdentifyIA";
 import HomePage from "./pages/HomePage";
 import Community from "./pages/Community";
+import Reviews from "./pages/Reviews"; // Certifique-se que esta página está configurada corretamente
 import Discussion from "./components/Discussion";
 
 export const AuthRoute = createBrowserRouter([
@@ -27,6 +28,14 @@ export const AuthRoute = createBrowserRouter([
   {
     path: "/community",
     element: <Community />,
+  },
+  {
+    path: "/reviews/:recipeId",
+    element: <Reviews />,
+  },
+  {
+    path: "/myLikedRecipes",
+    element: <Reviews />,
   },
   {
     path: "/*",
@@ -60,8 +69,16 @@ export const Route = createBrowserRouter([
     element: <Community />,
   },
   {
-    path: '/discussion/:id',
+    path: "/discussion/:id",
     element: <Discussion />,
+  },
+  {
+    path: "/reviews/:recipeId",
+    element: <Reviews />,
+  },  
+  {
+    path: "/myLikedRecipes",
+    element: <Reviews />,
   },
   {
     path: "/*",

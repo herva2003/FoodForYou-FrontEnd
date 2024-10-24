@@ -32,5 +32,10 @@ export const SidebarData = [
     name: "Comunidade",
     icon: FaRobot,
     link: "/Community",
+  },
+  {
+    name: "Receitas curtidas",
+    icon: FaRobot,
+    link: "/MyLikedRecipes",
   }
 ];

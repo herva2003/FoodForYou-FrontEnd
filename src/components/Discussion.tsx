@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { TextField, Button, List, ListItem, ListItemText, Divider } from '@mui/material';
-import Sidebar from './Sidebar'; // Importe o componente Sidebar
+import Sidebar from './Sidebar';
 import api from '../services/api';
 
 interface Message {

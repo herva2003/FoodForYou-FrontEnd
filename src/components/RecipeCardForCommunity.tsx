@@ -1,291 +1,267 @@
-import React, { useState, useEffect } from 'react';
-import { RecipeProps } from '../interfaces/RecipeProps';
-import { Comment } from '../interfaces/Comment';
-import { Like } from '../interfaces/Like';
-import { Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Button } from '@mui/material';
-import { AiOutlineClockCircle, AiOutlineClose } from 'react-icons/ai';
-import { FaStar } from 'react-icons/fa6';
-import api from '../services/api';
+import React, { useState, useEffect } from "react";
+import { RecipeProps } from "../interfaces/RecipeProps";
+import { Like } from "../interfaces/Like";
+import {
+  Modal,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
+} from "@mui/material";
+import { AiOutlineClockCircle, AiOutlineClose, AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { FaStar } from "react-icons/fa6";
+import api from "../services/api";
 import { useAuth } from "../context/authContext";
+import { nutritionalValueTranslation } from "../components/NutritionalValueTranslation";
 
 interface RecipeCardForCommunityProps {
   recipe: RecipeProps;
   userId: string;
 }
 
-const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({ recipe, userId }) => {
+const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
+  recipe,
+  userId,
+}) => {
   const [isLiked, setIsLiked] = useState(recipe.likes.includes(userId));
-  const [showCommentBox, setShowCommentBox] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [comments, setComments] = useState<Comment[]>(recipe.comments);
   const [openModal, setOpenModal] = useState(false);
-  const [likes, setLikes] = useState<string[]>([]);
+  const [likes, setLikes] = useState<string[]>(recipe.likes);
   const { getToken } = useAuth();
+  const [reviewsCount, setReviewsCount] = useState(0);
 
-  const handleLike = async () => {
-    console.log('handleLike called');
+  useEffect(() => {
+    if (openModal) {
+      fetchReviewsCount();
+    }
+  }, [openModal]);
+
+  const fetchReviewsCount = async () => {
     try {
-      const data = { userId: userId } as Like;
-      const response = await api.post(`/api/v1/recipes/${recipe.id}/likes`, data);
-      if (response) {
-        setIsLiked(true);
+      const token = await getToken();
+      const response = await api.get(
+        `/api/v1/review/count?recipeId=${recipe.id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data) {
+        setReviewsCount(response.data);
       }
     } catch (error) {
-      console.error('Error liking recipe:', error);
+      console.error("Error fetching reviews count:", error);
     }
   };
 
-  const handleAddComment = async () => {
+  const handleLike = async () => {
+    console.log("handleLike called");
     try {
-      const data = { content: newComment, id: recipe.id } as Comment;
-      const response = await api.post(`/api/v1/recipe/comment`, data);
-      if (response) {
-        setComments([...comments, response.data]);
-        setNewComment('');
+      const data = { userId: userId, recipeId: recipe.id } as Like;
+      const token = await getToken();
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+  
+      if (isLiked) {
+        const response = await api.post(`/api/v1/recipe/unlike`, data, config);
+        if (response) {
+          setIsLiked(false);
+          setLikes(likes.filter(id => id !== userId));
+        }
+      } else {
+        const response = await api.post(`/api/v1/recipe/like`, data, config);
+        if (response) {
+          setIsLiked(true);
+          setLikes([...likes, userId]);
+        }
       }
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error("Error liking/unliking recipe:", error);
     }
   };
 
   const handleOpenModal = () => {
-    console.log('Opening modal');
+    console.log("Opening modal");
     setOpenModal(true);
   };
 
-  const handleCloseModal = () => {
-    console.log('Closing modal');
+  const handleCloseModal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("Closing modal");
     setOpenModal(false);
   };
 
-  const nutritionalValueTranslation: { [key: string]: string } = {
-    calcium_mg: "Cálcio",
-    saturated_fats_g: "Gorduras Saturadas",
-    carb_g: "Carboidratos",
-    copper_mcg: "Cobre",
-    energy_kcal: "Energia",
-    fat_g: "Gordura",
-    fiber_g: "Fibra",
-    folate_mcg: "Folato",
-    iron_mg: "Ferro",
-    magnesium_mg: "Magnésio",
-    manganese_mg: "Manganês",
-    niacin_mg: "Niacina",
-    phosphorus_mg: "Fósforo",
-    potassium_mg: "Potássio",
-    protein_g: "Proteína",
-    riboflavin_mg: "Riboflavina",
-    selenium_mcg: "Selênio",
-    sodium_mg: "Sódio",
-    sugar_g: "Açúcar",
-    thiamin_mg: "Tiamina",
-    vitA_mcg: "Vitamina A",
-    vitB12_mcg: "Vitamina B12",
-    vitB6_mg: "Vitamina B6",
-    vitC_mg: "Vitamina C",
-    vitD2_mcg: "Vitamina D2",
-    vitE_mg: "Vitamina E",
-    zinc_mg: "Zinco",
-  };
-
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="p-4">
+    <div className="bg-white shadow-md rounded-lg overflow-hidden relative">
+      <div className="absolute top-4 right-4 text-center">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log("Like button clicked");
+            handleLike();
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          {isLiked ? (
+            <AiFillHeart size={24} color="red" />
+          ) : (
+            <AiOutlineHeart size={24} color="gray" />
+          )}
+        </button>
+        <div style={{ marginTop: "4px", color: "gray" }}>
+          {likes.length}
+        </div>
+      </div>
+      <div className="p-4" onClick={handleOpenModal} style={{ cursor: "pointer" }}>
         <h2 className="text-xl font-bold">{recipe.name}</h2>
-        <p className="text-gray-700">Tempo de preparo: {recipe.preparationTime} minutos</p>
+        <p className="text-gray-700">
+          Tempo de preparo: {recipe.preparationTime} minutos
+        </p>
         <h3 className="text-lg font-semibold mt-2">Ingredientes:</h3>
         <ul className="list-disc list-inside">
           {recipe.ingredients.map((ingredient, index) => (
-            <li key={index}>{ingredient.name} - {ingredient.quantity}</li>
+            <li key={index}>
+              {ingredient.name} - {ingredient.quantity}
+            </li>
           ))}
         </ul>
-        <div className="mt-4">
-          <button
-            className={`bg-blue-500 text-white px-4 py-2 rounded mr-2 ${isLiked ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={() => {
-              console.log('Like button clicked');
-              handleLike();
-            }}
-            disabled={isLiked}
-          >
-            Curtir
-          </button>
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
-            onClick={handleOpenModal}
-          >
-            Comentar
-          </button>
-        </div>
-        
-        {/* Display Likes */}
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold">Curtidas:</h3>
-          <ul className="list-disc list-inside">
-            {likes.map((like, index) => (
-              <li key={index}>{like}</li>
-            ))}
-          </ul>
-        </div>
+      </div>
 
-        <Modal
+      <Modal
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            minWidth: "50%",
+            minHeight: "50%",
+            maxWidth: "90%",
+            maxHeight: "90%",
+            overflowY: "auto",
+            background: "white",
+            borderRadius: "12px",
+            padding: "20px",
           }}
-          open={openModal}
-          onClose={handleCloseModal}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
         >
-          <div
-            style={{
-              minWidth: "50%",
-              minHeight: "50%",
-              maxWidth: "90%",
-              maxHeight: "90%",
-              overflowY: "auto",
-              background: "white",
-              borderRadius: "12px",
-              padding: "20px",
-            }}
-          >
-            <div className="flex justify-between items-center">
-              <h1 className="text-md text-title font-semibold ">
-                {recipe.name === "" ? (
-                  <span>Nome não adicionado</span>
-                ) : (
-                  <span>{recipe.name}</span>
-                )}
-              </h1>
-              <div className="flex items-center">
-                <p className="text-xs text-gray-500 mr-2">
-                  Criado em: {recipe.createdAt}
-                </p>
-                <AiOutlineClose
-                  size={25}
-                  className="cursor-pointer text-title"
-                  onClick={handleCloseModal}
-                />
-              </div>
-            </div>
-            <div className="flex m-4 items-center gap-2">
-              <FaStar className="text-yellow-400" />
-              <p className="text-sm font-bold text-gray-900 ">4.95</p>
-              <span className="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"></span>
-              <a
-                href="#carousel-section"
-                className="text-sm font-medium text-gray-900 underline hover:no-underline"
-              >
-                73 reviews
-              </a>
-            </div>
-
-            <div className="mb-6 flex items-center flex-col p-4 gap-2">
-              <h2 className="font-semibold text-lg">Ingredientes</h2>
-              {recipe.ingredients.length !== 0 ? (
-                <ul className="list-none">
-                  {recipe.ingredients.map((ingredient, index) => (
-                    <li key={index}>
-                      {ingredient.name.charAt(0).toUpperCase() +
-                        ingredient.name.slice(1)}{" "}
-                      - {ingredient.quantity}g
-                    </li>
-                  ))}
-                </ul>
+          <div className="flex justify-between items-center">
+            <h1 className="text-md text-title font-semibold ">
+              {recipe.name === "" ? (
+                <span>Nome não adicionado</span>
               ) : (
-                <p>Nenhum ingrediente especificado</p>
+                <span>{recipe.name}</span>
               )}
-            </div>
-            <div className="flex flex-col items-center">
-              <h2 className="font-semibold text-lg mb-2">Preparação</h2>
-              {recipe.preparationMethod.length !== 0 ? (
-                <ul className="list-decimal">
-                  {recipe.preparationMethod.map((prep, index) => (
-                    <li key={index}>
-                      {prep.charAt(0).toUpperCase() + prep.slice(1)}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>Nenhuma preparação adicionada</p>
-              )}
-            </div>
-            <div className="m-[40px] flex flex-col items-center">
-              <h2 className="font-semibold mb-2">Tempo de Preparação</h2>
-              <p className="flex items-center">
-                <AiOutlineClockCircle
-                  color="#667085"
-                  size={20}
-                ></AiOutlineClockCircle>
-                &nbsp;
-                {recipe.preparationTime === 0 ? (
-                  <span>Tempo não especificado</span>
-                ) : (
-                  <span>{recipe.preparationTime} minutos</span>
-                )}
+            </h1>
+            <div className="flex items-center">
+              <p className="text-xs text-gray-500 mr-2">
+                Criado em: {recipe.createdAt}
               </p>
-              {recipe.nutritionalValues && (
-                <div className="ml-4">
-                  <h2 className="font-semibold mb-2">Valores Nutricionais</h2>
-                  <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
-                    <Table stickyHeader aria-label="nutritional values table">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Nutrientes</TableCell>
-                          <TableCell align="right">Valor</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {Object.entries(recipe.nutritionalValues)
-                          .filter(([key]) => key !== "id")
-                          .map(([key, value], index) => (
-                            <TableRow key={index}>
-                              <TableCell component="th" scope="row">
-                                {nutritionalValueTranslation[key]}
-                              </TableCell>
-                              <TableCell align="right">{value}</TableCell>
-                            </TableRow>
-                          ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </div>
-              )}
+              <AiOutlineClose
+                size={25}
+                className="cursor-pointer text-title"
+                onClick={handleCloseModal}
+              />
             </div>
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold">Comentários:</h3>
-              <ul className="list-disc list-inside">
-                {comments.map((comment, index) => (
+          </div>
+          <div className="flex m-4 items-center gap-2">
+            <FaStar className="text-yellow-400" />
+            <p className="text-sm font-bold text-gray-900 ">4.95</p>
+            <span className="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"></span>
+            <a
+              href="#carousel-section"
+              className="text-sm font-medium text-gray-900 underline hover:no-underline"
+            >
+              {reviewsCount} reviews
+            </a>
+          </div>
+
+          <div className="mb-6 flex items-center flex-col p-4 gap-2">
+            <h2 className="font-semibold text-lg">Ingredientes</h2>
+            {recipe.ingredients.length !== 0 ? (
+              <ul className="list-none">
+                {recipe.ingredients.map((ingredient, index) => (
                   <li key={index}>
-                    <p><strong>{comment.createdBy}:</strong> {comment.content}</p>
+                    {ingredient.name.charAt(0).toUpperCase() +
+                      ingredient.name.slice(1)}{" "}
+                    - {ingredient.quantity}g
                   </li>
                 ))}
               </ul>
-            </div>
-            <div className="mt-4">
-              <TextField
-                label="Adicionar Comentário"
-                variant="outlined"
-                fullWidth
-                multiline
-                rows={4}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                className="mt-2"
-                onClick={handleAddComment}
-              >
-                Adicionar Comentário
-              </Button>
-            </div>
+            ) : (
+              <p>Nenhum ingrediente especificado</p>
+            )}
           </div>
-        </Modal>
-      </div>
+          <div className="flex flex-col items-center">
+            <h2 className="font-semibold text-lg mb-2">Preparação</h2>
+            {recipe.preparationMethod.length !== 0 ? (
+              <ul className="list-decimal">
+                {recipe.preparationMethod.map((prep, index) => (
+                  <li key={index}>
+                    {prep.charAt(0).toUpperCase() + prep.slice(1)}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Nenhuma preparação adicionada</p>
+            )}
+          </div>
+          <div className="m-[40px] flex flex-col items-center">
+            <h2 className="font-semibold mb-2">Tempo de Preparação</h2>
+            <p className="flex items-center">
+              <AiOutlineClockCircle
+                color="#667085"
+                size={20}
+              ></AiOutlineClockCircle>
+              &nbsp;
+              {recipe.preparationTime === 0 ? (
+                <span>Tempo não especificado</span>
+              ) : (
+                <span>{recipe.preparationTime} minutos</span>
+              )}
+            </p>
+            {recipe.nutritionalValues && (
+              <div className="ml-4">
+                <h2 className="font-semibold mb-2">Valores Nutricionais</h2>
+                <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                  <Table stickyHeader aria-label="nutritional values table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Nutrientes</TableCell>
+                        <TableCell align="right">Valor</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {Object.entries(recipe.nutritionalValues)
+                        .filter(([key]) => key !== "id")
+                        .map(([key, value], index) => (
+                          <TableRow key={index}>
+                            <TableCell component="th" scope="row">
+                              {nutritionalValueTranslation[key]}
+                            </TableCell>
+                            <TableCell align="right">{value}</TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
