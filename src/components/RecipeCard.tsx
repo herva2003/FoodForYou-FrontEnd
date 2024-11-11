@@ -16,7 +16,7 @@ import Swal from "sweetalert2";
 import { FaStar } from "react-icons/fa6";
 import { FaStarHalfAlt } from "react-icons/fa";
 import { useAuth } from "../context/authContext";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 
 interface RecipeCardProps {
   recipeProps: RecipeProps;
@@ -34,7 +34,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   const [newReview, setNewReview] = useState("");
   const [rating, setRating] = useState(0);
   const [reviewsCount, setReviewsCount] = useState(0);
-  const [showReviewForm, setShowReviewForm] = useState(false); // New state for review form visibility
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -118,7 +118,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
         setNewReviewTitle("");
         setNewReview("");
         setRating(0);
-        setShowReviewForm(false); // Hide the review form after submission
+        setShowReviewForm(false);
       }
     } catch (error) {
       console.error("Error adding review:", error);
@@ -157,7 +157,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   };
 
   return (
-    <>
+    <div className="w-full h-[60px] bg-white flex items-center px-[10px] my-[10px] rounded-[4px] shadow-sm hover:shadow-md transition-shadow duration-200">
       <Modal
         style={{
           display: "flex",
@@ -359,7 +359,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       <div className="recipe-card" onClick={() => setOpenRecipeModal(true)}>
         <h3>{recipeProps.name}</h3>
       </div>
-    </>
+    </div>
   );
 };
 

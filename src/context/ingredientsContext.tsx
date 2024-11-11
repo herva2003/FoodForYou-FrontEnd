@@ -13,6 +13,7 @@ interface IngredientsContextProps {
 
 export interface IngredientProps {
   id: string;
+  quantity: string;
   protein_g: number;
   phosphorus_mg: number;
   potassium_mg: number;
@@ -45,7 +46,7 @@ export interface IngredientProps {
 }
 
 interface SelectedIngredientProps {
-  id: string;
+  ingredientId: string;
   value: string;
 }
 
@@ -56,22 +57,20 @@ const IngredientsContext = createContext<IngredientsContextProps>(
 const IngredientsProvider: React.FC<IngredientsContextProviderProps> = ({
   children,
 }) => {
-  const [selectedIngredients, setSelectedIngredients] = useState<
-    SelectedIngredientProps[]
-  >([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<SelectedIngredientProps[]>([]);
   const [ingredients, setIngredients] = useState<IngredientProps[]>([]);
 
   const handleSetIngredients = (data: Array<IngredientProps>) => {
     setIngredients(data);
   };
 
-  const addIngredient = (id: string, value: string) => {
+  const addIngredient = (ingredientId: string, value: string) => {
     const copy = [...selectedIngredients];
 
-    const item = copy.find((item) => item.id === id);
+    const item = copy.find((item) => item.ingredientId === ingredientId);
 
     if (!item) {
-      copy.push({ id, value });
+      copy.push({ ingredientId, value });
     }
 
     setSelectedIngredients(copy);

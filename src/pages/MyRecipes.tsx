@@ -5,6 +5,7 @@ import api from "../services/api";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
+import { UserProps } from "../interfaces/UserProps";
 import {
   Modal,
   Paper,
@@ -26,6 +27,7 @@ import { RecipeProps } from "../interfaces/RecipeProps";
 import Swal from "sweetalert2";
 import { useIngredients } from "../context/ingredientsContext";
 import Dropdown from "../components/Dropdown";
+import MyRecipesWelcomeCard from "../components/MyRecipesWelcomeCard";
 
 interface CalculatedValues {
   [key: string]: any;
@@ -66,6 +68,7 @@ const nutritionalValueTranslation: { [key: string]: string } = {
 };
 
 const MyRecipes: React.FC = () => {
+  const [userData, setUserData] = useState<UserProps | null>(null);
   const [openModal, setOpenModal] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [ingredientSearchText] = useState("");
@@ -91,7 +94,18 @@ const MyRecipes: React.FC = () => {
     {}
   );
 
+  const fetchUserData = async (): Promise<void> => {
+    try {
+      const response = await api.get("/api/v1/user/me");
+      const userDataFromApi: UserProps = response.data;
+      setUserData(userDataFromApi);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
   useEffect(() => {
+    fetchUserData();
     fetchRecipes();
     fetchIngredients(ingredientSearchText);
   }, []);
@@ -139,26 +153,31 @@ const MyRecipes: React.FC = () => {
       setShowError(true);
       return;
     }
+  
     Swal.fire({
       title: "Loading",
       html: "Loading",
       timer: 2000,
       timerProgressBar: true,
+      didOpen: () => {
+        Swal.showLoading();
+      },
     });
-
+  
     try {
       const token = await getToken();
       const formData = getFormData();
-
+  
       const response = await api.post("/api/v1/user/recipe", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       Swal.close();
-
+  
       if (response.data) {
+        console.log("Recipe added response:", response.data);
         closeModal();
         clearRecipeFields();
         setNutritionalValues({});
@@ -202,6 +221,61 @@ const MyRecipes: React.FC = () => {
     });
   };
 
+  const checkAndRemoveIngredients = async (recipeId: string) => {
+    try {
+      const token = await getToken();
+      const response = await api.post(
+        `/api/v1/user/checkAndRemoveIngredients/${recipeId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
+      console.log("checkAndRemoveIngredients response:", response);
+      return response;
+    } catch (error) {
+      console.error("Error checking and removing ingredients:", error);
+      Swal.fire({
+        title: "Erro!",
+        text: "Houve um erro ao verificar e remover os ingredientes.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      throw error;
+    }
+  };
+
+const addNutritionalValuesFromRecipe = async (recipeId: string) => {
+  try {
+    const token = await getToken();
+    const response = await api.post(
+      `/api/v1/user/nutritionalValuesFromRecipe/${recipeId}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (response.status === 200) {
+      Swal.fire({
+        title: "Sucesso!",
+        text: "Valores nutricionais adicionados ao usuário.",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+    }
+  } catch (error) {
+    console.error("Error adding nutritional values:", error);
+    Swal.fire({
+      title: "Erro!",
+      text: "Houve um erro ao adicionar os valores nutricionais.",
+      icon: "error",
+      confirmButtonText: "OK",
+    });
+  }
+};
+
   const closeModal = () => {
     clearRecipeFields();
     setNutritionalValues({});
@@ -231,17 +305,50 @@ const MyRecipes: React.FC = () => {
     setNutritionalValues({});
   };
 
+  const handleMakeRecipe = async (recipeId: string) => {
+    try {
+      const response = await checkAndRemoveIngredients(recipeId);
+  
+      if (response.status === 200) {
+        await addNutritionalValuesFromRecipe(recipeId);
+      } else if (response.status === 400 && response.data.includes("Some ingredients are missing")) {
+        Swal.fire({
+          title: "Ingredientes insuficientes",
+          text: response.data,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sim",
+          cancelButtonText: "Não",
+        });
+      }
+    } catch (error) {
+      console.log("makeRecipe error:", error);
+      Swal.fire({
+        title: "Erro!",
+        text: "Ocorreu um erro ao fazer a receita.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
   const getFormData = (): {} => {
-    return {
+    const formData = {
       name: newRecipeName,
-      ingredients: ingredientsList.map((ingredient) => ({
-        name: ingredient,
-        quantity: ingredientGrams[ingredient],
-      })),
+      ingredients: ingredientsList.map((ingredient) => {
+        const selectedIngredient = selectedIngredients.find((item) => item.name === ingredient);
+        return {
+          id: selectedIngredient ? selectedIngredient.id : null,
+          name: ingredient,
+          quantity: ingredientGrams[ingredient],
+        };
+      }),
       preparationMethod: preparationMethodList,
       preparationTime: newPreparationTime,
       nutritionalValues: nutritionalValues,
     };
+    console.log("FormData:", formData);
+    return formData;
   };
 
   const validateRecipe = () => {
@@ -255,9 +362,11 @@ const MyRecipes: React.FC = () => {
 
   const handleAddSelectedIngredient = (name: string, id: string) => {
     const isAlreadyAdded = selectedIngredients.some((item) => item.id === id);
+    console.log("isAlreadyAdded:", isAlreadyAdded);
     if (!isAlreadyAdded) {
       const newItem: SelectedIngredientsProps = { name, id };
       setSelectedIngredients((prev) => [...prev, newItem]);
+      console.log("selectedIngredients:", selectedIngredients);
 
       if (!ingredientsList.includes(name)) {
         setIngredientsList((prev) => [...prev, name]);
@@ -460,8 +569,9 @@ const MyRecipes: React.FC = () => {
         </div>
       </Modal>
       <SidebarPage headerTitle="Minhas Receitas">
+        <MyRecipesWelcomeCard userName={userData?.fullName ?? "User"} />
         <div className="flex flex-col w-full">
-          <div className="h-[80vh] flex flex-col w-full pr-[100px] mt-[40px]">
+          <div className="h-[80vh] flex flex-col w-full pr-[100px] mt-[40px] overflow-y-auto">
             <Input
               value={filterText}
               onChange={(event) => setFilterText(event.target.value)}
@@ -505,8 +615,17 @@ const MyRecipes: React.FC = () => {
                     recipeProps={recipe}
                     fetchRecipes={fetchRecipes}
                   />
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => handleMakeRecipe(recipe.id)}
+                      className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                    >
+                      Fazer Receita
+                    </button>
+                  </div>
                 </div>
               ))}
+              <div className="h-20"></div>
             </div>
           </div>
         </div>

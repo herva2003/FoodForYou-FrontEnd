@@ -18,31 +18,37 @@ import { UserProps } from "../interfaces/UserProps";
 import IngredientsWelcomeCard from "../components/IngredientsWelcomeCard";
 import ShoppingListWelcomeCard from "../components/ShoppingListWelcomeCard";
 
+import ingredientData from "../../ingredientes.json";
+
 interface SelectedIngredientsProps {
   name: string;
   id: string;
+  quantity: string;
 }
 
 interface CheckedIngredientsProps {
   id: string;
 }
 
+interface IngredientDetail {
+  id: string;
+  descrip: string;
+  quantity: string;
+}
+
 const Ingredients: React.FC = () => {
   const [userData, setUserData] = useState<UserProps | null>(null);
-  const { ingredients } = useIngredients();
-  const { handleSetIngredients } = useIngredients();
+  const { ingredients, handleSetIngredients } = useIngredients();
   const [openModal, setOpenModal] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [visible, setVisible] = useState(false);
   const [checkeds, setCheckeds] = useState<CheckedIngredientsProps[]>([]);
-  const [selectedIngredients, setSelectedIngredients] = useState<
-    SelectedIngredientsProps[]
-  >([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<SelectedIngredientsProps[]>([]);
   const [tabIndex, setTabIndex] = useState(0);
 
   const { getToken } = useAuth();
 
-  const fetchUserData = async () => {
+  const fetchUserData = async (): Promise<void> => {
     try {
       const response = await api.get("/api/v1/user/me");
       const userDataFromApi: UserProps = response.data;
@@ -52,16 +58,18 @@ const Ingredients: React.FC = () => {
     }
   };
 
-  const addIngredients = async () => {
+  const addIngredients = async (): Promise<void> => {
     try {
       const token = await getToken();
-      const response = await api.post(
-        "/api/v1/user/ingredient",
-        selectedIngredients,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const ingredientsToAdd = selectedIngredients.map((ingredient) => ({
+        id: ingredient.id,
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+      }));
+
+      const response = await api.post("/api/v1/user/ingredient", ingredientsToAdd, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response) {
         console.log("addIngredients response:", response);
@@ -86,7 +94,7 @@ const Ingredients: React.FC = () => {
     }
   };
 
-  const getIngredients = async () => {
+  const getIngredients = async (): Promise<void> => {
     try {
       const token = await getToken();
       const response = await api.get("/api/v1/user/ingredient", {
@@ -94,15 +102,26 @@ const Ingredients: React.FC = () => {
       });
 
       if (response.data) {
-        console.log("getIngredients response:", response);
-        handleSetIngredients(response.data.data);
+        console.log("getIngredients response:", response.data);
+
+        const ingredientsWithDetails = response.data.data.map((item: { ingredientId: string, quantity: string }) => {
+          const ingredientDetail = ingredientData.find(ingredient => ingredient.oid === item.ingredientId);
+          return {
+            ...ingredientDetail,
+            id: item.ingredientId,
+            quantity: item.quantity,
+          };
+        });
+
+        console.log("Mapped ingredients with details:", ingredientsWithDetails);
+        handleSetIngredients(ingredientsWithDetails);
       }
     } catch (error) {
       console.log("getIngredients error:", error);
     }
   };
 
-  const deleteIngredients = async () => {
+  const deleteIngredients = async (): Promise<void> => {
     try {
       const token = await getToken();
       const response = await api.delete("/api/v1/user/ingredient/", {
@@ -130,16 +149,18 @@ const Ingredients: React.FC = () => {
     }
   };
 
-  const addShoppingList = async () => {
+  const addShoppingList = async (): Promise<void> => {
     try {
       const token = await getToken();
-      const response = await api.post(
-        "/api/v1/user/shoppList",
-        selectedIngredients,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const shoppingListToAdd = selectedIngredients.map((ingredient) => ({
+        id: ingredient.id,
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+      }));
+
+      const response = await api.post("/api/v1/user/shoppList", shoppingListToAdd, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response) {
         console.log("addShoppingList response:", response);
@@ -164,7 +185,7 @@ const Ingredients: React.FC = () => {
     }
   };
 
-  const getShoppingList = async () => {
+  const getShoppingList = async (): Promise<void> => {
     try {
       const token = await getToken();
       const response = await api.get("/api/v1/user/shoppList", {
@@ -172,15 +193,27 @@ const Ingredients: React.FC = () => {
       });
 
       if (response.data) {
-        console.log("getShoppingList response:", response);
-        handleSetIngredients(response.data.data);
+        console.log("getShoppingList response:", response.data);
+
+        const ingredientsWithDetails = response.data.data.map((item: { ingredientId: string, quantity: string }) => {
+          const ingredientDetail = ingredientData.find(ingredient => ingredient.oid === item.ingredientId);
+          return {
+            ...ingredientDetail,
+            id: item.ingredientId,
+            quantity: item.quantity,
+          };
+        });
+
+        console.log("Mapped shoppList with details:", ingredientsWithDetails);
+        handleSetIngredients(ingredientsWithDetails);
       }
+
     } catch (error) {
       console.log("getShoppingList error:", error);
     }
   };
 
-  const deleteShoppingList = async () => {
+  const deleteShoppingList = async (): Promise<void> => {
     try {
       const token = await getToken();
       const response = await api.delete("/api/v1/user/shoppList/", {
@@ -208,7 +241,7 @@ const Ingredients: React.FC = () => {
     }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = (): void => {
     Swal.fire({
       title: "Você tem certeza?",
       text: "Esta ação não pode ser revertida!",
@@ -228,39 +261,48 @@ const Ingredients: React.FC = () => {
     });
   };
 
-  const sortedIngredients: any = ingredients.sort((a, b) =>
-    a.descrip.localeCompare(b.descrip)
-  );
+  const sortedIngredients = ingredients
+    ? ingredients.filter((ingredient: IngredientDetail) => ingredient.descrip)
+      .sort((a: IngredientDetail, b: IngredientDetail) => a.descrip.localeCompare(b.descrip))
+    : [];
 
-  const handleRemoveSelectedIngredient = (id: string) => {
+  const handleRemoveSelectedIngredient = (id: string): void => {
     const filter = selectedIngredients.filter((item) => item.id !== id);
-
     setSelectedIngredients(filter);
   };
 
-  const handleAddSelectedIngredient = (name: string, id: string) => {
+  const handleQtdChange = (id: string, value: string): void => {
+    setSelectedIngredients(prev =>
+      prev.map(ingredient =>
+        ingredient.id === id ? { ...ingredient, quantity: value } : ingredient
+      )
+    );
+  };
+
+  const handleAddSelectedIngredient = (name: string, id: string): void => {
     const isAlreadyAdded = selectedIngredients.some((item) => item.id === id);
     if (!isAlreadyAdded) {
       const newItem: SelectedIngredientsProps = {
         name: name,
         id: id,
+        quantity: "",
       };
       setSelectedIngredients((prev) => [...prev, newItem]);
     }
   };
 
-  const blank = () => (
+  const blank = (): JSX.Element => (
     <div className="flex justify-center">
       {" "}
       <h1 className="text-sm- text-subtitle">A lista está vazia</h1>
     </div>
   );
 
-  const closeModal = () => {
+  const closeModal = (): void => {
     setOpenModal(false);
   };
 
-  const handleIngredientCheck = (data: { checked: boolean; id: string }) => {
+  const handleIngredientCheck = (data: { checked: boolean; id: string }): void => {
     const { checked, id } = data;
 
     if (checked === true) {
@@ -322,6 +364,8 @@ const Ingredients: React.FC = () => {
                       <SelectedIngredientCard
                         key={index}
                         name={item.name}
+                        quantity={item.quantity}
+                        onQtdChange={(value) => handleQtdChange(item.id, value)}
                         onClickRemove={() =>
                           handleRemoveSelectedIngredient(item.id)
                         }
@@ -348,7 +392,7 @@ const Ingredients: React.FC = () => {
           ) : (
             <ShoppingListWelcomeCard userName={userData?.fullName ?? "User"} />
           )}
-          <div className="tabs">
+          <div className="tabs mr-24">
             {tabs.map((tab) => (
               <button
                 key={tab.index}
@@ -405,23 +449,20 @@ const Ingredients: React.FC = () => {
             </div>
             <div className=" w-full h-[100%] mt-[20px] overflow-y-scroll">
               <FlatList
-                list={ingredients}
+                list={sortedIngredients}
                 renderOnScroll
-                sort
                 renderWhenEmpty={blank}
-                sortBy={sortedIngredients}
-                renderItem={(item) => (
+                renderItem={(item: IngredientDetail) => (
                   <IngredientCard
                     handleIngredientCheck={handleIngredientCheck}
                     key={item.id}
                     value={item.descrip}
                     id={item.id}
+                    quantity={item.quantity}
                   />
                 )}
-                filterBy={(item) =>
-                  item.descrip.toLowerCase().startsWith(filterText)
-                }
               />
+              <div className="h-20"></div>
             </div>
           </div>
         </div>
