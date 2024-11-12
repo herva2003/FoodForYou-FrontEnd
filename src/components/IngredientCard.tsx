@@ -6,6 +6,7 @@ interface IngredientCardProps {
   id: string;
   quantity: string;
   handleIngredientCheck: (data: any) => void;
+  handleMoveIngredient: (id: string) => void;
 }
 
 const IngredientCard: React.FC<IngredientCardProps> = ({

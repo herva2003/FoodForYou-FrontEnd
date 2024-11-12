@@ -1,6 +1,7 @@
 import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
-import { RecipeIADTO } from "../interfaces/RecipeIADTO";
+import { RecipeIADTO, IngredientRecipeDTO } from "../interfaces/RecipeIADTO";
 import { AiOutlineClockCircle } from "react-icons/ai";
+import ingredientData from "../../ingredientes.json";
 
 const RecipeCardForIA = ({ recipe }: { recipe: RecipeIADTO }) => {
     const nutritionalValueTranslation: { [key: string]: string } = {
@@ -33,7 +34,11 @@ const RecipeCardForIA = ({ recipe }: { recipe: RecipeIADTO }) => {
         'Zinc_mg': 'Zinco mg',
       };
 
-      console.log(recipe.nutritionalValues)
+    const getIngredientNameById = (oid: string): string => {
+        const ingredient = ingredientData.find((ingredient: { oid: string; descrip: string }) => ingredient.oid === oid);
+        console.log("ingrediente:", ingredient)
+        return ingredient ? ingredient.descrip : "Ingrediente não encontrado";
+    };
 
     return (
         <>
@@ -44,7 +49,7 @@ const RecipeCardForIA = ({ recipe }: { recipe: RecipeIADTO }) => {
                     </h1>
                     <div className="flex items-center">
                         <p className="text-xs text-gray-500 mr-2">
-                            Gerado em: {recipe.generatedAt}
+                            Gerado em: {new Date(recipe.generatedAt).toLocaleDateString()}
                         </p>
                     </div>
                 </div>
@@ -52,9 +57,9 @@ const RecipeCardForIA = ({ recipe }: { recipe: RecipeIADTO }) => {
                     <h2 className="font-semibold mb-2">Ingredientes</h2>
                     {recipe.ingredients.length !== 0 ? (
                         <ul className="ml-5 list-disc">
-                            {recipe.ingredients.map((ingredient: { name: string; quantity: number; }, index: number) => (
+                            {recipe.ingredients.map((ingredient: IngredientRecipeDTO, index: number) => (
                                 <li key={index}>
-                                    {ingredient.name.charAt(0).toUpperCase() + ingredient.name.slice(1)} - {ingredient.quantity}g
+                                    {getIngredientNameById(ingredient.id).charAt(0).toUpperCase() + getIngredientNameById(ingredient.id).slice(1)} - {ingredient.quantity}g
                                 </li>
                             ))}
                         </ul>

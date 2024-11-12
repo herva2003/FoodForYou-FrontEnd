@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { AxiosError } from "axios";
 import SidebarPage from "../components/SidebarPage";
 import RecipeCard from "../components/RecipeCard";
 import api from "../services/api";
@@ -153,7 +154,7 @@ const MyRecipes: React.FC = () => {
       setShowError(true);
       return;
     }
-  
+
     Swal.fire({
       title: "Loading",
       html: "Loading",
@@ -163,19 +164,19 @@ const MyRecipes: React.FC = () => {
         Swal.showLoading();
       },
     });
-  
+
     try {
       const token = await getToken();
       const formData = getFormData();
-  
+
       const response = await api.post("/api/v1/user/recipe", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       Swal.close();
-  
+
       if (response.data) {
         console.log("Recipe added response:", response.data);
         closeModal();
@@ -231,7 +232,7 @@ const MyRecipes: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-  
+
       console.log("checkAndRemoveIngredients response:", response);
       return response;
     } catch (error) {
@@ -246,35 +247,35 @@ const MyRecipes: React.FC = () => {
     }
   };
 
-const addNutritionalValuesFromRecipe = async (recipeId: string) => {
-  try {
-    const token = await getToken();
-    const response = await api.post(
-      `/api/v1/user/nutritionalValuesFromRecipe/${recipeId}`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+  const addNutritionalValuesFromRecipe = async (recipeId: string) => {
+    try {
+      const token = await getToken();
+      const response = await api.post(
+        `/api/v1/user/nutritionalValuesFromRecipe/${recipeId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    if (response.status === 200) {
+      if (response.status === 200) {
+        Swal.fire({
+          title: "Sucesso!",
+          text: "Valores nutricionais adicionados ao usuário.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding nutritional values:", error);
       Swal.fire({
-        title: "Sucesso!",
-        text: "Valores nutricionais adicionados ao usuário.",
-        icon: "success",
+        title: "Erro!",
+        text: "Houve um erro ao adicionar os valores nutricionais.",
+        icon: "error",
         confirmButtonText: "OK",
       });
     }
-  } catch (error) {
-    console.error("Error adding nutritional values:", error);
-    Swal.fire({
-      title: "Erro!",
-      text: "Houve um erro ao adicionar os valores nutricionais.",
-      icon: "error",
-      confirmButtonText: "OK",
-    });
-  }
-};
+  };
 
   const closeModal = () => {
     clearRecipeFields();
@@ -305,30 +306,114 @@ const addNutritionalValuesFromRecipe = async (recipeId: string) => {
     setNutritionalValues({});
   };
 
+  const addIngredientsToShoppingList = async (missingIngredients: string[]) => {
+    const quantities = await Swal.fire({
+      title: "Adicione as quantidades",
+      html: missingIngredients.map(id => `
+        <div>
+          <label for="ingredient-${id}">Ingrediente ${id}</label>
+          <input id="ingredient-${id}" class="swal2-input" placeholder="Quantidade">
+        </div>
+      `).join(''),
+      focusConfirm: false,
+      preConfirm: () => {
+        const inputs = missingIngredients.map(id => {
+          const quantity = (document.getElementById(`ingredient-${id}`) as HTMLInputElement).value;
+          return { ingredientId: id, quantity: quantity || '0' };
+        });
+        return inputs;
+      }
+    });
+  
+    if (!quantities.value) {
+      console.error("Quantities value is undefined");
+      return;
+    }
+  
+    const ingredientsWithQuantities: { ingredientId: string, quantity: string }[] = quantities.value;
+  
+    const token = await getToken();
+    const responseAdd = await api.post(
+      `/api/v1/user/addToShoppingList`,
+      ingredientsWithQuantities,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    console.log("addToShoppingList response:", responseAdd);
+    console.log("missingIngredients:", ingredientsWithQuantities);
+  };
+
   const handleMakeRecipe = async (recipeId: string) => {
     try {
+      console.log("Iniciando handleMakeRecipe para a receita:", recipeId);
+      const token = await getToken();
+      console.log("Token obtido:", token);
+  
       const response = await checkAndRemoveIngredients(recipeId);
   
+      console.log("checkAndRemoveIngredients response status:", response.status);
+      console.log("checkAndRemoveIngredients response data:", response.data);
+  
       if (response.status === 200) {
+        console.log("Ingredientes suficientes. Adicionando valores nutricionais.");
         await addNutritionalValuesFromRecipe(recipeId);
-      } else if (response.status === 400 && response.data.includes("Some ingredients are missing")) {
-        Swal.fire({
+      } else if (response.status === 400 && response.data.missingIngredients) {
+        console.log("Ingredientes insuficientes:", response.data.missingIngredients);
+  
+        const result = await Swal.fire({
           title: "Ingredientes insuficientes",
-          text: response.data,
-          icon: "warning",
+          text: "Deseja adicionar os ingredientes necessários à sua lista de compras?",
+          icon: "question",
           showCancelButton: true,
           confirmButtonText: "Sim",
           cancelButtonText: "Não",
         });
+  
+        console.log("Swal result:", result);
+  
+        if (result.isConfirmed) {
+          await addIngredientsToShoppingList(response.data.missingIngredients);
+        }
+      } else {
+        console.log("Resposta inesperada:", response);
       }
     } catch (error) {
-      console.log("makeRecipe error:", error);
-      Swal.fire({
-        title: "Erro!",
-        text: "Ocorreu um erro ao fazer a receita.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+      console.log("Erro no handleMakeRecipe:", error);
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          const result = await Swal.fire({
+            title: "Ingredientes insuficientes",
+            text: "Deseja adicionar os ingredientes necessários à sua lista de compras?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Sim",
+            cancelButtonText: "Não",
+          });
+  
+          console.log("Swal result (erro 400):", result);
+  
+          if (result.isConfirmed) {
+            await addIngredientsToShoppingList(error.response.data.missingIngredients);
+          }
+        } else {
+          console.log("makeRecipe error:", error);
+          Swal.fire({
+            title: "Erro!",
+            text: "Ocorreu um erro ao fazer a receita.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      } else {
+        console.log("Unexpected error:", error);
+        Swal.fire({
+          title: "Erro!",
+          text: "Ocorreu um erro inesperado.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      }
     }
   };
 
@@ -336,7 +421,9 @@ const addNutritionalValuesFromRecipe = async (recipeId: string) => {
     const formData = {
       name: newRecipeName,
       ingredients: ingredientsList.map((ingredient) => {
-        const selectedIngredient = selectedIngredients.find((item) => item.name === ingredient);
+        const selectedIngredient = selectedIngredients.find(
+          (item) => item.name === ingredient
+        );
         return {
           id: selectedIngredient ? selectedIngredient.id : null,
           name: ingredient,
@@ -400,7 +487,6 @@ const addNutritionalValuesFromRecipe = async (recipeId: string) => {
       console.error("Error sending ingredients:", error);
     }
   };
-
   return (
     <>
       <Modal

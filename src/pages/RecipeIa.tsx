@@ -88,7 +88,8 @@ const RecipeIa: React.FC = () => {
         }
       );
 
-      console.log(response);
+      console.log("recipe info: ", recipeInfo)
+      console.log("Resposta do chat: ", response.data);
       if (response.data) {
         Swal.close();
         setRecipeGeneratedIA(response.data);

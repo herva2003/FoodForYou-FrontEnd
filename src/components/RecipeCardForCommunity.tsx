@@ -9,13 +9,20 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
 } from "@mui/material";
-import { AiOutlineClockCircle, AiOutlineClose, AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import {
+  AiOutlineClockCircle,
+  AiOutlineClose,
+  AiFillHeart,
+  AiOutlineHeart,
+} from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
 import api from "../services/api";
 import { useAuth } from "../context/authContext";
 import { nutritionalValueTranslation } from "../components/NutritionalValueTranslation";
+import { AxiosError } from "axios";
+import Swal from "sweetalert2";
 
 interface RecipeCardForCommunityProps {
   recipe: RecipeProps;
@@ -62,14 +69,14 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
       const data = { userId: userId, recipeId: recipe.id } as Like;
       const token = await getToken();
       const config = {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       };
-  
+
       if (isLiked) {
         const response = await api.post(`/api/v1/recipe/unlike`, data, config);
         if (response) {
           setIsLiked(false);
-          setLikes(likes.filter(id => id !== userId));
+          setLikes(likes.filter((id) => id !== userId));
         }
       } else {
         const response = await api.post(`/api/v1/recipe/like`, data, config);
@@ -94,6 +101,170 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
     setOpenModal(false);
   };
 
+  const handleMakeRecipe = async (recipeId: string) => {
+    try {
+      console.log("Iniciando handleMakeRecipe para a receita:", recipeId);
+      const token = await getToken();
+      console.log("Token obtido:", token);
+  
+      const response = await checkAndRemoveIngredients(recipeId);
+  
+      console.log("checkAndRemoveIngredients response status:", response.status);
+      console.log("checkAndRemoveIngredients response data:", response.data);
+  
+      if (response.status === 200) {
+        console.log("Ingredientes suficientes. Adicionando valores nutricionais.");
+        await addNutritionalValuesFromRecipe(recipeId);
+      } else if (response.status === 400 && response.data.missingIngredients) {
+        console.log("Ingredientes insuficientes:", response.data.missingIngredients);
+  
+        const result = await Swal.fire({
+          title: "Ingredientes insuficientes",
+          text: "Deseja adicionar os ingredientes necessários à sua lista de compras?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Sim",
+          cancelButtonText: "Não",
+        });
+    
+        if (result.isConfirmed) {
+          await addIngredientsToShoppingList(response.data.missingIngredients);
+        }
+      } else {
+        console.log("Resposta inesperada:", response);
+      }
+    } catch (error) {
+      console.log("Erro no handleMakeRecipe:", error);
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          const result = await Swal.fire({
+            title: "Ingredientes insuficientes",
+            text: "Deseja adicionar os ingredientes necessários à sua lista de compras?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Sim",
+            cancelButtonText: "Não",
+          });
+  
+          console.log("Swal result (erro 400):", result);
+  
+          if (result.isConfirmed) {
+            await addIngredientsToShoppingList(error.response.data.missingIngredients);
+          }
+        } else {
+          console.log("makeRecipe error:", error);
+          Swal.fire({
+            title: "Erro!",
+            text: "Ocorreu um erro ao fazer a receita.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      } else {
+        console.log("Unexpected error:", error);
+        Swal.fire({
+          title: "Erro!",
+          text: "Ocorreu um erro inesperado.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      }
+    }
+  };
+
+  const checkAndRemoveIngredients = async (recipeId: string) => {
+    try {
+      const token = await getToken();
+      const response = await api.post(
+        `/api/v1/user/checkAndRemoveIngredients/${recipeId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      console.log("checkAndRemoveIngredients response:", response);
+      return response;
+    } catch (error) {
+      console.error("Error checking and removing ingredients:", error);
+      Swal.fire({
+        title: "Erro!",
+        text: "Houve um erro ao verificar e remover os ingredientes.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      throw error;
+    }
+  };
+
+  const addIngredientsToShoppingList = async (missingIngredients: string[]) => {
+    const quantities = await Swal.fire({
+      title: "Adicione as quantidades",
+      html: missingIngredients.map(id => `
+        <div>
+          <label for="ingredient-${id}">Ingrediente ${id}</label>
+          <input id="ingredient-${id}" class="swal2-input" placeholder="Quantidade">
+        </div>
+      `).join(''),
+      focusConfirm: false,
+      preConfirm: () => {
+        const inputs = missingIngredients.map(id => {
+          const quantity = (document.getElementById(`ingredient-${id}`) as HTMLInputElement).value;
+          return { ingredientId: id, quantity: quantity || '0' };
+        });
+        return inputs;
+      }
+    });
+  
+    if (!quantities.value) {
+      console.error("Quantities value is undefined");
+      return;
+    }
+  
+    const ingredientsWithQuantities: { ingredientId: string, quantity: string }[] = quantities.value;
+  
+    const token = await getToken();
+    const responseAdd = await api.post(
+      `/api/v1/user/addToShoppingList`,
+      ingredientsWithQuantities,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    console.log("addToShoppingList response:", responseAdd);
+    console.log("missingIngredients:", ingredientsWithQuantities);
+  };
+
+  const addNutritionalValuesFromRecipe = async (recipeId: string) => {
+    try {
+      const token = await getToken();
+      const response = await api.post(
+        `/api/v1/user/nutritionalValuesFromRecipe/${recipeId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
+        Swal.fire({
+          title: "Sucesso!",
+          text: "Valores nutricionais adicionados ao usuário.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding nutritional values:", error);
+      Swal.fire({
+        title: "Erro!",
+        text: "Houve um erro ao adicionar os valores nutricionais.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden relative">
       <div className="absolute top-4 right-4 text-center">
@@ -115,11 +286,13 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
             <AiOutlineHeart size={24} color="gray" />
           )}
         </button>
-        <div style={{ marginTop: "4px", color: "gray" }}>
-          {likes.length}
-        </div>
+        <div style={{ marginTop: "4px", color: "gray" }}>{likes.length}</div>
       </div>
-      <div className="p-4" onClick={handleOpenModal} style={{ cursor: "pointer" }}>
+      <div
+        className="p-4"
+        onClick={handleOpenModal}
+        style={{ cursor: "pointer" }}
+      >
         <h2 className="text-xl font-bold">{recipe.name}</h2>
         <p className="text-gray-700">
           Tempo de preparo: {recipe.preparationTime} minutos
@@ -260,6 +433,14 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
               </div>
             )}
           </div>
+          <div className="flex justify-center mb-4 gap-2">
+          <button
+            className="bg-blue-500 text-white py-2 px-4 rounded"
+            onClick={() => handleMakeRecipe(recipe.id)}
+          >
+            Fazer Receita
+          </button>
+        </div>
         </div>
       </Modal>
     </div>
