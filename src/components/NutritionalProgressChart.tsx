@@ -1,12 +1,28 @@
-// NutritionalProgressChart.tsx
-import React, { useEffect, useRef, useState } from 'react';
-import { Bar, Line, Pie, Doughnut, Radar, PolarArea, Bubble, Scatter, ChartComponent } from 'react-chartjs-2';
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import 'chart.js/auto';
-import api from "../services/api"
+import React, { useEffect, useRef, useState } from "react";
+import { Bar, Line, Pie, Doughnut, Radar, PolarArea } from "react-chartjs-2";
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import "chart.js/auto";
+import api from "../services/api";
 import { useAuth } from "../context/authContext";
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface NutritionalData {
   id: string;
@@ -22,7 +38,7 @@ interface NutritionalData {
   iron_mg: number;
   magnesium_mg: number;
   phosphorus_mg: number;
-  Potassium_mg: number;
+  potassium_mg: number;
   sodium_mg: number;
   zinc_mg: number;
   copper_mcg: number;
@@ -41,9 +57,9 @@ interface NutritionalData {
 }
 
 interface NutritionalProgressChartProps {
-    startDate: Date | null;
-    endDate: Date | null;
-    chartType: 'line' | 'bar' | 'pie' | 'doughnut' | 'radar' | 'polarArea';
+  startDate: Date | null;
+  endDate: Date | null;
+  chartType: "line" | "bar" | "pie" | "doughnut" | "radar" | "polarArea";
 }
 
 const normalizeDate = (date: Date) => {
@@ -52,7 +68,11 @@ const normalizeDate = (date: Date) => {
   return newDate;
 };
 
-const NutritionalProgressChart: React.FC<NutritionalProgressChartProps> = ({ startDate, endDate, chartType }) => {
+const NutritionalProgressChart: React.FC<NutritionalProgressChartProps> = ({
+  startDate,
+  endDate,
+  chartType,
+}) => {
   const normalizedStartDate = startDate ? normalizeDate(startDate) : null;
   const normalizedEndDate = endDate ? normalizeDate(endDate) : null;
   const { getToken } = useAuth();
@@ -65,110 +85,168 @@ const NutritionalProgressChart: React.FC<NutritionalProgressChartProps> = ({ sta
       const response = await api.get("/api/v1/user/nv", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('receitas:', response.data.data)
       setMockData(response.data.data);
     } catch (error) {
-      console.error('Error fetching nutritional data:', error);
+      console.error("Error fetching nutritional data:", error);
     }
   };
+
   useEffect(() => {
-  
     fetchData();
   }, []);
-  console.log(mockData)
-  
-  const filteredData = mockData.filter(data => {
+
+  const filteredData = mockData.filter((data) => {
     const createdAt = normalizeDate(new Date(data.createdAt));
-    return (!normalizedStartDate || createdAt >= normalizedStartDate) && (!normalizedEndDate || createdAt <= normalizedEndDate);
+    return (
+      (!normalizedStartDate || createdAt >= normalizedStartDate) &&
+      (!normalizedEndDate || createdAt <= normalizedEndDate)
+    );
   });
 
-
-  const labels = filteredData.map(data => new Date(data.createdAt).toLocaleDateString());
+  const labels = filteredData.map((data) =>
+    new Date(data.createdAt).toLocaleDateString()
+  );
 
   const data = {
     labels,
     datasets: [
       {
-        label: 'Calorias (kcal)',
-        data: mockData.map(data => data.energy_kcal),
-        borderColor: 'rgba(255, 99, 132, 1)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        label: "Calorias (kcal)",
+        data: filteredData.map((data) => data.energy_kcal),
+        borderColor: "rgba(255, 99, 132, 1)",
+        backgroundColor: "rgba(255, 99, 132, 0.2)",
+        fill: true,
       },
       {
-        label: 'Proteina (g)',
-        data: mockData.map(data => data.protein_g),
-        borderColor: 'rgba(54, 162, 235, 1)',
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        label: "Proteína (g)",
+        data: filteredData.map((data) => data.protein_g),
+        borderColor: "rgba(54, 162, 235, 1)",
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
+        fill: true,
       },
       {
-        label: 'Gordura (g)',
-        data: mockData.map(data => data.fat_g),
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        label: "Gordura (g)",
+        data: filteredData.map((data) => data.fat_g),
+        borderColor: "rgba(75, 192, 192, 1)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        fill: true,
       },
       {
-        label: 'Carboidratos (g)',
-        data: mockData.map(data => data.carb_g),
-        borderColor: 'rgba(153, 102, 255, 1)',
-        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+        label: "Carboidratos (g)",
+        data: filteredData.map((data) => data.carb_g),
+        borderColor: "rgba(153, 102, 255, 1)",
+        backgroundColor: "rgba(153, 102, 255, 0.2)",
+        fill: true,
       },
       {
-        label: 'Açucar (g)',
-        data: mockData.map(data => data.sugar_g),
-        borderColor: 'rgba(255, 159, 64, 1)',
-        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+        label: "Açúcar (g)",
+        data: filteredData.map((data) => data.sugar_g),
+        borderColor: "rgba(255, 159, 64, 1)",
+        backgroundColor: "rgba(255, 159, 64, 0.2)",
+        fill: true,
       },
       {
-        label: 'Sal (mg)',
-        data: mockData.map(data => data.sodium_mg),
-        borderColor: 'rgba(255, 206, 86, 1)',
-        backgroundColor: 'rgba(255, 206, 86, 0.2)',
-      }
+        label: "Sal (mg)",
+        data: filteredData.map((data) => data.sodium_mg),
+        borderColor: "rgba(255, 206, 86, 1)",
+        backgroundColor: "rgba(255, 206, 86, 0.2)",
+        fill: true,
+      },
     ],
   };
-
 
   const options = {
     responsive: true,
     plugins: {
-        legend: {
-            position: 'top' as const,
+      legend: {
+        position: "top" as const,
+        labels: {
+          font: {
+            size: 10, // Tamanho da fonte da legenda
+          },
         },
+      },
+      title: {
+        display: true,
+        font: {
+          size: 14, // Tamanho da fonte do título
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function (tooltipItem: any) {
+            return `${tooltipItem.dataset.label}: ${tooltipItem.raw}`;
+          },
+        },
+        titleFont: {
+          size: 10, // Tamanho da fonte do título do tooltip
+        },
+        bodyFont: {
+          size: 10, // Tamanho da fonte do corpo do tooltip
+        },
+      },
+    },
+    scales: {
+      x: {
         title: {
-            display: true,
-            text: 'Nutritional Progress',
+          display: true,
+          text: "Data",
+          font: {
+            size: 12, // Tamanho da fonte do título do eixo X
+          },
         },
+        ticks: {
+          font: {
+            size: 10, // Tamanho da fonte dos ticks do eixo X
+          },
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: "Valores",
+          font: {
+            size: 12, // Tamanho da fonte do título do eixo Y
+          },
+        },
+        ticks: {
+          font: {
+            size: 10, // Tamanho da fonte dos ticks do eixo Y
+          },
+        },
+      },
     },
   };
 
-    const chartRef = useRef<ChartComponent | null>(null);
+  const chartRef = useRef<any>(null);
 
-    useEffect(() => {
-        return () => {
-            if (chartRef.current) {
-                (chartRef.current as ChartComponent).destroy();
-            }
-        };
-    }, [chartType]);
+  useEffect(() => {
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, [chartType]);
 
-    let ChartComponent;
+  let ChartComponent;
+
   switch (chartType) {
-    case 'line':
+    case "line":
       ChartComponent = Line;
       break;
-    case 'bar':
+    case "bar":
       ChartComponent = Bar;
       break;
-    case 'pie':
+    case "pie":
       ChartComponent = Pie;
       break;
-    case 'doughnut':
+    case "doughnut":
       ChartComponent = Doughnut;
       break;
-    case 'radar':
+    case "radar":
       ChartComponent = Radar;
       break;
-    case 'polarArea':
+    case "polarArea":
       ChartComponent = PolarArea;
       break;
     default:
@@ -177,11 +255,7 @@ const NutritionalProgressChart: React.FC<NutritionalProgressChartProps> = ({ sta
 
   return (
     mockData.length > 0 && (
-      <ChartComponent
-        data={data}
-        options={options}
-        ref={chartRef}
-      />
+      <ChartComponent data={data} options={options} ref={chartRef} />
     )
   );
 };
