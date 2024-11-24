@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { RecipeProps } from "../interfaces/RecipeProps";
-import { Like } from "../interfaces/Like";
+import { RecipeProps } from "../../interfaces/RecipeProps";
+import { Like } from "../../interfaces/Like";
 import {
   Modal,
   Paper,
@@ -16,13 +16,17 @@ import {
   AiOutlineClose,
   AiFillHeart,
   AiOutlineHeart,
+  AiOutlineEye,
+  AiOutlineEyeInvisible,
 } from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
-import api from "../services/api";
-import { useAuth } from "../context/authContext";
-import { nutritionalValueTranslation } from "../components/NutritionalValueTranslation";
+import api from "../../services/api";
+import { useAuth } from "../../context/authContext";
+import nutritionalValueTranslation from "../NutritionalValueTranslation";
 import { AxiosError } from "axios";
 import Swal from "sweetalert2";
+import ingredientData from "../../../ingredientes.json";
+import { useNavigate } from "react-router-dom";
 
 interface RecipeCardForCommunityProps {
   recipe: RecipeProps;
@@ -38,10 +42,14 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
   const [likes, setLikes] = useState<string[]>(recipe.likes);
   const { getToken } = useAuth();
   const [reviewsCount, setReviewsCount] = useState(0);
+  const navigate = useNavigate();
+  const [rating, setRating] = useState();
+  const [showNutritionalValues, setShowNutritionalValues] = useState(true);
 
   useEffect(() => {
     if (openModal) {
       fetchReviewsCount();
+      fetchReviewRating();
     }
   }, [openModal]);
 
@@ -54,9 +62,27 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
+      console.log("recipe:", recipe);
       if (response.data) {
         setReviewsCount(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews count:", error);
+    }
+  };
+
+  const fetchReviewRating = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.get(
+        `/api/v1/review/rating?recipeId=${recipe.id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("recipeProps:", recipe);
+      if (response.data) {
+        setRating(response.data);
       }
     } catch (error) {
       console.error("Error fetching reviews count:", error);
@@ -91,7 +117,6 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
   };
 
   const handleOpenModal = () => {
-    console.log("Opening modal");
     setOpenModal(true);
   };
 
@@ -106,18 +131,26 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
       console.log("Iniciando handleMakeRecipe para a receita:", recipeId);
       const token = await getToken();
       console.log("Token obtido:", token);
-  
+
       const response = await checkAndRemoveIngredients(recipeId);
-  
-      console.log("checkAndRemoveIngredients response status:", response.status);
+
+      console.log(
+        "checkAndRemoveIngredients response status:",
+        response.status
+      );
       console.log("checkAndRemoveIngredients response data:", response.data);
-  
+
       if (response.status === 200) {
-        console.log("Ingredientes suficientes. Adicionando valores nutricionais.");
+        console.log(
+          "Ingredientes suficientes. Adicionando valores nutricionais."
+        );
         await addNutritionalValuesFromRecipe(recipeId);
       } else if (response.status === 400 && response.data.missingIngredients) {
-        console.log("Ingredientes insuficientes:", response.data.missingIngredients);
-  
+        console.log(
+          "Ingredientes insuficientes:",
+          response.data.missingIngredients
+        );
+
         const result = await Swal.fire({
           title: "Ingredientes insuficientes",
           text: "Deseja adicionar os ingredientes necessários à sua lista de compras?",
@@ -126,7 +159,7 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
           confirmButtonText: "Sim",
           cancelButtonText: "Não",
         });
-    
+
         if (result.isConfirmed) {
           await addIngredientsToShoppingList(response.data.missingIngredients);
         }
@@ -145,11 +178,13 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
             confirmButtonText: "Sim",
             cancelButtonText: "Não",
           });
-  
+
           console.log("Swal result (erro 400):", result);
-  
+
           if (result.isConfirmed) {
-            await addIngredientsToShoppingList(error.response.data.missingIngredients);
+            await addIngredientsToShoppingList(
+              error.response.data.missingIngredients
+            );
           }
         } else {
           console.log("makeRecipe error:", error);
@@ -197,32 +232,75 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
     }
   };
 
+  const capitalizeFirstLetter = (string: string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+  };
+
+  const createFormHtml = (missingIngredients: string[]) => {
+    const form = document.createElement("form");
+
+    missingIngredients.forEach((id) => {
+      const ingredientDetail = ingredientData.find(
+        (ingredient) => ingredient.oid === id
+      );
+
+      const div = document.createElement("div");
+      div.style.display = "flex";
+      div.style.justifyContent = "space-between";
+      div.style.alignItems = "center";
+      div.style.marginBottom = "10px";
+
+      const label = document.createElement("label");
+      label.setAttribute("for", `ingredient-${id}`);
+      label.style.fontWeight = "bold";
+      const ingredientName = ingredientDetail
+        ? capitalizeFirstLetter(ingredientDetail.descrip)
+        : id;
+      label.textContent = `${ingredientName}`;
+      div.appendChild(label);
+
+      const input = document.createElement("input");
+      input.setAttribute("id", `ingredient-${id}`);
+      input.setAttribute("class", "swal2-input");
+      input.setAttribute("placeholder", "Quantidade");
+      input.style.width = "250px";
+      input.style.marginLeft = "10px";
+      div.appendChild(input);
+
+      form.appendChild(div);
+    });
+
+    return form;
+  };
+
   const addIngredientsToShoppingList = async (missingIngredients: string[]) => {
+    const formHtml = createFormHtml(missingIngredients);
+
     const quantities = await Swal.fire({
       title: "Adicione as quantidades",
-      html: missingIngredients.map(id => `
-        <div>
-          <label for="ingredient-${id}">Ingrediente ${id}</label>
-          <input id="ingredient-${id}" class="swal2-input" placeholder="Quantidade">
-        </div>
-      `).join(''),
+      html: formHtml,
       focusConfirm: false,
       preConfirm: () => {
-        const inputs = missingIngredients.map(id => {
-          const quantity = (document.getElementById(`ingredient-${id}`) as HTMLInputElement).value;
-          return { ingredientId: id, quantity: quantity || '0' };
+        const inputs = missingIngredients.map((id) => {
+          const quantity = (
+            document.getElementById(`ingredient-${id}`) as HTMLInputElement
+          ).value;
+          return { ingredientId: id, quantity: quantity || "0" };
         });
         return inputs;
-      }
+      },
     });
-  
+
     if (!quantities.value) {
       console.error("Quantities value is undefined");
       return;
     }
-  
-    const ingredientsWithQuantities: { ingredientId: string, quantity: string }[] = quantities.value;
-  
+
+    const ingredientsWithQuantities: {
+      ingredientId: string;
+      quantity: string;
+    }[] = quantities.value;
+
     const token = await getToken();
     const responseAdd = await api.post(
       `/api/v1/user/addToShoppingList`,
@@ -265,8 +343,15 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
     }
   };
 
+  const toggleNutritionalValues = () => {
+    setShowNutritionalValues(!showNutritionalValues);
+  };
+
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden relative">
+    <div
+      id="recipesCard"
+      className="bg-white shadow-md rounded-lg overflow-hidden relative"
+    >
       <div className="absolute top-4 right-4 text-center">
         <button
           onClick={(e) => {
@@ -318,25 +403,10 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <div
-          style={{
-            minWidth: "50%",
-            minHeight: "50%",
-            maxWidth: "90%",
-            maxHeight: "90%",
-            overflowY: "auto",
-            background: "white",
-            borderRadius: "12px",
-            padding: "20px",
-          }}
-        >
-          <div className="flex justify-between items-center">
-            <h1 className="text-md text-title font-semibold ">
-              {recipe.name === "" ? (
-                <span>Nome não adicionado</span>
-              ) : (
-                <span>{recipe.name}</span>
-              )}
+        <div className="w-[80vh] max-h-[80vh] overflow-auto bg-white rounded-[12px] p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-md text-title font-semibold">
+              {recipe.name || "Nome não adicionado"}
             </h1>
             <div className="flex items-center">
               <p className="text-xs text-gray-500 mr-2">
@@ -349,27 +419,33 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
               />
             </div>
           </div>
-          <div className="flex m-4 items-center gap-2">
+
+          <div className="flex items-center gap-2 mb-4">
             <FaStar className="text-yellow-400" />
-            <p className="text-sm font-bold text-gray-900 ">4.95</p>
+            <p className="text-sm font-bold text-gray-900 ">{rating}</p>
             <span className="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"></span>
-            <a
-              href="#carousel-section"
-              className="text-sm font-medium text-gray-900 underline hover:no-underline"
+            <button
+              className="text-sm font-medium text-gray-900 underline hover:no-underline see_avaliacao"
+              onClick={() =>
+                navigate(`/reviews/${recipe.id}`, {
+                  state: { recipeProps: recipe },
+                })
+              }
             >
               {reviewsCount} reviews
-            </a>
+            </button>
           </div>
 
-          <div className="mb-6 flex items-center flex-col p-4 gap-2">
-            <h2 className="font-semibold text-lg">Ingredientes</h2>
-            {recipe.ingredients.length !== 0 ? (
+          <div className="mb-6">
+            <h2 className="font-semibold text-lg mb-2">Ingredientes</h2>
+            {recipe.ingredients.length ? (
               <ul className="list-none">
                 {recipe.ingredients.map((ingredient, index) => (
                   <li key={index}>
-                    {ingredient.name.charAt(0).toUpperCase() +
-                      ingredient.name.slice(1)}{" "}
-                    - {ingredient.quantity}g
+                    {`${
+                      ingredient.name.charAt(0).toUpperCase() +
+                      ingredient.name.slice(1)
+                    } - ${ingredient.quantity}g`}
                   </li>
                 ))}
               </ul>
@@ -377,10 +453,11 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
               <p>Nenhum ingrediente especificado</p>
             )}
           </div>
-          <div className="flex flex-col items-center">
-            <h2 className="font-semibold text-lg mb-2">Preparação</h2>
-            {recipe.preparationMethod.length !== 0 ? (
-              <ul className="list-decimal">
+
+          <div className="flex flex-col mb-6">
+            <h2 className="font-semibold text-lg mb-2">Preparo</h2>
+            {recipe.preparationMethod.length ? (
+              <ul>
                 {recipe.preparationMethod.map((prep, index) => (
                   <li key={index}>
                     {prep.charAt(0).toUpperCase() + prep.slice(1)}
@@ -391,23 +468,39 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
               <p>Nenhuma preparação adicionada</p>
             )}
           </div>
-          <div className="m-[40px] flex flex-col items-center">
-            <h2 className="font-semibold mb-2">Tempo de Preparação</h2>
+
+          <div className="mb-6">
+            <h2 className="font-semibold mb-2">Tempo de Preparo</h2>
             <p className="flex items-center">
-              <AiOutlineClockCircle
-                color="#667085"
-                size={20}
-              ></AiOutlineClockCircle>
+              <AiOutlineClockCircle color="#667085" size={20} />
               &nbsp;
-              {recipe.preparationTime === 0 ? (
-                <span>Tempo não especificado</span>
-              ) : (
+              {recipe.preparationTime ? (
                 <span>{recipe.preparationTime} minutos</span>
+              ) : (
+                <span>Tempo não especificado</span>
               )}
             </p>
-            {recipe.nutritionalValues && (
-              <div className="ml-4">
-                <h2 className="font-semibold mb-2">Valores Nutricionais</h2>
+          </div>
+
+          {recipe.nutritionalValues && (
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="font-semibold">Valores Nutricionais</h2>
+                <button
+                  className="text-blue-500 flex items-center"
+                  onClick={toggleNutritionalValues}
+                >
+                  {showNutritionalValues ? (
+                    <AiOutlineEyeInvisible size={20} />
+                  ) : (
+                    <AiOutlineEye size={20} />
+                  )}
+                  <span className="ml-2">
+                    {showNutritionalValues ? "Ocultar" : "Mostrar"}
+                  </span>
+                </button>
+              </div>
+              {showNutritionalValues && (
                 <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
                   <Table stickyHeader aria-label="nutritional values table">
                     <TableHead>
@@ -430,17 +523,21 @@ const RecipeCardForCommunity: React.FC<RecipeCardForCommunityProps> = ({
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </div>
-            )}
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={(e) => {
+                handleMakeRecipe(recipe.id);
+                handleCloseModal(e);
+              }}
+              className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+            >
+              Fazer Receita
+            </button>
           </div>
-          <div className="flex justify-center mb-4 gap-2">
-          <button
-            className="bg-blue-500 text-white py-2 px-4 rounded"
-            onClick={() => handleMakeRecipe(recipe.id)}
-          >
-            Fazer Receita
-          </button>
-        </div>
         </div>
       </Modal>
     </div>

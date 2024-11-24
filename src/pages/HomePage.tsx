@@ -9,9 +9,8 @@ const HomePage: React.FC = () => {
         <img className="w-[280px] h-[250px]" src="src/assets/Logo.png" alt="Logo" />
         <p className="font-bold text-3xl text-black text-center">
           Cada receita em nosso site é  
-          <span className="block"></span> cuidadosamente selecionada 
-          <span className="block"></span> para despertar os sentidos e 
-          satisfazer os paladares mais 
+          <span className="block"></span>cuidadosamente selecionada 
+          <span className="block"></span>para despertar os sentidos e satisfazer os paladares mais 
           <span className="block"></span> exigentes.
         </p>
         <div className="flex flex-row gap-4 p-8">

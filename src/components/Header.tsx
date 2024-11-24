@@ -1,5 +1,4 @@
 import React from "react";
-import Sidebar from "./Sidebar";
 
 interface HeaderProps {
   visible: boolean;

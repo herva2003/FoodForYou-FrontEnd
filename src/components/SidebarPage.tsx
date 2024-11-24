@@ -4,20 +4,23 @@ import Sidebar from "./Sidebar";
 import { useAuth } from "../context/authContext";
 import api from "../services/api";
 import { UserProps } from "../interfaces/UserProps";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import "intro.js/introjs.css";
 
-interface SidebarPage {
+interface SidebarPageProps {
   children: React.ReactNode;
   headerTitle: string;
 }
 
-const SidebarPage: React.FC<SidebarPage> = ({ children, headerTitle }) => {
+const SidebarPage: React.FC<SidebarPageProps> = ({ children, headerTitle }) => {
   const [userData, setUserData] = useState<UserProps | null>(null);
   const [visible, setVisible] = useState(true);
   const [profileVisible, setProfileVisible] = useState(false);
+  const [tutorialVisible, setTutorialVisible] = useState(false);
   const navigate = useNavigate();
   const { handleSetToken, getRefreshToken, getToken } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const tutorialDropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => {
     try {
@@ -32,6 +35,33 @@ const SidebarPage: React.FC<SidebarPage> = ({ children, headerTitle }) => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setProfileVisible(false);
+      }
+      if (
+        tutorialDropdownRef.current &&
+        !tutorialDropdownRef.current.contains(event.target as Node)
+      ) {
+        setTutorialVisible(false);
+      }
+    };
+
+    if (profileVisible || tutorialVisible) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [profileVisible, tutorialVisible]);
 
   const logout = async () => {
     try {
@@ -60,26 +90,13 @@ const SidebarPage: React.FC<SidebarPage> = ({ children, headerTitle }) => {
     setProfileVisible(!profileVisible);
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setProfileVisible(false);
-    }
+  const toggleTutorial = () => {
+    setTutorialVisible(!tutorialVisible);
   };
 
-  useEffect(() => {
-    if (profileVisible) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [profileVisible]);
+  const handleTutorialClick = (tutorialName: string) => {
+    navigate(`/${tutorialName}`, { state: { startTutorial: true } });
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -143,6 +160,37 @@ const SidebarPage: React.FC<SidebarPage> = ({ children, headerTitle }) => {
                 <p className="font-bold text-lg">{userData?.fullName ?? ""}</p>
                 <p className="text-sm text-gray-600">{userData?.login ?? ""}</p>
               </div>
+            </div>
+            <div className="mt-4">
+              <button
+                className="text-black transition-colors duration-100 hover:bg-gray-400 hover:text-black w-full text-left p-2"
+                onClick={toggleTutorial}
+              >
+                Fazer Tutoriais
+              </button>
+              {tutorialVisible && (
+                <div
+                  ref={tutorialDropdownRef}
+                  className="mt-2 bg-gray-100 rounded-lg shadow-lg divide-y divide-gray-200"
+                >
+                  {[
+                    { label: "Tutorial do Dashboard", onClick: () => handleTutorialClick("dashboard") },
+                    { label: "Tutorial dos Ingredientes", onClick: () => handleTutorialClick("ingredients") },
+                    { label: "Tutorial das suas receitas", onClick: () => handleTutorialClick("myrecipes") },
+                    { label: "Tutorial de gerar receita", onClick: () => handleTutorialClick("recipeIa") },
+                    { label: "Tutorial de identificar uma receita", onClick: () => handleTutorialClick("identifyIa") },
+                    { label: "Tutorial da comunidade", onClick: () => handleTutorialClick("community") },
+                  ].map((item, index) => (
+                    <button
+                      key={index}
+                      className="w-full text-left p-4 hover:bg-gray-200 transition-colors duration-200"
+                      onClick={item.onClick}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

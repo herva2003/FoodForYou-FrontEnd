@@ -1,24 +1,26 @@
 import React, { useEffect, useState } from "react";
 import FlatList from "flatlist-react";
 import { useIngredients } from "../context/ingredientsContext";
-import IngredientCard from "../components/IngredientCard";
+import IngredientCard from "../components/Cards/IngredientCard";
 import Input from "../components/Input";
-import { IoIosCloseCircleOutline } from "react-icons/io";
 import SidebarPage from "../components/SidebarPage";
 import Button from "../components/Button";
-import { Modal } from "@mui/material";
+import { Modal, Tabs, Tab } from "@mui/material";
 import { AiOutlineClose } from "react-icons/ai";
 import Dropdown from "../components/Dropdown";
-import SelectedIngredientCard from "../components/SelectedIngredientCard";
+import SelectedIngredientCard from "../components/Cards/SelectedIngredientCard";
 import api from "../services/api";
 import { IoSearchOutline } from "react-icons/io5";
 import { useAuth } from "../context/authContext";
+import { IoMdHelpCircle, IoIosCloseCircleOutline } from "react-icons/io";
 import Swal from "sweetalert2";
-import { UserProps } from "../interfaces/UserProps";
-import IngredientsWelcomeCard from "../components/IngredientsWelcomeCard";
-import ShoppingListWelcomeCard from "../components/ShoppingListWelcomeCard";
-
+import IngredientsWelcomeCard from "../components/WelcomeCards/IngredientsWelcomeCard";
+import ShoppingListWelcomeCard from "../components/WelcomeCards/ShoppingListWelcomeCard";
 import ingredientData from "../../ingredientes.json";
+import TutorialIngredients from "../components/Tutorials/TutorialIngredients";
+import IntroJs from "intro.js";
+import "intro.js/introjs.css";
+import SearchBar from "../components/SearchBar";
 
 interface SelectedIngredientsProps {
   name: string;
@@ -38,7 +40,6 @@ interface IngredientDetail {
 }
 
 const Ingredients: React.FC = () => {
-  const [userData, setUserData] = useState<UserProps | null>(null);
   const { ingredients, handleSetIngredients } = useIngredients();
   const [openModal, setOpenModal] = useState(false);
   const [filterText, setFilterText] = useState("");
@@ -48,18 +49,17 @@ const Ingredients: React.FC = () => {
     SelectedIngredientsProps[]
   >([]);
   const [tabIndex, setTabIndex] = useState(0);
-
   const { getToken } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchUserData = async (): Promise<void> => {
-    try {
-      const response = await api.get("/api/v1/user/me");
-      const userDataFromApi: UserProps = response.data;
-      setUserData(userDataFromApi);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
+  useEffect(() => {
+    if (tabIndex === 0) {
+      getIngredients();
+    } else {
+      getShoppingList();
     }
-  };
+    setVisible(checkeds.length > 0);
+  }, [checkeds, tabIndex, searchQuery]);
 
   const addIngredients = async (): Promise<void> => {
     try {
@@ -135,7 +135,7 @@ const Ingredients: React.FC = () => {
   const deleteIngredients = async (): Promise<void> => {
     try {
       const token = await getToken();
-      const ingredientIds = checkeds.map(item => item.ingredientId);
+      const ingredientIds = checkeds.map((item) => item.ingredientId);
       const response = await api.delete("/api/v1/user/ingredient", {
         data: ingredientIds,
         headers: { Authorization: `Bearer ${token}` },
@@ -279,7 +279,7 @@ const Ingredients: React.FC = () => {
     });
   };
 
-  const sortedIngredients = ingredients
+  const filteredIngredients = ingredients
     ? ingredients
         .filter((ingredient: IngredientDetail) => ingredient.descrip)
         .sort((a: IngredientDetail, b: IngredientDetail) =>
@@ -288,20 +288,26 @@ const Ingredients: React.FC = () => {
     : [];
 
   const handleRemoveSelectedIngredient = (id: string): void => {
-    const filter = selectedIngredients.filter((item) => item.ingredientId !== id);
+    const filter = selectedIngredients.filter(
+      (item) => item.ingredientId !== id
+    );
     setSelectedIngredients(filter);
   };
 
   const handleQtdChange = (id: string, value: string): void => {
     setSelectedIngredients((prev) =>
       prev.map((ingredient) =>
-        ingredient.ingredientId === id ? { ...ingredient, quantity: value } : ingredient
+        ingredient.ingredientId === id
+          ? { ...ingredient, quantity: value }
+          : ingredient
       )
     );
   };
 
   const handleAddSelectedIngredient = (name: string, id: string): void => {
-    const isAlreadyAdded = selectedIngredients.some((item) => item.ingredientId === id);
+    const isAlreadyAdded = selectedIngredients.some(
+      (item) => item.ingredientId === id
+    );
     if (!isAlreadyAdded) {
       const newItem: SelectedIngredientsProps = {
         name: name,
@@ -322,12 +328,19 @@ const Ingredients: React.FC = () => {
   const closeModal = (): void => {
     setOpenModal(false);
   };
-  
-  const handleIngredientCheck = (data: { checked: boolean; id: string; quantity?: string }): void => {
+
+  const handleIngredientCheck = (data: {
+    checked: boolean;
+    id: string;
+    quantity?: string;
+  }): void => {
     const { checked, id, quantity } = data;
-  
+
     if (checked) {
-      setCheckeds((prev) => [...prev, { ingredientId: id, quantity: quantity || '0' }]);
+      setCheckeds((prev) => [
+        ...prev,
+        { ingredientId: id, quantity: quantity || "0" },
+      ]);
     } else {
       setCheckeds((prev) => prev.filter((item) => item.ingredientId !== id));
     }
@@ -364,60 +377,94 @@ const Ingredients: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUserData();
-    if (tabIndex === 0) {
-      getIngredients();
-    } else {
-      getShoppingList();
-    }
-    setVisible(checkeds.length > 0);
-  }, [checkeds, tabIndex]);
-
   const tabs = [
     { index: 0, label: "Lista de Ingredientes" },
     { index: 1, label: "Lista de Compras" },
   ];
+
+  const startTutorial = () => {
+    console.log("startTutorial");
+    IntroJs()
+      .setOptions({
+        steps: [
+          {
+            title: "Adicione um ingrediente",
+            element: "#addItem",
+            intro: "Digite o ingrediente que voce possui em casa.",
+          },
+          {
+            title: "Adicione uma quantidade ao ingrediente",
+            element: "#addQtd",
+            intro:
+              "Digite a quantidade de ingrediente que voce possui em casa.",
+          },
+          {
+            title: "Clique aqui para salvar",
+            element: "#salvarIng",
+            intro:
+              "Clicando aqui voce salvará seus ingredientes em seu perfil.",
+          },
+        ],
+        showProgress: true,
+        showBullets: false,
+        scrollTo: "tooltip",
+        scrollToElement: true,
+        scrollPadding: 300,
+        exitOnOverlayClick: false,
+        disableInteraction: true,
+        exitOnEsc: false,
+      })
+      .start();
+  };
 
   return (
     <>
       <div>
         <Modal
           style={{
+            display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            alignSelf: "center",
-            justifySelf: "center",
           }}
           open={openModal}
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
-          <div className="w-[70vw] h-[90vh] bg-white rounded-[4px] py-[20px] px-[40px]">
+          <div className="w-[50vw] h-[60vh] bg-white rounded-[4px] py-[20px] px-[40px] flex flex-col overflow-auto">
             <div className="flex justify-between items-center mb-[40px]">
-              <h1 className="text-md text-title font-semibold ">
+              <h1 className="text-md text-title font-semibold">
                 Selecione os itens que deseja adicionar à sua lista
               </h1>
-              <AiOutlineClose
-                size={30}
-                className="cursor-pointer text-title"
-                onClick={closeModal}
-              />
+              <div className="flex items-center">
+                <IoMdHelpCircle
+                  size={25}
+                  className="cursor-pointer text-title mr-3"
+                  onClick={startTutorial}
+                />
+                <AiOutlineClose
+                  size={30}
+                  className="cursor-pointer text-title"
+                  onClick={closeModal}
+                />
+              </div>
             </div>
-            <div className="flex justify-between">
-              <Dropdown onClick={handleAddSelectedIngredient} />
-              <div className="flex flex-col h-[60vh] w-[40%] overflow-hidden overflow-y-scroll no-scrollbar rounded-[4px] ">
+            <div className="flex justify-between flex-grow">
+              <div id="addItem" className="w-[22vw] h-[4vh]">
+                <Dropdown onClick={handleAddSelectedIngredient} />
+              </div>
+              <div className="flex flex-col h-full w-[40%] overflow-hidden overflow-y-scroll no-scrollbar rounded-[4px]">
                 <FlatList
                   renderWhenEmpty={blank}
                   list={selectedIngredients}
                   renderOnScroll
                   renderItem={(item, index) => (
-                    <div className="mb-5">
+                    <div className="mb-5" id="addQtd" key={index}>
                       <SelectedIngredientCard
-                        key={index}
                         name={item.name}
                         quantity={item.quantity}
-                        onQtdChange={(value) => handleQtdChange(item.ingredientId, value)}
+                        onQtdChange={(value) =>
+                          handleQtdChange(item.ingredientId, value)
+                        }
                         onClickRemove={() =>
                           handleRemoveSelectedIngredient(item.ingredientId)
                         }
@@ -427,48 +474,46 @@ const Ingredients: React.FC = () => {
                 />
               </div>
             </div>
-            <div className=" w-full h-[44px] justify-end flex items-end mt-[30px]">
-              <Button
-                title="Salvar"
-                width="w-[10%]"
-                onClick={tabIndex === 0 ? addIngredients : addShoppingList}
-              />
+            <div className=" flex justify-end">
+              <div id="salvarIng" className="w-[4vw] h-[4vh]">
+                <Button
+                  title="Salvar"
+                  onClick={tabIndex === 0 ? addIngredients : addShoppingList}
+                />
+              </div>
             </div>
           </div>
         </Modal>
       </div>
-      <SidebarPage headerTitle="Ingredientes">
-        <div className="flex flex-col w-full">
-          {tabIndex === 0 ? (
-            <IngredientsWelcomeCard userName={userData?.fullName ?? "User"} />
-          ) : (
-            <ShoppingListWelcomeCard userName={userData?.fullName ?? "User"} />
-          )}
-          <div className="tabs mr-24">
+      <SidebarPage headerTitle={tabs[tabIndex].label}>
+        <TutorialIngredients />
+        <div className="flex flex-col w-full h-[100vh] pr-[100px] overflow-y-auto">
+          <Tabs
+            value={tabIndex}
+            onChange={(event: React.ChangeEvent<{}>, newValue: number) =>
+              setTabIndex(newValue)
+            }
+            aria-label="Ingredients and Shopping List Tabs"
+            id="tabs"
+            className="mr-24"
+          >
             {tabs.map((tab) => (
-              <button
-                key={tab.index}
-                className={`tab ${
-                  tabIndex === tab.index ? "bg-blue-500 text-white" : ""
-                }`}
-                onClick={() => setTabIndex(tab.index)}
-              >
-                {tab.label}
-              </button>
+              <Tab key={tab.index} label={tab.label} />
             ))}
+          </Tabs>
+          <div className="mt-4">
+            {tabIndex === 0 ? (
+              <IngredientsWelcomeCard />
+            ) : (
+              <ShoppingListWelcomeCard />
+            )}
           </div>
-          <div className="h-[80vh] flex flex-col w-full pr-[100px] mt-[40px]">
-            <Input
-              value={filterText}
-              onChange={(value) => setFilterText(value.target.value)}
-              placeholder="Buscar..."
-              firstIcon={<IoSearchOutline color="#667085" size={20} />}
-              icon={
-                <button onClick={() => setFilterText("")}>
-                  <IoIosCloseCircleOutline color="#667085" size={20} />
-                </button>
-              }
-            />
+          <div className="flex flex-col w-full">
+            <div className="search mt-6">
+              <div id="search" className="mt-6">
+                <SearchBar filterText={searchQuery} setFilterText={setSearchQuery} />
+              </div>
+            </div>
             <div className="flex justify-between items-center mt-[40px]">
               <h1 className="text-md text-subtitle self-end">
                 {tabIndex === 0 ? "Sua lista" : "Sua lista de compras"}
@@ -500,23 +545,30 @@ const Ingredients: React.FC = () => {
                     )}
                   </>
                 )}
-                <Button
-                  title="Adicionar"
-                  width="w-[120px]"
-                  marginBottom=""
-                  marginLeft="ml-[40px]"
-                  onClick={() => {
-                    setOpenModal(true);
-                  }}
-                />
+                <div id="add-button">
+                  <Button
+                    title="Adicionar"
+                    width="w-[120px]"
+                    marginBottom=""
+                    onClick={() => {
+                      setOpenModal(true);
+                    }}
+                  />
+                </div>
               </div>
             </div>
-            <div className=" w-full h-[100%] mt-[20px] overflow-y-scroll">
+            <div className=" w-full h-[100%] mt-[20px] overflow-y-scroll IngredientCard">
               <FlatList
-                list={sortedIngredients}
+                list={filteredIngredients}
                 renderOnScroll
-                renderWhenEmpty={blank}
-                renderItem={(item: IngredientDetail) => (
+                renderWhenEmpty={() => (
+                  <div className="flex justify-center">
+                    <h1 className="text-sm- text-subtitle">
+                      A lista está vazia
+                    </h1>
+                  </div>
+                )}
+                renderItem={(item) => (
                   <IngredientCard
                     handleIngredientCheck={handleIngredientCheck}
                     key={item.id}

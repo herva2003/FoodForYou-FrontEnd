@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import Checkbox from "./Checkbox";
+import Checkbox from "../Checkbox";
 
 interface IngredientCardProps {
   value: string;

@@ -5,7 +5,6 @@ export interface RecipeIADTO {
     preparationTime: number;
     generatedAt: number; 
     nutritionalValues: NutritionalData;
-
 }
 
 export interface IngredientRecipeDTO {
@@ -43,4 +42,4 @@ interface NutritionalData {
     vitA_mcg: number;
     vitE_mg: number;
     vitD2_mcg: number;
-  }
+}

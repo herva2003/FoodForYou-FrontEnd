@@ -2,37 +2,9 @@ import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody
 import { RecipeIADTO, IngredientRecipeDTO } from "../interfaces/RecipeIADTO";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import ingredientData from "../../ingredientes.json";
+import nutritionalValueTranslation from "./NutritionalValueTranslation"
 
 const RecipeCardForIA = ({ recipe }: { recipe: RecipeIADTO }) => {
-    const nutritionalValueTranslation: { [key: string]: string } = {
-        'Calcium_mg': 'Cálcio mg',
-        'Saturated_fats_g': 'Gorduras Saturadas',
-        'Carb_g': 'Carboidratos g',
-        'Copper_mcg': 'Cobre mcg',
-        'Energy_kcal': 'Energia kcal',
-        'Fat_g': 'Gordura g',
-        'Fiber_g': 'Fibra g',
-        'Folate_mcg': 'Folato mcg',
-        'Iron_mg': 'Ferro mg',
-        'Magnesium_mg': 'Magnésio mg',
-        'Manganese_mg': 'Manganês mg',
-        'Niacin_mg': 'Niacina mg',
-        'Phosphorus_mg': 'Fósforo mg',
-        'Potassium_mg': 'Potássio mg',
-        'Protein_g': 'Proteína g',
-        'Riboflavin_mg': 'Riboflavina mg',
-        'Selenium_mcg': 'Selênio mcg',
-        'Sodium_mg': 'Sódio mg',
-        'Sugar_g': 'Açúcar g',
-        'Thiamin_mg': 'Tiamina mg',
-        'VitA_mcg': 'Vitamina A mcg',
-        'VitB12_mcg': 'Vitamina B12 mcg',
-        'VitB6_mg': 'Vitamina B6 mg',
-        'VitC_mg': 'Vitamina C mg',
-        'VitD2_mcg': 'Vitamina D2 mcg',
-        'VitE_mg': 'Vitamina E mg',
-        'Zinc_mg': 'Zinco mg',
-      };
 
     const getIngredientNameById = (oid: string): string => {
         const ingredient = ingredientData.find((ingredient: { oid: string; descrip: string }) => ingredient.oid === oid);
@@ -105,7 +77,7 @@ const RecipeCardForIA = ({ recipe }: { recipe: RecipeIADTO }) => {
                             .map(([key, value], index) => (
                                 <TableRow key={index}>
                                     <TableCell component="th" scope="row">
-                                        {nutritionalValueTranslation[key]}
+                                        {nutritionalValueTranslation[key.toLowerCase()]}
                                     </TableCell>
                                     <TableCell align="right">{value}</TableCell>
                                 </TableRow>

@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  TextField,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Fab,
-} from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/authContext";
+import { UserProps } from "../interfaces/UserProps";
+import SearchBar from "../components/SearchBar";
+import { TopicProps } from "../interfaces/TopicProps";
 
 interface Topic {
   id: string;
@@ -37,8 +25,9 @@ const Forum: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [createdBy, setCreatedBy] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState<UserProps | null>(null);
   const [open, setOpen] = useState(false);
+  const [filteredTopics, setFilteredTopics] = useState<TopicProps[]>([]);
 
   const { getToken } = useAuth();
 
@@ -54,10 +43,24 @@ const Forum: React.FC = () => {
     }
   };
 
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get("/api/v1/user/me");
+      const userDataFromApi: UserProps = response.data;
+      setCreatedBy(userDataFromApi);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
   const createTopic = async () => {
     try {
       const token = await getToken();
-      const data = { title, description, createdBy } as TopicDTO;
+      const data = {
+        title,
+        description,
+        createdBy: createdBy?.fullName,
+      } as TopicDTO;
 
       const response = await api.post("/api/v1/topics/", data, {
         headers: { Authorization: `Bearer ${token}` },
@@ -69,7 +72,7 @@ const Forum: React.FC = () => {
       if (response) {
         setTitle("");
         setDescription("");
-        setCreatedBy("");
+        setCreatedBy(null);
 
         await fetchTopics();
         handleClose();
@@ -81,11 +84,16 @@ const Forum: React.FC = () => {
 
   useEffect(() => {
     fetchTopics();
+    fetchUserData();
   }, []);
 
-  const filteredTopics = topics.filter((topic) =>
-    topic.title?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    setFilteredTopics(
+      topics.filter((topic) =>
+        topic.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, topics]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -96,85 +104,94 @@ const Forum: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Fórum</h1>
-      <div className="mb-4">
-        <TextField
-          label="Pesquisar Tópicos"
-          variant="outlined"
-          fullWidth
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+    <div className="h-[100vh] pr-[100px] overflow-y-auto">
+      <div id="search" className="mt-6">
+        <SearchBar filterText={searchQuery} setFilterText={setSearchQuery} />
       </div>
-      <List>
+      <ul>
         {filteredTopics.map((topic) => (
           <React.Fragment key={topic.id}>
-            <ListItem component={Link} to={`/discussion/${topic.id}`} button>
-              <ListItemText
-                primary={topic.title || "Título não disponível"}
-                secondary={`${
-                  topic.description || "Descrição não disponível"
-                } - Criado por ${topic.createdBy || "Anônimo"} em ${new Date(
-                  topic.createdAt
-                ).toLocaleDateString()}`}
-              />
-            </ListItem>
-            <Divider />
+            <li className="border-b border-gray-300 relative p-4 hover:bg-gray-100">
+              <Link to={`/discussion/${topic.id}`} className="block">
+                <h2 className="text-xl font-semibold">
+                  {topic.title || "Título não disponível"}
+                </h2>
+                <p className="text-gray-600 mt-2">
+                  {topic.description || "Descrição não disponível"}
+                </p>
+                <p className="text-gray-500 text-sm absolute top-2 right-4">
+                  Criado dia {new Date(topic.createdAt).toLocaleDateString()}
+                </p>
+                <p className="text-gray-500 text-sm absolute bottom-2 right-4">
+                  Criado por {topic.createdBy || "Anônimo"}
+                </p>
+              </Link>
+            </li>
           </React.Fragment>
         ))}
-      </List>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="form-dialog-title"
-      >
-        <DialogTitle id="form-dialog-title">Criar Novo Tópico</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Por favor, preencha os campos abaixo para criar um novo tópico.
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Título do Tópico"
-            type="text"
-            fullWidth
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            label="Descrição"
-            type="text"
-            fullWidth
-            multiline
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancelar
-          </Button>
-          <Button
-            onClick={createTopic}
-            color="primary"
-            disabled={!title || !description}
-          >
-            Criar
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Fab
-        color="primary"
-        aria-label="add"
+      </ul>
+      {open && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg overflow-hidden shadow-xl max-w-md w-full">
+            <div className="p-4 border-b">
+              <h2 className="text-xl font-semibold">Criar Novo Tópico</h2>
+            </div>
+            <div className="p-4">
+              <p className="mb-4">
+                Por favor, preencha os campos abaixo para criar um novo tópico.
+              </p>
+              <input
+                type="text"
+                placeholder="Título do Tópico"
+                className="border border-gray-300 rounded p-2 w-full mb-4"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <textarea
+                placeholder="Descrição"
+                className="border border-gray-300 rounded p-2 w-full mb-4"
+                rows={4}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <div className="p-4 border-t flex justify-end">
+              <button
+                className="bg-gray-500 text-white rounded px-4 py-2 mr-2"
+                onClick={handleClose}
+              >
+                Cancelar
+              </button>
+              <button
+                className="bg-blue-500 text-white rounded px-4 py-2"
+                onClick={createTopic}
+                disabled={!title || !description}
+              >
+                Criar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button
+        className="fixed bottom-16 right-16 bg-blue-500 text-white rounded-full p-4 shadow-lg"
         onClick={handleClickOpen}
-        style={{ position: "fixed", bottom: 16, right: 16 }}
       >
-        <AddIcon />
-      </Fab>
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M12 4v16m8-8H4"
+          ></path>
+        </svg>
+      </button>
     </div>
   );
 };

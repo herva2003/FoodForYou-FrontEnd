@@ -9,7 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextareaAutosize,
+  TextField,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import api from "../services/api";
@@ -20,34 +20,37 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import TutorialIdentifyIA from "../components/Tutorials/TutorialIdentifyIA";
+import nutritionalValueTranslation from "../components/NutritionalValueTranslation";
+import IdentifyIAWelcomeCard from "../components/WelcomeCards/IdentifyIAWelcomeCard";
 
 interface NutritionalValues {
-  Calcium_mg: number;
-  Carb_g: number;
-  Copper_mcg: number;
-  Energy_kcal: number;
-  Fat_g: number;
-  Fiber_g: number;
-  Folate_mcg: number;
-  Iron_mg: number;
-  Magnesium_mg: number;
-  Manganese_mg: number;
-  Niacin_mg: number;
-  Phosphorus_mg: number;
-  Potassium_mg: number;
-  Protein_g: number;
-  Riboflavin_mg: number;
-  Selenium_mcg: number;
-  Sodium_mg: number;
-  Sugar_g: number;
-  Thiamin_mg: number;
-  VitA_mcg: number;
-  VitB6_mg: number;
-  VitB12_mcg: number;
-  VitC_mg: number;
-  VitD2_mcg: number;
-  VitE_mg: number;
-  Zinc_mg: number;
+  calcium_mg: number;
+  carb_g: number;
+  copper_mcg: number;
+  energy_kcal: number;
+  fat_g: number;
+  fiber_g: number;
+  folate_mcg: number;
+  iron_mg: number;
+  magnesium_mg: number;
+  manganese_mg: number;
+  niacin_mg: number;
+  phosphorus_mg: number;
+  potassium_mg: number;
+  protein_g: number;
+  riboflavin_mg: number;
+  selenium_mcg: number;
+  sodium_mg: number;
+  sugar_g: number;
+  thiamin_mg: number;
+  vitA_mcg: number;
+  vitB6_mg: number;
+  vitB12_mcg: number;
+  vitC_mg: number;
+  vitD2_mcg: number;
+  vitE_mg: number;
+  zinc_mg: number;
 }
 
 interface Ingredient {
@@ -82,35 +85,6 @@ const IA: React.FC = () => {
   const { getToken } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set<number>());
-
-  const nutritionalValueTranslation: { [key: string]: string } = {
-    Calcium_mg: "Cálcio mg",
-    Carb_g: "Carboidratos g",
-    Copper_mcg: "Cobre mcg",
-    Energy_kcal: "Energia kcal",
-    Fat_g: "Gordura g",
-    Fiber_g: "Fibra g",
-    Folate_mcg: "Folato mcg",
-    Iron_mg: "Ferro mg",
-    Magnesium_mg: "Magnésio mg",
-    Manganese_mg: "Manganês mg",
-    Niacin_mg: "Niacina mg",
-    Phosphorus_mg: "Fósforo mg",
-    Potassium_mg: "Potássio mg",
-    Protein_g: "Proteína g",
-    Riboflavin_mg: "Riboflavina mg",
-    Selenium_mcg: "Selênio mcg",
-    Sodium_mg: "Sódio mg",
-    Sugar_g: "Açúcar g",
-    Thiamin_mg: "Tiamina mg",
-    VitA_mcg: "Vitamina A mcg",
-    VitB12_mcg: "Vitamina B12 mcg",
-    VitB6_mg: "Vitamina B6 mg",
-    VitC_mg: "Vitamina C mg",
-    VitD2_mcg: "Vitamina D2 mcg",
-    VitE_mg: "Vitamina E mg",
-    Zinc_mg: "Zinco mg",
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -312,25 +286,25 @@ const IA: React.FC = () => {
         return (
           <form onSubmit={handleSubmit}>
             <label className="block mb-2">Escreva a receita abaixo:</label>
-            <TextareaAutosize
-              minRows={5}
-              className="
-              w-full
-              focus:ring-blue-500
-              focus:outline-none
-              focus:ring-2
-              border
-              border-gray-300
-              rounded-md
-              shadow-sm
-              mb-2
-              "
+
+            <TextField
+              id="addRecipe"
+              label="Ingredientes ou receitas"
+              variant="outlined"
+              multiline
+              rows={4} // Define o número de linhas visíveis
+              sx={{
+                mt: 4,
+                "& .MuiInputBase-root": {
+                  height: "150px", // Define a altura do campo de texto
+                },
+              }}
+              className="bg-transparent w-full focus:ring-blue-500 focus:outline-none focus:ring-2 border border-gray-300 rounded-lg"
               value={textToProcess}
               onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                 setTextToProcess(e.target.value)
               }
             />
-            <Button type="submit" title="Analisar receita" className="" />
           </form>
         );
       case 1:
@@ -388,7 +362,7 @@ const IA: React.FC = () => {
                       ([nutrient, values]) => (
                         <TableRow key={nutrient}>
                           <TableCell component="th" scope="row">
-                            {nutritionalValueTranslation[nutrient]}
+                            {nutritionalValueTranslation[nutrient.toLowerCase()]}
                           </TableCell>
                           <TableCell component="th" align="right" scope="row">
                             {values}
@@ -414,7 +388,9 @@ const IA: React.FC = () => {
 
   return (
     <SidebarPage headerTitle="Identificar Receita">
-      <div className="flex justify-center w-full">
+      <IdentifyIAWelcomeCard />
+      <TutorialIdentifyIA />
+      <div className="flex justify-center w-full overflow-y-auto">
         <div className="h-[80vh] w-[80%] flex flex-col pr-[100px] mt-[40px]">
           <Box sx={{ width: "100%" }}>
             <Stepper activeStep={activeStep}>

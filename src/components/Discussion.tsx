@@ -1,8 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { TextField, Button, List, ListItem, ListItemText, Divider } from '@mui/material';
-import Sidebar from './Sidebar';
-import api from '../services/api';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import {
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Paper,
+  Typography,
+  Box,
+} from "@mui/material";
+import SidebarPage from "./SidebarPage";
+import api from "../services/api";
+import { UserProps } from "../interfaces/UserProps";
 
 interface Message {
   id: string;
@@ -21,15 +32,25 @@ const Discussion: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [topic, setTopic] = useState<Topic | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [sidebarVisible, setSidebarVisible] = useState<boolean>(true);
+  const [newMessage, setNewMessage] = useState("");
+  const [userData, setUserData] = useState<UserProps | null>(null);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get("/api/v1/user/me");
+      const userDataFromApi: UserProps = response.data;
+      setUserData(userDataFromApi);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
 
   const fetchTopic = async () => {
     try {
       const response = await api.get(`/api/v1/topics/${id}`);
       setTopic(response.data);
     } catch (error) {
-      console.error('Error fetching topic:', error);
+      console.error("Error fetching topic:", error);
     }
   };
 
@@ -38,7 +59,7 @@ const Discussion: React.FC = () => {
       const response = await api.get(`/api/v1/topics/${id}/messages`);
       setMessages(response.data);
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error("Error fetching messages:", error);
     }
   };
 
@@ -47,17 +68,21 @@ const Discussion: React.FC = () => {
       return;
     }
     try {
-      await api.post(`/api/v1/topics/${id}/messages`, { content: newMessage, createdBy: 'Usuário Atual' });
-      setNewMessage('');
+      await api.post(`/api/v1/topics/${id}/messages`, {
+        content: newMessage,
+        createdBy: userData!.fullName,
+      });
+      setNewMessage("");
       fetchMessages();
     } catch (error) {
-      console.error('Error creating message:', error);
+      console.error("Error creating message:", error);
     }
   };
 
   useEffect(() => {
     fetchTopic();
     fetchMessages();
+    fetchUserData();
   }, [id]);
 
   if (!topic) {
@@ -65,12 +90,14 @@ const Discussion: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-dark-whitesaAS">
-      <Sidebar visible={sidebarVisible} setVisible={setSidebarVisible} />
-      <div className={`flex-1 p-4 flex flex-col ${sidebarVisible ? 'ml-[300px]' : 'ml-[56px]'}`}>
-        <h1 className="text-2xl font-bold mb-4">{topic.title}</h1>
-        <p className="mb-4">{topic.description}</p>
-        <div className="mb-4">
+    <SidebarPage headerTitle={topic.title}>
+      <Box sx={{ height: '100vh', pr: 12, overflowY: 'auto' }}>
+        <Paper elevation={3} sx={{ mb: 4, p: 4, backgroundColor: 'white' }}>
+          <Typography variant="body1" color="textPrimary">
+            {topic.description}
+          </Typography>
+        </Paper>
+        <Box display="flex" mb={4}>
           <TextField
             label="Nova Mensagem"
             variant="outlined"
@@ -79,34 +106,35 @@ const Discussion: React.FC = () => {
             rows={4}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
+            sx={{ mr: 2 }}
           />
           <Button
             variant="contained"
             color="primary"
-            className="mt-2"
             onClick={createMessage}
-            disabled={!newMessage.trim()} // Desabilita o botão se a mensagem estiver vazia ou apenas com espaços
+            disabled={!newMessage.trim()}
+            sx={{ alignSelf: 'flex-start', mt: 4 }}
           >
             Enviar Mensagem
           </Button>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <List>
-            {messages.map(message => (
-              <React.Fragment key={message.id}>
-                <ListItem>
-                  <ListItemText
-                    primary={message.content}
-                    secondary={`${message.createdBy} em ${new Date(message.createdAt).toLocaleDateString()}`}
-                  />
-                </ListItem>
-                <Divider />
-              </React.Fragment>
-            ))}
-          </List>
-        </div>
-      </div>
-    </div>
+        </Box>
+        <List>
+          {messages.map((message) => (
+            <React.Fragment key={message.id}>
+              <ListItem>
+                <ListItemText
+                  primary={message.content}
+                  secondary={`${message.createdBy} em ${new Date(
+                    message.createdAt
+                  ).toLocaleDateString()}`}
+                />
+              </ListItem>
+              <Divider />
+            </React.Fragment>
+          ))}
+        </List>
+      </Box>
+    </SidebarPage>
   );
 };
 

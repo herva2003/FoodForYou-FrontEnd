@@ -1,14 +1,17 @@
 import { Modal } from "@mui/material";
-import { UserProps } from "../interfaces/UserProps";
-import Button from "./Button";
+import { UserProps } from "../../interfaces/UserProps";
+import Button from "../Button";
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { useAuth } from "../context/authContext";
-import api from "../services/api";
+import { useAuth } from "../../context/authContext";
+import api from "../../services/api";
 import { AiOutlineClose } from "react-icons/ai";
-import Input from "./Input";
+import { IoMdHelpCircle } from "react-icons/io";
+import Input from "../Input";
 import { IoArrowUpOutline, IoPersonOutline } from "react-icons/io5";
 import { RiWeightLine } from "react-icons/ri";
+import IntroJs from "intro.js";
+import "intro.js/introjs.css";
 
 interface DashboardWelcomeCardProps extends UserProps {
   fetchData: () => void;
@@ -104,48 +107,78 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
     }
   };
 
+  const startTutorial = () => {
+    setTimeout(() => {
+      IntroJs().setOptions({
+        steps: [
+          { title: "Alterar Informações", intro: "Vamos ver como alterar suas informações." },
+          { title: "Nome", element: "#name", intro: "Aqui você pode alterar seu nome." },
+          { title: "Altura", element: "#height", intro: "Aqui você pode alterar sua altura." },
+          { title: "Peso", element: "#weight", intro: "Aqui você pode alterar seu peso." },
+          { title: "Dietas", element: "#diets", intro: "Aqui você pode adicionar dietas." },
+          { title: "Alergias", element: "#allergies", intro: "Aqui você pode adicionar alergias." },
+          { title: "Intolerâncias", element: "#intolerances", intro: "Aqui você pode adicionar intolerâncias." },
+        ],
+        showProgress: true,
+        showBullets: false,
+        scrollTo: "tooltip",
+        scrollToElement: true,
+        scrollPadding: 300,
+        exitOnOverlayClick: false,
+        disableInteraction: true,
+        exitOnEsc: false,
+      }).start();
+    }, 200);
+  };
+  
   return (
     <>
       <Modal
         style={{
+          display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          alignSelf: "center",
-          justifySelf: "center",
         }}
         open={openModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <div className="min-w-[50vw] min-h-[50vh] bg-white rounded-[25px] py-[20px] px-[40px]">
+        <div className="max-w-[50vw] bg-white rounded-[25px] py-[20px] px-[40px]">
           <div className="flex justify-between items-center mb-[40px]">
-            <h1 className="text-md text-title font-bold ">
+            <h1 className="text-md text-title font-bold">
               Alterar informações de cadastro
             </h1>
-            <AiOutlineClose
-              size={25}
-              className="cursor-pointer text-title"
-              onClick={closeModal}
-            />
+            <div className="flex items-center">
+              <IoMdHelpCircle
+                size={25}
+                className="cursor-pointer text-title mr-3"
+                onClick={startTutorial}
+              />
+              <AiOutlineClose
+                size={25}
+                className="cursor-pointer text-title"
+                onClick={closeModal}
+              />
+            </div>
           </div>
           <form onSubmit={submitUpdateUser}>
             <div className="mb-4">
               <Input
+                id="name"
                 backgroundColor="bg-dark-white"
                 placeholder="Nome"
                 label="Nome"
-                firstIcon={
-                  <IoPersonOutline color="#667085" size={20}></IoPersonOutline>
-                }
+                firstIcon={<IoPersonOutline color="#667085" size={20} />}
                 value={fullName}
                 onChange={(e) => {
                   setFullName(e.target.value);
                 }}
-              ></Input>
+              />
             </div>
             <div className="flex justify-between">
               <div className="w-[47%]">
                 <Input
+                  id="height"
                   backgroundColor="bg-dark-white"
                   placeholder="Altura (cm)"
                   label="Altura"
@@ -153,16 +186,12 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
                   onChange={(e) => {
                     setHeight(e.target.value);
                   }}
-                  firstIcon={
-                    <IoArrowUpOutline
-                      color="#667085"
-                      size={20}
-                    ></IoArrowUpOutline>
-                  }
+                  firstIcon={<IoArrowUpOutline color="#667085" size={20} />}
                 />
               </div>
               <div className="w-[47%]">
                 <Input
+                  id="weight"
                   backgroundColor="bg-dark-white"
                   placeholder="Peso (kg)"
                   label="Peso"
@@ -170,15 +199,14 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
                   onChange={(e) => {
                     setWeight(e.target.value);
                   }}
-                  firstIcon={
-                    <RiWeightLine color="#667085" size={20}></RiWeightLine>
-                  }
+                  firstIcon={<RiWeightLine color="#667085" size={20} />}
                 />
               </div>
             </div>
             <div className="flex justify-between">
               <div className="w-[30%]">
                 <Input
+                  id="diets"
                   backgroundColor="bg-dark-white"
                   placeholder="Dietas"
                   label="Dietas"
@@ -190,6 +218,7 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
               </div>
               <div className="w-[30%]">
                 <Input
+                  id="allergies"
                   backgroundColor="bg-dark-white"
                   placeholder="Alergias"
                   label="Alergias"
@@ -201,6 +230,7 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
               </div>
               <div className="w-[30%]">
                 <Input
+                  id="intolerances"
                   backgroundColor="bg-dark-white"
                   placeholder="Intolerâncias"
                   label="Intolerâncias"
@@ -216,7 +246,7 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
                 Por favor, preencha todos os campos.
               </div>
             )}
-            <div className="flex justify-end items-end mt-[30px] mb-[10px]">
+            <div className="flex justify-end mt-[30px] mb-[10px]">
               <Button title="Alterar dados" />
             </div>
           </form>
@@ -228,8 +258,7 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
             Olá {props.fullName}!
           </h1>
         </div>
-        <div className="text-title mb-6">
-          <p className="text-2xl font-semibold mb-2">Suas informações:</p>
+        <div className="text-title mb-6 mt-4">
           <ul className="text-1xl">
             <li>
               <span className="font-semibold">Altura</span>: {props.height}cm
@@ -258,7 +287,7 @@ export default function DashboardWelcomeCard(props: DashboardWelcomeCardProps) {
             resetUserFields();
             setOpenModal(true);
           }}
-        ></Button>
+        />
       </div>
     </>
   );

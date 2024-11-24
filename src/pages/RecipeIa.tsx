@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SidebarPage from "../components/SidebarPage";
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
@@ -20,12 +20,12 @@ import {
 } from "@mui/material";
 import { useAuth } from "../context/authContext";
 import api from "../services/api";
-
 import Swal from "sweetalert2";
 import { RecipeInfoDTO } from "../interfaces/RecipeInfoDTO";
 import { RecipeIADTO } from "../interfaces/RecipeIADTO";
-
 import RecipeCardForIA from "../components/RecipeCardForIA";
+import TutorialGenerateRecipe from "../components/Tutorials/TutorialGenerateRecipe";
+import RecipeIAWelcomeCard from "../components/WelcomeCards/RecipeIAWelcomeCard";
 
 const steps = ["Selecionar configurações", "Escolher receita", "Fazer receita"];
 
@@ -38,9 +38,12 @@ const RecipeIa: React.FC = () => {
   const [recipeGeneratedIa, setRecipeGeneratedIA] =
     useState<RecipeIADTO | null>(null);
   const [validationIngredient, setValidationIngredient] = useState([]);
+  const introRef = useRef<any>(null);
+
   useEffect(() => {
     validateIngredients();
   }, []);
+
   const validateIngredients = async () => {
     try {
       const token = await getToken();
@@ -88,12 +91,15 @@ const RecipeIa: React.FC = () => {
         }
       );
 
-      console.log("recipe info: ", recipeInfo)
+      console.log("recipe info: ", recipeInfo);
       console.log("Resposta do chat: ", response.data);
       if (response.data) {
         Swal.close();
         setRecipeGeneratedIA(response.data);
         setActiveStep(1);
+        if (introRef.current) {
+          introRef.current.goToStep(2).start();
+        }
       }
     } catch (error) {
       console.error(error);
@@ -146,6 +152,9 @@ const RecipeIa: React.FC = () => {
           text: "Receita salva com sucesso!",
         });
         setActiveStep(0);
+        if (introRef.current) {
+          introRef.current.goToStep(3).start();
+        }
       } catch (error) {
         console.error(error);
         Swal.close();
@@ -237,8 +246,9 @@ const RecipeIa: React.FC = () => {
             }}
           >
             <FormControl>
-              <FormLabel id="meal-type-label">Tipo de refeição</FormLabel>
+              <FormLabel>Tipo de refeição</FormLabel>
               <RadioGroup
+                id="tipeRecipe"
                 row
                 aria-labelledby="meal-type-label"
                 name="meal-type"
@@ -263,11 +273,10 @@ const RecipeIa: React.FC = () => {
               </RadioGroup>
             </FormControl>
             <Alert severity="warning" className="mt-2">
-              Observação: Caso você tenha alguma intolerância ou não goste de
-              algum ingrediente.
+              Observação: Caso você esteja procurando algo específico digite abaixo.
             </Alert>
             <TextField
-              id="meal-observation"
+              id="recipeDetails"
               label="Observações"
               variant="outlined"
               sx={{ mt: 2 }}
@@ -279,7 +288,9 @@ const RecipeIa: React.FC = () => {
         );
       case 1:
         return (
-          <Box>
+          <Box id="step-recipe-selection">
+            {" "}
+            {/* Adicionado id */}
             {recipeGeneratedIa ? (
               <Card sx={{ minWidth: 275 }}>
                 <CardContent>
@@ -304,7 +315,9 @@ const RecipeIa: React.FC = () => {
         );
       case 2:
         return (
-          <>
+          <Box id="step-recipe-finalization">
+            {" "}
+            {/* Adicionado id */}
             {recipeGeneratedIa && (
               <Card sx={{ minWidth: 275 }}>
                 <CardContent>
@@ -315,7 +328,7 @@ const RecipeIa: React.FC = () => {
                 </CardContent>
               </Card>
             )}
-          </>
+          </Box>
         );
       default:
         return "Desconhecido";
@@ -324,7 +337,9 @@ const RecipeIa: React.FC = () => {
 
   return (
     <SidebarPage headerTitle="Geração de Receita">
-      <div className="flex justify-center w-full">
+      <TutorialGenerateRecipe ref={introRef} />
+      <RecipeIAWelcomeCard/>
+      <div className="flex justify-center w-full overflow-y-auto">
         <div className="h-[80vh] w-[80%] flex flex-col pr-[100px] mt-[40px]">
           <Box sx={{ width: "100%" }}>
             <Stepper activeStep={activeStep}>
@@ -369,7 +384,7 @@ const RecipeIa: React.FC = () => {
                     Voltar
                   </Button>
                   <Box sx={{ flex: "1 1 auto" }} />
-                  <Button onClick={handleNext}>
+                  <Button id="makeRecipe" onClick={handleNext}>
                     {activeStep === steps.length - 1 ? "Salvar" : "Próximo"}
                   </Button>
                 </Box>

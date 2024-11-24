@@ -1,34 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { AxiosError } from "axios";
 import SidebarPage from "../components/SidebarPage";
-import RecipeCard from "../components/RecipeCard";
+import RecipeCard from "../components/Cards/RecipeCard";
 import api from "../services/api";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
-import { UserProps } from "../interfaces/UserProps";
-import {
-  Modal,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
+import SearchBar from "../components/SearchBar";
+import { Modal } from "@mui/material";
 import {
   AiOutlineClockCircle,
   AiOutlineClose,
   AiOutlineCloseCircle,
 } from "react-icons/ai";
-import { IoIosCloseCircleOutline } from "react-icons/io";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoMdHelpCircle } from "react-icons/io";
 import { RecipeProps } from "../interfaces/RecipeProps";
 import Swal from "sweetalert2";
 import { useIngredients } from "../context/ingredientsContext";
 import Dropdown from "../components/Dropdown";
-import MyRecipesWelcomeCard from "../components/MyRecipesWelcomeCard";
+import MyRecipesWelcomeCard from "../components/WelcomeCards/MyRecipesWelcomeCard";
+import TutorialMyRecipes from "../components/Tutorials/TutorialMyRecipes";
+import ingredientData from "../../ingredientes.json";
+import IntroJs from "intro.js";
+import "intro.js/introjs.css";
 
 interface CalculatedValues {
   [key: string]: any;
@@ -39,40 +33,8 @@ interface SelectedIngredientsProps {
   id: string;
 }
 
-const nutritionalValueTranslation: { [key: string]: string } = {
-  Calcium_mg: "Cálcio mg",
-  Carb_g: "Carboidratos g",
-  Copper_mcg: "Cobre mcg",
-  Energy_kcal: "Energia kcal",
-  Fat_g: "Gordura g",
-  Fiber_g: "Fibra g",
-  Folate_mcg: "Folato mcg",
-  Iron_mg: "Ferro mg",
-  Magnesium_mg: "Magnésio mg",
-  Manganese_mg: "Manganês mg",
-  Niacin_mg: "Niacina mg",
-  Phosphorus_mg: "Fósforo mg",
-  Potassium_mg: "Potássio mg",
-  Protein_g: "Proteína g",
-  Riboflavin_mg: "Riboflavina mg",
-  Selenium_mcg: "Selênio mcg",
-  Sodium_mg: "Sódio mg",
-  Sugar_g: "Açúcar g",
-  Thiamin_mg: "Tiamina mg",
-  VitA_mcg: "Vitamina A mcg",
-  VitB12_mcg: "Vitamina B12 mcg",
-  VitB6_mg: "Vitamina B6 mg",
-  VitC_mg: "Vitamina C mg",
-  VitD2_mcg: "Vitamina D2 mcg",
-  VitE_mg: "Vitamina E mg",
-  Zinc_mg: "Zinco mg",
-};
-
 const MyRecipes: React.FC = () => {
-  const [userData, setUserData] = useState<UserProps | null>(null);
   const [openModal, setOpenModal] = useState(false);
-  const [filterText, setFilterText] = useState("");
-  const [ingredientSearchText] = useState("");
   const [visible] = useState(false);
   const [recipes, setRecipes] = useState<RecipeProps[]>([]);
   const [newRecipeName, setNewRecipeName] = useState("");
@@ -93,37 +55,43 @@ const MyRecipes: React.FC = () => {
   >([]);
   const [nutritionalValues, setNutritionalValues] = useState<CalculatedValues>(
     {}
-  );
+  )
+  const [filteredRecipes, setFilteredRecipes] = useState<RecipeProps[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchUserData = async (): Promise<void> => {
-    try {
-      const response = await api.get("/api/v1/user/me");
-      const userDataFromApi: UserProps = response.data;
-      setUserData(userDataFromApi);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
+  useEffect(() => {
+    fetchRecipes(page, searchQuery);
+  }, [page, searchQuery]);
+  
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery]);
+
+  const handleNextPage = () => {
+    if (hasMore) {
+      setPage((prevPage) => prevPage + 1);
     }
   };
 
-  useEffect(() => {
-    fetchUserData();
-    fetchRecipes();
-    fetchIngredients(ingredientSearchText);
-  }, []);
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage((prevPage) => prevPage - 1);
+    }
+  };
 
-  useEffect(() => {
-    fetchIngredients(ingredientSearchText);
-  }, [ingredientSearchText]);
-
-  const fetchRecipes = async () => {
+  const fetchRecipes = async (page: number, searchQuery: string) => {
     try {
       const token = await getToken();
-      const response = await api.get("/api/v1/user/recipe", {
+      const response = await api.get(`/api/v1/user/recipe?page=${page}&limit=10&search=${searchQuery}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       if (response.data) {
         setRecipes(response.data.data);
+        setFilteredRecipes(response.data.data);
+        setHasMore(response.data.data.length === 10);
       }
     } catch (error) {
       console.error(error);
@@ -277,6 +245,11 @@ const MyRecipes: React.FC = () => {
     }
   };
 
+  const openModalHandler = () => {
+    resetRecipeItemsInputs();
+    setOpenModal(true);
+  };
+
   const closeModal = () => {
     clearRecipeFields();
     setNutritionalValues({});
@@ -306,32 +279,75 @@ const MyRecipes: React.FC = () => {
     setNutritionalValues({});
   };
 
+  const capitalizeFirstLetter = (string: string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+  };
+
+  const createFormHtml = (missingIngredients: string[]) => {
+    const form = document.createElement("form");
+
+    missingIngredients.forEach((id) => {
+      const ingredientDetail = ingredientData.find(
+        (ingredient) => ingredient.oid === id
+      );
+
+      const div = document.createElement("div");
+      div.style.display = "flex";
+      div.style.justifyContent = "space-between";
+      div.style.alignItems = "center";
+      div.style.marginBottom = "10px";
+
+      const label = document.createElement("label");
+      label.setAttribute("for", `ingredient-${id}`);
+      label.style.fontWeight = "bold";
+      const ingredientName = ingredientDetail
+        ? capitalizeFirstLetter(ingredientDetail.descrip)
+        : id;
+      label.textContent = `${ingredientName}`;
+      div.appendChild(label);
+
+      const input = document.createElement("input");
+      input.setAttribute("id", `ingredient-${id}`);
+      input.setAttribute("class", "swal2-input");
+      input.setAttribute("placeholder", "Quantidade");
+      input.style.width = "250px";
+      input.style.marginLeft = "10px";
+      div.appendChild(input);
+
+      form.appendChild(div);
+    });
+
+    return form;
+  };
+
   const addIngredientsToShoppingList = async (missingIngredients: string[]) => {
+    const formHtml = createFormHtml(missingIngredients);
+
     const quantities = await Swal.fire({
       title: "Adicione as quantidades",
-      html: missingIngredients.map(id => `
-        <div>
-          <label for="ingredient-${id}">Ingrediente ${id}</label>
-          <input id="ingredient-${id}" class="swal2-input" placeholder="Quantidade">
-        </div>
-      `).join(''),
+      html: formHtml,
       focusConfirm: false,
       preConfirm: () => {
-        const inputs = missingIngredients.map(id => {
-          const quantity = (document.getElementById(`ingredient-${id}`) as HTMLInputElement).value;
-          return { ingredientId: id, quantity: quantity || '0' };
+        const inputs = missingIngredients.map((id) => {
+          const quantity = (
+            document.getElementById(`ingredient-${id}`) as HTMLInputElement
+          ).value;
+          return { ingredientId: id, quantity: quantity || "0" };
         });
         return inputs;
-      }
+      },
     });
-  
+
     if (!quantities.value) {
       console.error("Quantities value is undefined");
       return;
     }
-  
-    const ingredientsWithQuantities: { ingredientId: string, quantity: string }[] = quantities.value;
-  
+
+    const ingredientsWithQuantities: {
+      ingredientId: string;
+      quantity: string;
+    }[] = quantities.value;
+
     const token = await getToken();
     const responseAdd = await api.post(
       `/api/v1/user/addToShoppingList`,
@@ -349,18 +365,26 @@ const MyRecipes: React.FC = () => {
       console.log("Iniciando handleMakeRecipe para a receita:", recipeId);
       const token = await getToken();
       console.log("Token obtido:", token);
-  
+
       const response = await checkAndRemoveIngredients(recipeId);
-  
-      console.log("checkAndRemoveIngredients response status:", response.status);
+
+      console.log(
+        "checkAndRemoveIngredients response status:",
+        response.status
+      );
       console.log("checkAndRemoveIngredients response data:", response.data);
-  
+
       if (response.status === 200) {
-        console.log("Ingredientes suficientes. Adicionando valores nutricionais.");
+        console.log(
+          "Ingredientes suficientes. Adicionando valores nutricionais."
+        );
         await addNutritionalValuesFromRecipe(recipeId);
       } else if (response.status === 400 && response.data.missingIngredients) {
-        console.log("Ingredientes insuficientes:", response.data.missingIngredients);
-  
+        console.log(
+          "Ingredientes insuficientes:",
+          response.data.missingIngredients
+        );
+
         const result = await Swal.fire({
           title: "Ingredientes insuficientes",
           text: "Deseja adicionar os ingredientes necessários à sua lista de compras?",
@@ -369,9 +393,9 @@ const MyRecipes: React.FC = () => {
           confirmButtonText: "Sim",
           cancelButtonText: "Não",
         });
-  
+
         console.log("Swal result:", result);
-  
+
         if (result.isConfirmed) {
           await addIngredientsToShoppingList(response.data.missingIngredients);
         }
@@ -390,11 +414,13 @@ const MyRecipes: React.FC = () => {
             confirmButtonText: "Sim",
             cancelButtonText: "Não",
           });
-  
+
           console.log("Swal result (erro 400):", result);
-  
+
           if (result.isConfirmed) {
-            await addIngredientsToShoppingList(error.response.data.missingIngredients);
+            await addIngredientsToShoppingList(
+              error.response.data.missingIngredients
+            );
           }
         } else {
           console.log("makeRecipe error:", error);
@@ -487,8 +513,54 @@ const MyRecipes: React.FC = () => {
       console.error("Error sending ingredients:", error);
     }
   };
+
+  const startTutorial = () => {
+    console.log("startTutorial");
+    IntroJs()
+      .setOptions({
+        steps: [
+          {
+            title: "Adicionar nome da receita",
+            element: "#addName",
+            intro: "Adcione um nome intuitivo para sua receita.",
+          },
+          {
+            title: "Adicionar ingredientes",
+            element: "#addIngredient",
+            intro: "Adicione os ingredientes usados na receita.",
+          },
+          {
+            title: "Calcular valores nutricionais",
+            element: "#addNutritionalValues",
+            intro:
+              "Clique aqui para calcular os valores nutricionais da sua receita.",
+          },
+          {
+            title: "Passos de preparo",
+            element: "#addPreparationStep",
+            intro: "Adicione os passos necessários para completar sua receita.",
+          },
+          {
+            title: "Tempo de preparo",
+            element: "#addPreparationTime",
+            intro: "Adicione o tempo que leva para preparara a receita .",
+          },
+        ],
+        showProgress: true,
+        showBullets: false,
+        scrollTo: "tooltip",
+        scrollToElement: true,
+        scrollPadding: 300,
+        exitOnOverlayClick: false,
+        disableInteraction: true,
+        exitOnEsc: false,
+      })
+      .start();
+  };
+
   return (
     <>
+      <TutorialMyRecipes />
       <Modal
         style={{
           display: "flex",
@@ -504,30 +576,39 @@ const MyRecipes: React.FC = () => {
             <h1 className="text-md text-title font-bold">
               Adicionar nova receita
             </h1>
-            <AiOutlineClose
-              size={25}
-              className="cursor-pointer text-title"
-              onClick={closeModal}
-            />
+            <div className="flex items-center">
+              <IoMdHelpCircle
+                size={25}
+                className="cursor-pointer text-title mr-3"
+                onClick={startTutorial}
+              />
+              <AiOutlineClose
+                size={30}
+                className="cursor-pointer text-title"
+                onClick={closeModal}
+              />
+            </div>
           </div>
           <form onSubmit={submitAddedRecipe}>
-            <div className="mb-4">
+            <div id="addName" className="mb-4">
               <label className="block text-title text-md font-semibold mb-2">
                 Nome da Receita
               </label>
-              <input
-                type="text"
-                value={newRecipeName}
-                onChange={(e) => setNewRecipeName(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder="Nome da Receita"
-              />
+              <div id="recipe_name" className="recipe_name">
+                <input
+                  type="text"
+                  value={newRecipeName}
+                  onChange={(e) => setNewRecipeName(e.target.value)}
+                  className="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Nome da Receita"
+                />
+              </div>
             </div>
-            <div className="flex flex-col mb-4 relative">
+            <div id="addIngredient" className="flex flex-col mb-4 relative">
               <label className="block text-title text-md font-semibold mb-2">
                 Ingredientes
               </label>
-              <div className="relative z-10">
+              <div id="add_ingredient" className="relative z-10 add_ingredient">
                 <Dropdown onClick={handleAddSelectedIngredient} />
               </div>
             </div>
@@ -560,41 +641,20 @@ const MyRecipes: React.FC = () => {
                 </div>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={handleSendIngredients}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Calcular Valores Nutricionais
-            </button>
-            {Object.keys(nutritionalValues).length > 0 && (
-              <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
-                <Table stickyHeader aria-label="nutritional values table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Nutrientes</TableCell>
-                      <TableCell align="right">Valor</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {Object.entries(nutritionalValues).map(
-                      ([key, value], index) => (
-                        <TableRow key={index}>
-                          <TableCell component="th" scope="row">
-                            {nutritionalValueTranslation[key] || key}
-                          </TableCell>
-                          <TableCell align="right">{value}</TableCell>
-                        </TableRow>
-                      )
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
+            <div id="addNutritionalValues" className="">
+              <button
+                type="button"
+                onClick={handleSendIngredients}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Calcular Valores Nutricionais
+              </button>
+            </div>
+
+            <div id="addPreparationStep" className="mb-4 mt-4">
             <h2 className="text-md text-title font-semibold mb-2">
               Passos de preparo
             </h2>
-            <div className="mb-4 flex">
               <input
                 type="text"
                 value={newPreparationStep}
@@ -630,7 +690,7 @@ const MyRecipes: React.FC = () => {
                 </li>
               ))}
             </ul>
-            <div className="mb-6">
+            <div id="addPreparationTime" className="mb-6 preparation_time">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Tempo de Preparo (minutos)
               </label>
@@ -655,22 +715,14 @@ const MyRecipes: React.FC = () => {
         </div>
       </Modal>
       <SidebarPage headerTitle="Minhas Receitas">
-        <MyRecipesWelcomeCard userName={userData?.fullName ?? "User"} />
+        <MyRecipesWelcomeCard />
         <div className="flex flex-col w-full">
           <div className="h-[80vh] flex flex-col w-full pr-[100px] mt-[40px] overflow-y-auto">
-            <Input
-              value={filterText}
-              onChange={(event) => setFilterText(event.target.value)}
-              placeholder="Buscar..."
-              firstIcon={<IoSearchOutline color="#667085" size={20} />}
-              icon={
-                <button onClick={() => setFilterText("")}>
-                  <IoIosCloseCircleOutline color="#667085" size={20} />
-                </button>
-              }
-            />
+            <div id="search">
+              <SearchBar filterText={searchQuery} setFilterText={setSearchQuery} />
+            </div>
             <div className="flex justify-between items-center mt-[40px]">
-              <h1 className="text-md text-subtitle self-end">Sua lista</h1>
+              <h1 className="text-md text-subtitle self-end">Suas receitas</h1>
               {visible && (
                 <Button
                   title="Deletar"
@@ -680,28 +732,27 @@ const MyRecipes: React.FC = () => {
                   onClick={() => {}}
                 />
               )}
-              <Button
-                title="Adicionar"
-                width="w-[120px]"
-                marginBottom=""
-                marginLeft="ml-[40px]"
-                onClick={() => {
-                  resetRecipeItemsInputs();
-                  setOpenModal(true);
-                }}
-              />
+              <div id="add-button">
+                <Button
+                  title="Adicionar"
+                  width="w-[120px]"
+                  marginBottom=""
+                  marginLeft="ml-[40px]"
+                  onClick={openModalHandler}
+                />
+              </div>
             </div>
-            <div className="w-full h-[100%] mt-[20px] overflow-y-scroll">
+            <div className="w-full h-[100%] mt-[20px] overflow-y-scroll RecipeCard mb-12">
               {recipes.map((recipe: RecipeProps) => (
                 <div
                   key={recipe.id}
-                  className="mb-4 p-4 border rounded-lg shadow-sm hover:bg-blue-100 transition duration-200"
+                  className="mb-4 rounded-lg shadow-sm hover:bg-blue-500 transition duration-200 relative"
                 >
                   <RecipeCard
                     recipeProps={recipe}
                     fetchRecipes={fetchRecipes}
                   />
-                  <div className="flex justify-end">
+                  <div className="absolute top-2 right-2">
                     <button
                       onClick={() => handleMakeRecipe(recipe.id)}
                       className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
@@ -711,8 +762,23 @@ const MyRecipes: React.FC = () => {
                   </div>
                 </div>
               ))}
-              <div className="h-20"></div>
             </div>
+            <div className="flex justify-between mb-16">
+            <Button
+                title="Anterior"
+                width="w-[100px]"
+                marginLeft="mr-[30px]"
+                onClick={handlePrevPage}
+                disabled={page === 1}                
+              />
+              <Button
+                title="Próxima"
+                width="w-[100px]"
+                onClick={handleNextPage}
+                disabled={!hasMore}
+              />
+            </div>
+            <div className="h-20"></div>
           </div>
         </div>
       </SidebarPage>

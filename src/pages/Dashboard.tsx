@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import SidebarPage from "../components/SidebarPage";
-import DashboardWelcomeCard from "../components/DashboardWelcomeCard";
+import DashboardWelcomeCard from "../components/WelcomeCards/DashboardWelcomeCard";
 import NutritionalProgressChart from "../components/NutritionalProgressChart";
 import api from "../services/api";
 import DatePicker from "react-datepicker";
@@ -9,6 +9,8 @@ import { UserProps } from "../interfaces/UserProps";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { Modal, Box } from "@mui/material";
+import TutorialDashboard from "../components/Tutorials/TutorialDashboard";
+import { useLocation } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
   const [userData, setUserData] = useState<UserProps | null>(null);
@@ -20,12 +22,17 @@ const Dashboard: React.FC = () => {
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
   const [modalStartDate, setModalStartDate] = useState<Date | null>(null);
   const [modalEndDate, setModalEndDate] = useState<Date | null>(null);
+  const location = useLocation();
+  
+  useEffect(() => {
+    fetchData();
+    fetchNutritionalData();
+  }, [location]);
 
   const fetchData = async () => {
     try {
       const response = await api.get("/api/v1/user/me");
-      const userDataFromApi: UserProps = response.data;
-      setUserData(userDataFromApi);
+      setUserData(response.data);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
@@ -39,11 +46,6 @@ const Dashboard: React.FC = () => {
       console.error("Error fetching nutritional data:", error);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-    fetchNutritionalData();
-  }, []);
 
   const filterDataByDateRange = (start: Date | null, end: Date | null) => {
     if (!start || !end) return nutritionalData;
@@ -72,9 +74,56 @@ const Dashboard: React.FC = () => {
     const filteredData = filterDataByDateRange(startDate, endDate);
 
     const doc = new jsPDF();
-    doc.text("Relatório Nutricional", 14, 22);
 
-    // Define the table columns
+    // Adicionando título do documento
+    doc.setFontSize(18);
+    doc.text("Relatório Nutricional", 105, 20, { align: "center" });
+
+    // Adicionando linha separadora
+    doc.setLineWidth(0.5);
+    doc.line(14, 25, 196, 25);
+
+    // Seção de Informações do Paciente
+    doc.setFontSize(14);
+    doc.text("Informações do Paciente", 14, 35);
+
+    const userInfoTableColumn = ["Campo", "Informação"];
+    const userInfoTableRows = [
+      ["Nome", userData?.fullName ?? ""],
+      ["Altura", `${userData?.height ?? ""} cm`],
+      ["Peso", `${userData?.weight ?? ""} kg`],
+      ["Dietas", userData?.diets ?? ""],
+      ["Alergias", userData?.allergies ?? ""],
+      ["Intolerâncias", userData?.intolerances ?? ""],
+    ];
+
+    (doc as any).autoTable({
+      head: [userInfoTableColumn],
+      body: userInfoTableRows,
+      startY: 40,
+      theme: "grid",
+      styles: {
+        fontSize: 12,
+        cellPadding: 3,
+      },
+      headStyles: {
+        fillColor: [22, 160, 133],
+        textColor: [255, 255, 255],
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240],
+      },
+    });
+
+    // Adicionando linha separadora
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setLineWidth(0.5);
+    doc.line(14, finalY, 196, finalY);
+
+    // Adicionando seção da tabela de dados nutricionais
+    doc.setFontSize(14);
+    doc.text("Dados Nutricionais", 14, finalY + 10);
+
     const tableColumn = [
       "Data",
       "Calorias (kcal)",
@@ -84,8 +133,7 @@ const Dashboard: React.FC = () => {
       "Açúcar (g)",
       "Sal (mg)",
     ];
-    // Define the table rows
-    const tableRows: any[] = [];
+    const tableRows: any = [];
 
     filteredData.forEach((data) => {
       const dataRow = [
@@ -100,8 +148,23 @@ const Dashboard: React.FC = () => {
       tableRows.push(dataRow);
     });
 
-    // Add table to PDF
-    (doc as any).autoTable(tableColumn, tableRows, { startY: 30 });
+    (doc as any).autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: finalY + 20,
+      theme: "grid",
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+      },
+      headStyles: {
+        fillColor: [22, 160, 133],
+        textColor: [255, 255, 255],
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240],
+      },
+    });
 
     doc.save("nutritional_report.pdf");
   };
@@ -141,19 +204,23 @@ const Dashboard: React.FC = () => {
 
   return (
     <SidebarPage headerTitle="Dashboard">
+      <TutorialDashboard/>
       <div className="h-[100vh] pr-[100px] overflow-y-auto">
-        <DashboardWelcomeCard
-          login={userData?.login ?? ""}
-          fullName={userData?.fullName ?? ""}
-          weight={userData?.weight ?? 0}
-          height={userData?.height ?? 0}
-          diets={userData?.diets ?? ""}
-          allergies={userData?.allergies ?? ""}
-          intolerances={userData?.intolerances ?? ""}
-          fetchData={fetchData}
-          id={""}
-        />
-        <div className="mt-8 flex flex-col items-center">
+        <div id="dashboardWelcomeCard">
+          <DashboardWelcomeCard
+            login={userData?.login ?? ""}
+            fullName={userData?.fullName ?? ""}
+            weight={userData?.weight ?? 0}
+            height={userData?.height ?? 0}
+            diets={userData?.diets ?? ""}
+            allergies={userData?.allergies ?? ""}
+            intolerances={userData?.intolerances ?? ""}
+            fetchData={fetchData}
+            id={""}
+          />
+        </div>
+
+        <div id="charts" className="mt-8 flex flex-col items-center">
           <div className="flex justify-center items-center bg-white shadow-lg rounded-lg mx-64 border p-4">
             <div className="mr-4">
               <DatePicker
@@ -198,93 +265,30 @@ const Dashboard: React.FC = () => {
           )}
           <button
             onClick={downloadPDF}
-            className="mt-4 p-2 bg-blue-500 text-white rounded"
+            className="mt-4 p-2 bg-blue-500 text-white rounded pdf-button"
           >
             Baixar PDF
           </button>
-          <div
-            id="pdf-content"
-            className="mt-[50px] w-full shadow-lg rounded-lg p-2 flex flex-col gap-4 justify-center mb-64"
-          >
+          <div className="mt-[50px] w-full shadow-lg rounded-lg p-2 flex flex-col gap-4 justify-center mb-64">
             <div className="flex flex-wrap gap-8 justify-center">
-              <button
-                className="bg-white shadow-lg rounded-lg p-4 mb-16 cursor-pointer"
-                style={{ width: "30%", minHeight: "100px" }}
-                onClick={() => openModal("line")}
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && openModal("line")}
-              >
-                <NutritionalProgressChart
-                  chartType="line"
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </button>
-              <button
-                className="bg-white shadow-lg rounded-lg p-4 mb-16 cursor-pointer"
-                style={{ width: "30%", minHeight: "300px" }}
-                onClick={() => openModal("bar")}
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && openModal("bar")}
-              >
-                <NutritionalProgressChart
-                  chartType="bar"
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </button>
-              <button
-                className="bg-white shadow-lg rounded-lg p-4 mb-16 cursor-pointer"
-                style={{ width: "30%", minHeight: "300px" }}
-                onClick={() => openModal("pie")}
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && openModal("pie")}
-              >
-                <NutritionalProgressChart
-                  chartType="pie"
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </button>
-              <button
-                className="bg-white shadow-lg rounded-lg p-4 mb-16 cursor-pointer"
-                style={{ width: "30%", minHeight: "300px" }}
-                onClick={() => openModal("doughnut")}
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && openModal("doughnut")}
-              >
-                <NutritionalProgressChart
-                  chartType="doughnut"
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </button>
-              <button
-                className="bg-white shadow-lg rounded-lg p-4 mb-16 cursor-pointer"
-                style={{ width: "30%", minHeight: "300px" }}
-                onClick={() => openModal("radar")}
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && openModal("radar")}
-              >
-                <NutritionalProgressChart
-                  chartType="radar"
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </button>
-              <button
-                className="bg-white shadow-lg rounded-lg p-4 mb-16 cursor-pointer"
-                style={{ width: "30%", minHeight: "300px" }}
-                onClick={() => openModal("polarArea")}
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && openModal("polarArea")}
-              >
-                <NutritionalProgressChart
-                  chartType="polarArea"
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </button>
+              {["line", "bar", "pie", "doughnut", "radar", "polarArea"].map(
+                (chartType) => (
+                  <button
+                    key={chartType}
+                    className="bg-white shadow-lg rounded-lg p-4 mb-16 cursor-pointer chart-button"
+                    style={{ width: "30%", minHeight: "100px" }}
+                    onClick={() => openModal(chartType)}
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === "Enter" && openModal(chartType)}
+                  >
+                    <NutritionalProgressChart
+                      chartType={chartType}
+                      startDate={startDate}
+                      endDate={endDate}
+                    />
+                  </button>
+                )
+              )}
             </div>
           </div>
         </div>
