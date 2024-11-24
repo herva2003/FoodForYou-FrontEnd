@@ -518,7 +518,7 @@ const Dashboard: React.FC = () => {
       </p>
     )}
 
-    <h2 className="text-lg mt-4 mb-4 text-center">Selecione até 7 valores</h2>
+    <h2 className="text-lg mt-4 mb-4 text-center">Selecione até 7 valores para adicionar ao PDF</h2>
 
     <div className="flex flex-wrap justify-center mt-4 max-w-4xl mx-auto">
       {availableColumns.map((column) => (
