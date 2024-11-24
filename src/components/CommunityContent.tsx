@@ -63,20 +63,10 @@ const CommunityContent: React.FC = () => {
         <SearchBar filterText={searchQuery} setFilterText={setSearchQuery} />
       </div>
       <div className="flex justify-between mt-4">
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handlePrevPage}
-          disabled={page === 1}
-        >
+        <Button onClick={handlePrevPage} disabled={page === 1}>
           Anterior
         </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleNextPage}
-          disabled={!hasMore}
-        >
+        <Button onClick={handleNextPage} disabled={!hasMore}>
           Próxima
         </Button>
       </div>

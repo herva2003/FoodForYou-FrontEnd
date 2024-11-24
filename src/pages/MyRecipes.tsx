@@ -3,11 +3,11 @@ import { AxiosError } from "axios";
 import SidebarPage from "../components/SidebarPage";
 import RecipeCard from "../components/Cards/RecipeCard";
 import api from "../services/api";
-import Button from "../components/Button";
+import Button2 from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/authContext";
 import SearchBar from "../components/SearchBar";
-import { Modal } from "@mui/material";
+import { Modal, Button } from "@mui/material";
 import {
   AiOutlineClockCircle,
   AiOutlineClose,
@@ -55,7 +55,7 @@ const MyRecipes: React.FC = () => {
   >([]);
   const [nutritionalValues, setNutritionalValues] = useState<CalculatedValues>(
     {}
-  )
+  );
   const [filteredRecipes, setFilteredRecipes] = useState<RecipeProps[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -64,7 +64,7 @@ const MyRecipes: React.FC = () => {
   useEffect(() => {
     fetchRecipes(page, searchQuery);
   }, [page, searchQuery]);
-  
+
   useEffect(() => {
     setPage(1);
   }, [searchQuery]);
@@ -84,10 +84,13 @@ const MyRecipes: React.FC = () => {
   const fetchRecipes = async (page: number, searchQuery: string) => {
     try {
       const token = await getToken();
-      const response = await api.get(`/api/v1/user/recipe?page=${page}&limit=10&search=${searchQuery}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
+      const response = await api.get(
+        `/api/v1/user/recipe?page=${page}&limit=10&search=${searchQuery}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       if (response.data) {
         setRecipes(response.data.data);
         setFilteredRecipes(response.data.data);
@@ -652,9 +655,9 @@ const MyRecipes: React.FC = () => {
             </div>
 
             <div id="addPreparationStep" className="mb-4 mt-4">
-            <h2 className="text-md text-title font-semibold mb-2">
-              Passos de preparo
-            </h2>
+              <h2 className="text-md text-title font-semibold mb-2">
+                Passos de preparo
+              </h2>
               <input
                 type="text"
                 value={newPreparationStep}
@@ -668,7 +671,7 @@ const MyRecipes: React.FC = () => {
                 className="shadow appearance-none border rounded w-4/5 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Novo Passo de Preparo"
               />
-              <Button
+              <Button2
                 type="button"
                 disabled={newPreparationStep.trim() === ""}
                 title="Adicionar"
@@ -719,12 +722,15 @@ const MyRecipes: React.FC = () => {
         <div className="flex flex-col w-full">
           <div className="h-[80vh] flex flex-col w-full pr-[100px] mt-[40px] overflow-y-auto">
             <div id="search">
-              <SearchBar filterText={searchQuery} setFilterText={setSearchQuery} />
+              <SearchBar
+                filterText={searchQuery}
+                setFilterText={setSearchQuery}
+              />
             </div>
             <div className="flex justify-between items-center mt-[40px]">
               <h1 className="text-md text-subtitle self-end">Suas receitas</h1>
               {visible && (
-                <Button
+                <Button2
                   title="Deletar"
                   width="w-[120px]"
                   marginBottom=""
@@ -733,7 +739,7 @@ const MyRecipes: React.FC = () => {
                 />
               )}
               <div id="add-button">
-                <Button
+                <Button2
                   title="Adicionar"
                   width="w-[120px]"
                   marginBottom=""
@@ -764,19 +770,12 @@ const MyRecipes: React.FC = () => {
               ))}
             </div>
             <div className="flex justify-between mb-16">
-            <Button
-                title="Anterior"
-                width="w-[100px]"
-                marginLeft="mr-[30px]"
-                onClick={handlePrevPage}
-                disabled={page === 1}                
-              />
-              <Button
-                title="Próxima"
-                width="w-[100px]"
-                onClick={handleNextPage}
-                disabled={!hasMore}
-              />
+              <Button onClick={handlePrevPage} disabled={page === 1}>
+                Anterior
+              </Button>
+              <Button onClick={handleNextPage} disabled={!hasMore}>
+                Próxima
+              </Button>
             </div>
             <div className="h-20"></div>
           </div>

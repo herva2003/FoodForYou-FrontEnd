@@ -8,9 +8,69 @@ import "react-datepicker/dist/react-datepicker.css";
 import { UserProps } from "../interfaces/UserProps";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-import { Modal, Box } from "@mui/material";
+import { Modal, Box, Button, FormControlLabel, Checkbox } from "@mui/material";
 import TutorialDashboard from "../components/Tutorials/TutorialDashboard";
 import { useLocation } from "react-router-dom";
+
+const availableColumns = [
+  "energy_kcal",
+  "protein_g",
+  "saturated_fats_g",
+  "fat_g",
+  "carb_g",
+  "fiber_g",
+  "sugar_g",
+  "calcium_mg",
+  "iron_mg",
+  "magnesium_mg",
+  "phosphorus_mg",
+  "potassium_mg",
+  "sodium_mg",
+  "zinc_mg",
+  "copper_mcg",
+  "manganese_mg",
+  "selenium_mcg",
+  "vitC_mg",
+  "thiamin_mg",
+  "riboflavin_mg",
+  "niacin_mg",
+  "vitB6_mg",
+  "folate_mcg",
+  "vitB12_mcg",
+  "vitA_mcg",
+  "vitE_mg",
+  "vitD2_mcg",
+];
+
+const columnLabels: { [key: string]: string } = {
+  energy_kcal: "Calorias (kcal)",
+  protein_g: "Proteína (g)",
+  saturated_fats_g: "Gordura Saturada (g)",
+  fat_g: "Gordura (g)",
+  carb_g: "Carboidratos (g)",
+  fiber_g: "Fibra (g)",
+  sugar_g: "Açúcar (g)",
+  calcium_mg: "Cálcio (mg)",
+  iron_mg: "Ferro (mg)",
+  magnesium_mg: "Magnésio (mg)",
+  phosphorus_mg: "Fósforo (mg)",
+  potassium_mg: "Potássio (mg)",
+  sodium_mg: "Sódio (mg)",
+  zinc_mg: "Zinco (mg)",
+  copper_mcg: "Cobre (mcg)",
+  manganese_mg: "Manganês (mg)",
+  selenium_mcg: "Selênio (mcg)",
+  vitC_mg: "Vitamina C (mg)",
+  thiamin_mg: "Tiamina (mg)",
+  riboflavin_mg: "Riboflavina (mg)",
+  niacin_mg: "Niacina (mg)",
+  vitB6_mg: "Vitamina B6 (mg)",
+  folate_mcg: "Folato (mcg)",
+  vitB12_mcg: "Vitamina B12 (mcg)",
+  vitA_mcg: "Vitamina A (mcg)",
+  vitE_mg: "Vitamina E (mg)",
+  vitD2_mcg: "Vitamina D2 (mcg)",
+};
 
 const Dashboard: React.FC = () => {
   const [userData, setUserData] = useState<UserProps | null>(null);
@@ -22,8 +82,10 @@ const Dashboard: React.FC = () => {
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
   const [modalStartDate, setModalStartDate] = useState<Date | null>(null);
   const [modalEndDate, setModalEndDate] = useState<Date | null>(null);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [columnModalIsOpen, setColumnModalIsOpen] = useState(false);
   const location = useLocation();
-  
+
   useEffect(() => {
     fetchData();
     fetchNutritionalData();
@@ -69,24 +131,43 @@ const Dashboard: React.FC = () => {
       setShowWarning(true);
       return;
     }
-
+  
+    if (selectedColumns.length > 7) {
+      alert("Você pode selecionar no máximo 7 valores.");
+      return;
+    }
+  
     setShowWarning(false);
     const filteredData = filterDataByDateRange(startDate, endDate);
-
+  
+    // Calculando os totais
+    const totals = filteredData.reduce(
+      (acc, data) => {
+        selectedColumns.forEach((col) => {
+          acc[col] += data[col] ?? 0;
+        });
+        return acc;
+      },
+      selectedColumns.reduce((acc, col) => {
+        acc[col] = 0;
+        return acc;
+      }, {} as any)
+    );
+  
     const doc = new jsPDF();
-
+  
     // Adicionando título do documento
     doc.setFontSize(18);
     doc.text("Relatório Nutricional", 105, 20, { align: "center" });
-
+  
     // Adicionando linha separadora
     doc.setLineWidth(0.5);
     doc.line(14, 25, 196, 25);
-
+  
     // Seção de Informações do Paciente
     doc.setFontSize(14);
     doc.text("Informações do Paciente", 14, 35);
-
+  
     const userInfoTableColumn = ["Campo", "Informação"];
     const userInfoTableRows = [
       ["Nome", userData?.fullName ?? ""],
@@ -96,7 +177,7 @@ const Dashboard: React.FC = () => {
       ["Alergias", userData?.allergies ?? ""],
       ["Intolerâncias", userData?.intolerances ?? ""],
     ];
-
+  
     (doc as any).autoTable({
       head: [userInfoTableColumn],
       body: userInfoTableRows,
@@ -114,40 +195,37 @@ const Dashboard: React.FC = () => {
         fillColor: [240, 240, 240],
       },
     });
-
+  
     // Adicionando linha separadora
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     doc.setLineWidth(0.5);
     doc.line(14, finalY, 196, finalY);
-
+  
     // Adicionando seção da tabela de dados nutricionais
     doc.setFontSize(14);
     doc.text("Dados Nutricionais", 14, finalY + 10);
-
+  
     const tableColumn = [
       "Data",
-      "Calorias (kcal)",
-      "Proteína (g)",
-      "Gordura (g)",
-      "Carboidratos (g)",
-      "Açúcar (g)",
-      "Sal (mg)",
+      ...selectedColumns.map((col) => columnLabels[col]),
     ];
     const tableRows: any = [];
-
+  
     filteredData.forEach((data) => {
       const dataRow = [
         new Date(data.createdAt).toLocaleDateString(),
-        data.energy_kcal,
-        data.protein_g,
-        data.fat_g,
-        data.carb_g,
-        data.sugar_g,
-        data.sodium_mg,
+        ...selectedColumns.map((col) => (data[col] ?? 0).toFixed(2)),
       ];
       tableRows.push(dataRow);
     });
-
+  
+    // Adicionando a linha de total
+    const totalRow = [
+      "Total",
+      ...selectedColumns.map((col) => totals[col].toFixed(2)),
+    ];
+    tableRows.push(totalRow);
+  
     (doc as any).autoTable({
       head: [tableColumn],
       body: tableRows,
@@ -165,8 +243,9 @@ const Dashboard: React.FC = () => {
         fillColor: [240, 240, 240],
       },
     });
-
+  
     doc.save("nutritional_report.pdf");
+    setColumnModalIsOpen(false); // Fecha o modal após o download
   };
 
   const handleDropdownChange = (
@@ -202,9 +281,29 @@ const Dashboard: React.FC = () => {
     setSelectedChart(null);
   };
 
+  const handleColumnSelection = (column: string) => {
+    setSelectedColumns((prev) => {
+      if (prev.includes(column)) {
+        return prev.filter((col) => col !== column);
+      } else if (prev.length < 7) {
+        return [...prev, column];
+      } else {
+        return prev;
+      }
+    });
+  };
+
+  const openColumnModal = () => {
+    setColumnModalIsOpen(true);
+  };
+
+  const closeColumnModal = () => {
+    setColumnModalIsOpen(false);
+  };
+
   return (
     <SidebarPage headerTitle="Dashboard">
-      <TutorialDashboard/>
+      <TutorialDashboard />
       <div className="h-[100vh] pr-[100px] overflow-y-auto">
         <div id="dashboardWelcomeCard">
           <DashboardWelcomeCard
@@ -264,7 +363,7 @@ const Dashboard: React.FC = () => {
             </p>
           )}
           <button
-            onClick={downloadPDF}
+            onClick={openColumnModal}
             className="mt-4 p-2 bg-blue-500 text-white rounded pdf-button"
           >
             Baixar PDF
@@ -360,6 +459,94 @@ const Dashboard: React.FC = () => {
           )}
         </Box>
       </Modal>
+
+      <Modal open={columnModalIsOpen} onClose={closeColumnModal}>
+  <Box
+    sx={{
+      position: "relative",
+      width: { xs: "90%", md: "60%" },
+      maxHeight: "80%",
+      margin: "auto",
+      marginTop: "5%",
+      backgroundColor: "white",
+      borderRadius: "8px",
+      boxShadow: 24,
+      p: 4,
+      overflow: "auto",
+    }}
+  >
+    <div className="flex flex-col md:flex-row justify-center mt-4">
+      <div className="mb-4 md:mb-0 md:mr-4">
+        <DatePicker
+          selected={startDate}
+          onChange={(date: Date | null) => setStartDate(date)}
+          selectsStart
+          startDate={startDate}
+          endDate={endDate}
+          isClearable
+          placeholderText="Start Date"
+          className="border p-2 rounded-lg placeholder-center w-full"
+        />
+      </div>
+      <div className="mb-4 md:mb-0 md:mr-4">
+        <DatePicker
+          selected={endDate}
+          onChange={(date: Date | null) => setEndDate(date)}
+          selectsEnd
+          startDate={startDate}
+          endDate={endDate}
+          minDate={startDate}
+          isClearable
+          placeholderText="End Date"
+          className="border p-2 rounded-lg placeholder-center w-full text-black"
+        />
+      </div>
+      <div className="md:ml-4">
+        <select
+          onChange={handleDropdownChange}
+          className="border p-2 rounded-lg w-full"
+        >
+          <option value="">Selecione</option>
+          <option value="weekly">Semanal</option>
+          <option value="monthly">Mensal</option>
+        </select>
+      </div>
+    </div>
+    {showWarning && (
+      <p className="text-red-500 mt-2 text-center">
+        Por favor, selecione o intervalo de datas.
+      </p>
+    )}
+
+    <h2 className="text-lg mt-4 mb-4 text-center">Selecione até 7 valores</h2>
+
+    <div className="flex flex-wrap justify-center mt-4 max-w-4xl mx-auto">
+      {availableColumns.map((column) => (
+        <FormControlLabel
+          key={column}
+          control={
+            <Checkbox
+              checked={selectedColumns.includes(column)}
+              onChange={() => handleColumnSelection(column)}
+              name={column}
+              disabled={
+                selectedColumns.length >= 7 && !selectedColumns.includes(column)
+              }
+            />
+          }
+          label={columnLabels[column]}
+          className="mr-4 mb-2"
+        />
+      ))}
+    </div>
+
+    <div className="flex justify-end mt-4">
+      <Button variant="contained" color="primary" onClick={downloadPDF}>
+        Baixar PDF
+      </Button>
+    </div>
+  </Box>
+</Modal>
     </SidebarPage>
   );
 };

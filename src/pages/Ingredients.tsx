@@ -487,7 +487,7 @@ const Ingredients: React.FC = () => {
       </div>
       <SidebarPage headerTitle={tabs[tabIndex].label}>
         <TutorialIngredients />
-        <div className="flex flex-col w-full h-[100vh] pr-[100px] overflow-y-auto">
+        <div className="flex flex-col w-full h-[100vh] pr-[100px]">
           <Tabs
             value={tabIndex}
             onChange={(event: React.ChangeEvent<{}>, newValue: number) =>
@@ -508,7 +508,7 @@ const Ingredients: React.FC = () => {
               <ShoppingListWelcomeCard />
             )}
           </div>
-          <div className="flex flex-col w-full">
+          <div className="flex flex-col overflow-y-auto mb-12">
             <div className="search mt-6">
               <div id="search" className="mt-6">
                 <SearchBar filterText={searchQuery} setFilterText={setSearchQuery} />
@@ -557,10 +557,9 @@ const Ingredients: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className=" w-full h-[100%] mt-[20px] overflow-y-scroll IngredientCard">
+            <div className="w-full h-[100%] mt-[20px] IngredientCard overflow-y-auto mb-12">
               <FlatList
                 list={filteredIngredients}
-                renderOnScroll
                 renderWhenEmpty={() => (
                   <div className="flex justify-center">
                     <h1 className="text-sm- text-subtitle">
@@ -579,7 +578,6 @@ const Ingredients: React.FC = () => {
                   />
                 )}
               />
-              <div className="h-20"></div>
             </div>
           </div>
         </div>
