@@ -60,6 +60,10 @@ const MyRecipes: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
     fetchRecipes(page, searchQuery);
@@ -510,10 +514,22 @@ const MyRecipes: React.FC = () => {
         }
       );
 
-      const data: CalculatedValues = await response.json();
-      setNutritionalValues(data.nutritional_values);
+      if (response.status === 200) {
+        const data = await response.json();
+        setNutritionalValues(data.nutritional_values);
+        setNotification({
+          message: "Valores calculados com sucesso",
+          type: "success",
+        });
+      } else {
+        setNotification({ message: "Erro ao calcular valores", type: "error" });
+      }
     } catch (error) {
       console.error("Error sending ingredients:", error);
+      setNotification({
+        message: "Erro ao enviar ingredientes",
+        type: "error",
+      });
     }
   };
 
@@ -652,6 +668,15 @@ const MyRecipes: React.FC = () => {
               >
                 Calcular Valores Nutricionais
               </button>
+              {notification && (
+                <div
+                  className={`mt-2 text-${
+                    notification.type === "success" ? "green" : "red"
+                  }-600`}
+                >
+                  {notification.message}
+                </div>
+              )}
             </div>
 
             <div id="addPreparationStep" className="mb-4 mt-4">
@@ -712,7 +737,7 @@ const MyRecipes: React.FC = () => {
               </div>
             )}
             <div className="flex justify-end items-end mt-[30px] mb-[10px]">
-              <Button type="submit" title="Salvar" />
+              <Button2 type="submit" title="Salvar" />
             </div>
           </form>
         </div>

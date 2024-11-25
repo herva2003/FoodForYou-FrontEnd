@@ -258,7 +258,6 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               )}
             </div>
           )}
-
           <div className="flex justify-center gap-2">
             <button
               className="bg-red-500 text-white py-2 px-4 rounded"
