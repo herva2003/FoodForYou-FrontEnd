@@ -136,7 +136,13 @@ const MyRecipes: React.FC = () => {
       timer: 2000,
       timerProgressBar: true,
       didOpen: () => {
-        Swal.showLoading();
+        const popup = Swal.getPopup();
+        if (popup) {
+          const confirmButton = popup.querySelector('.swal2-confirm') as HTMLButtonElement;
+          if (confirmButton) {
+            Swal.showLoading(confirmButton);
+          }
+        }
       },
     });
 
@@ -157,7 +163,7 @@ const MyRecipes: React.FC = () => {
         closeModal();
         clearRecipeFields();
         setNutritionalValues({});
-        fetchRecipes();
+        fetchRecipes(page, searchQuery);
         Swal.fire({
           title: "Success!",
           text: "Recipe added successfully.",

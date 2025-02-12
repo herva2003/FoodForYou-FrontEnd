@@ -34,10 +34,6 @@ export const AuthRoute = createBrowserRouter([
     element: <Reviews />,
   },
   {
-    path: "/myLikedRecipes",
-    element: <Reviews />,
-  },
-  {
     path: "/*",
     element: <AuthRedirect isLogged={false} />,
   },
@@ -74,10 +70,6 @@ export const Route = createBrowserRouter([
   },
   {
     path: "/reviews/:recipeId",
-    element: <Reviews />,
-  },  
-  {
-    path: "/myLikedRecipes",
     element: <Reviews />,
   },
   {

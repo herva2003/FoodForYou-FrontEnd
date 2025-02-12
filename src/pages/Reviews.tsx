@@ -40,11 +40,7 @@ interface Review {
   createdAt: string;
 }
 
-interface ReviewProps {
-  fetchRecipes: () => void;
-}
-
-const Reviews: React.FC<ReviewProps> = ({ fetchRecipes }) => {
+const Reviews: React.FC = () => {
   const { recipeId } = useParams<{ recipeId: string }>();
   const location = useLocation();
   const recipeProps: RecipeProps = location.state?.recipeProps;
@@ -116,7 +112,6 @@ const Reviews: React.FC<ReviewProps> = ({ fetchRecipes }) => {
         });
 
         if (result.isConfirmed) {
-          fetchRecipes();
           fetchReviews();
           setNewReviewTitle("");
           setNewReview("");

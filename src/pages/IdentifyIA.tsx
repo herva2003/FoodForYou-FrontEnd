@@ -98,7 +98,13 @@ const IA: React.FC = () => {
         allowEscapeKey: false,
         showConfirmButton: false,
         didOpen: () => {
-          Swal.showLoading();
+          const popup = Swal.getPopup();
+          if (popup) {
+            const confirmButton = popup.querySelector('.swal2-confirm') as HTMLButtonElement;
+            if (confirmButton) {
+              Swal.showLoading(confirmButton);
+            }
+          }
         },
       });
 
@@ -163,7 +169,13 @@ const IA: React.FC = () => {
         allowEscapeKey: false,
         showConfirmButton: false,
         didOpen: () => {
-          Swal.showLoading();
+          const popup = Swal.getPopup();
+          if (popup) {
+            const confirmButton = popup.querySelector('.swal2-confirm') as HTMLButtonElement;
+            if (confirmButton) {
+              Swal.showLoading(confirmButton);
+            }
+          }
         },
       });
 
@@ -255,7 +267,8 @@ const IA: React.FC = () => {
 
   const handleNext = async () => {
     if (activeStep === 0) {
-      await handleSubmit(new Event("submit") as FormEvent);
+      const event = new Event("submit", { bubbles: true, cancelable: true });
+      await handleSubmit(event as unknown as FormEvent<HTMLFormElement>);
     } else if (activeStep === 1) {
       await handleSendQuantities();
     } else if (activeStep === steps.length - 1) {

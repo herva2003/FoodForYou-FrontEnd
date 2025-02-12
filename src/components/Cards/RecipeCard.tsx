@@ -26,7 +26,7 @@ import nutritionalValueTranslation from "../NutritionalValueTranslation";
 
 interface RecipeCardProps {
   recipeProps: RecipeProps;
-  fetchRecipes: () => void;
+  fetchRecipes: (page: number, searchQuery: string) => Promise<void>;
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({
@@ -100,7 +100,6 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
         if (response.status === 204) {
           closeModal();
           Swal.fire("Excluído!", "Sua receita foi excluída.", "success");
-          fetchRecipes();
         }
       }
     } catch (error) {

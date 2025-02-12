@@ -381,7 +381,7 @@ const Dashboard: React.FC = () => {
                     onKeyDown={(e) => e.key === "Enter" && openModal(chartType)}
                   >
                     <NutritionalProgressChart
-                      chartType={chartType}
+                      chartType={chartType as "line" | "bar" | "pie" | "doughnut" | "radar" | "polarArea"}
                       startDate={startDate}
                       endDate={endDate}
                     />
