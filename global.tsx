@@ -4,7 +4,7 @@ import { FaRobot, FaUtensils } from "react-icons/fa";
 
 export const SidebarData = [
   {
-    name: "Dashboard",
+    name: " ",
     icon: MdSpaceDashboard,
     link: "/dashboard",
   },
